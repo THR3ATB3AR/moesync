@@ -1,0 +1,55 @@
+import 'package:moesync/l10n/gen/app_localizations.dart';
+import 'package:dynamic_color/dynamic_color.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'providers/providers.dart';
+import 'router.dart';
+import 'services/env.dart';
+import 'services/storage_service.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  Env.init();
+  final storage = await StorageService.create();
+
+  runApp(
+    ProviderScope(
+      overrides: [storageServiceProvider.overrideWithValue(storage)],
+      child: const MainApp(),
+    ),
+  );
+}
+
+class MainApp extends ConsumerWidget {
+  const MainApp({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final goRouter = ref.watch(routerProvider);
+    final themeSettings = ref.watch(themeSettingsProvider);
+    final appLocale = ref.watch(languageSettingsProvider).locale;
+
+    return DynamicColorBuilder(
+      builder: (lightDynamic, darkDynamic) {
+        final lightTheme = themeSettings.buildLightTheme(
+          dynamicSeedColor: lightDynamic?.primary,
+        );
+        final darkTheme = themeSettings.buildDarkTheme(
+          dynamicSeedColor: darkDynamic?.primary,
+        );
+
+        return MaterialApp.router(
+          title: 'MoeSync',
+          debugShowCheckedModeBanner: false,
+          theme: lightTheme,
+          darkTheme: darkTheme,
+          themeMode: themeSettings.themeMode,
+          routerConfig: goRouter,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: const [Locale('en'), Locale('pl'), Locale('es')],
+          locale: appLocale,
+        );
+      },
+    );
+  }
+}

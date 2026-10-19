@@ -1,0 +1,11 @@
+
+{
+  "path": ["lib"],
+  "format": ["dart"],
+  "lsp": {
+    "enabled": true,
+    "analyses": {
+      "clones": true
+    }
+  }
+}
