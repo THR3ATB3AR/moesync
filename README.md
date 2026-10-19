@@ -70,6 +70,8 @@ MoeSync is developed primarily for **Android, Windows, and Linux**. Other Flutte
 
 MoeSync's interface is available in English, Polish, and Spanish. The app language can follow the system or be selected independently. Displayed titles can prefer the source title, English, Japanese, or rōmaji; when a service does not provide the selected title, MoeSync falls back to an available title.
 
+MoeSync plans to use [Weblate](https://weblate.org/) to coordinate translations once the project is eligible for and approved for free hosted service. Until then, localization contributions are maintained in the public repository under [`lib/l10n/`](lib/l10n/). MoeSync's source code is released under GPL-3.0-or-later, and the translations are kept alongside the code.
+
 ## Development
 
 Flutter localization resources are stored in [`lib/l10n/`](lib/l10n/). After editing ARB files, regenerate the localization classes with:

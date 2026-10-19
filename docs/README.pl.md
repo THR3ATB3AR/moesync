@@ -70,6 +70,8 @@ MoeSync jest rozwijany przede wszystkim z myślą o **Androidzie, Windowsie i Li
 
 Interfejs MoeSync jest dostępny po angielsku, polsku i hiszpańsku. Język aplikacji może być ustawiony zgodnie z systemem albo wybrany niezależnie. Dla wyświetlanych tytułów można preferować nazwę ze źródła, angielską, japońską lub rōmaji. Jeśli serwis nie udostępnia wybranego wariantu, MoeSync używa dostępnego tytułu.
 
+MoeSync planuje używać [Weblate](https://weblate.org/) do koordynowania tłumaczeń, gdy projekt będzie kwalifikował się do bezpłatnego hostingu i uzyska jego zatwierdzenie. Do tego czasu tłumaczenia można współtworzyć w publicznym repozytorium, w katalogu [`lib/l10n/`](../lib/l10n/). Kod źródłowy MoeSync jest wydany na licencji GPL-3.0-or-later, a tłumaczenia znajdują się razem z kodem.
+
 ## Rozwój
 
 Pliki lokalizacji Fluttera znajdują się w [`lib/l10n/`](../lib/l10n/). Po edycji plików ARB wygeneruj klasy lokalizacji:

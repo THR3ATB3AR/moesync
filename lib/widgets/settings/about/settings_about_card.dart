@@ -106,12 +106,12 @@ class _SettingsAboutCardState extends ConsumerState<SettingsAboutCard> {
                     )
                   else
                     Image.asset(
-                      'assets/icon/svg/moesync-icon-mono.png',
+                      'assets/icon/png/moesync-icon-mono.png',
                       width: 76,
                       height: 76,
                       color: theme.colorScheme.primary,
                       colorBlendMode: BlendMode.srcIn,
-                      ),
+                    ),
                   const SizedBox(width: 16),
                 ],
                 Text(
@@ -190,12 +190,12 @@ class _SettingsAboutCardState extends ConsumerState<SettingsAboutCard> {
                   ),
                 ),
                 _AboutSocialButton(
-                  label: 'Crowdin',
-                  colorAsset: 'assets/crowdin.svg',
-                  monoAsset: 'assets/crowdin-mono.svg',
+                  label: 'Weblate',
+                  colorAsset: 'assets/weblate.svg',
+                  monoAsset: 'assets/weblate-mono.svg',
                   style: displayStyle,
                   onPressed: () =>
-                      _openExternalUrl(Uri.parse('https://crowdin.com')),
+                      _openExternalUrl(Uri.parse('https://weblate.org')),
                 ),
               ],
             ),
