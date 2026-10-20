@@ -217,9 +217,11 @@ class _SearchMediaDialogState extends ConsumerState<SearchMediaDialog> {
                                   .read(mediaLibraryProvider.notifier)
                                   .addItemToAllServices(
                                     item: unified,
-                                    status: isAnime ? 'watching' : 'reading',
-                                    score: 8,
-                                    progress: 1,
+                                    status: isAnime
+                                        ? 'plan_to_watch'
+                                        : 'plan_to_read',
+                                    score: 0,
+                                    progress: 0,
                                   );
                               if (!mounted) return;
                               navigator.pop();
