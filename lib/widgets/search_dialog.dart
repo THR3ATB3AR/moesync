@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../l10n/gen/app_localizations.dart';
 import '../models/media_item.dart';
 import '../providers/providers.dart';
 
@@ -22,6 +23,7 @@ class _SearchMediaDialogState extends ConsumerState<SearchMediaDialog> {
 
   Future<void> _performSearch(String query) async {
     if (query.trim().isEmpty) return;
+    final l = AppLocalizations.of(context);
     setState(() {
       _isSearching = true;
       _error = null;
@@ -43,7 +45,7 @@ class _SearchMediaDialogState extends ConsumerState<SearchMediaDialog> {
       });
     } catch (e) {
       setState(() {
-        _error = 'Failed to search: $e';
+        _error = l.failedToSearch(e.toString());
         _isSearching = false;
       });
     }
@@ -52,6 +54,7 @@ class _SearchMediaDialogState extends ConsumerState<SearchMediaDialog> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
     final isAnime = widget.mediaType == MediaType.anime;
     final titleLanguage = ref.watch(languageSettingsProvider).titleLanguage;
 
@@ -72,7 +75,7 @@ class _SearchMediaDialogState extends ConsumerState<SearchMediaDialog> {
                   ),
                   const SizedBox(width: 10),
                   Text(
-                    'Search & Add ${isAnime ? 'Anime' : 'Manga'}',
+                    isAnime ? l.searchAddAnime : l.searchAddManga,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -89,7 +92,7 @@ class _SearchMediaDialogState extends ConsumerState<SearchMediaDialog> {
                 controller: _controller,
                 autofocus: true,
                 decoration: InputDecoration(
-                  hintText: 'Enter title (e.g. Frieren, Berserk)...',
+                  hintText: l.enterTitleExample,
                   prefixIcon: const Icon(Icons.search),
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.arrow_forward),
@@ -123,7 +126,7 @@ class _SearchMediaDialogState extends ConsumerState<SearchMediaDialog> {
                 Expanded(
                   child: Center(
                     child: Text(
-                      'Type a name and press search',
+                      l.typeNameAndPressSearch,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
@@ -188,8 +191,14 @@ class _SearchMediaDialogState extends ConsumerState<SearchMediaDialog> {
                         ),
                         subtitle: Text(
                           item.totalProgress != null
-                              ? '${item.totalProgress} ${isAnime ? 'episodes' : 'chapters'}'
-                              : 'Ongoing',
+                              ? isAnime
+                                    ? l.dataEpisodesEpisodes(
+                                        item.totalProgress!,
+                                      )
+                                    : l.dataChaptersChapters(
+                                        item.totalProgress!,
+                                      )
+                              : l.ongoing,
                           style: theme.textTheme.bodySmall,
                         ),
                         trailing: FilledButton.tonal(
@@ -201,22 +210,23 @@ class _SearchMediaDialogState extends ConsumerState<SearchMediaDialog> {
                               mediaType: widget.mediaType,
                               services: {item.service: item},
                             );
+                            final navigator = Navigator.of(context);
                             final messenger = ScaffoldMessenger.of(context);
                             try {
                               await ref
                                   .read(mediaLibraryProvider.notifier)
                                   .addItemToAllServices(
-                                  item: unified,
-                                  status: isAnime ? 'watching' : 'reading',
-                                  score: 8,
-                                  progress: 1,
-                                );
+                                    item: unified,
+                                    status: isAnime ? 'watching' : 'reading',
+                                    score: 8,
+                                    progress: 1,
+                                  );
                               if (!mounted) return;
-                              Navigator.pop(context);
+                              navigator.pop();
                               messenger.showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                    'Added "${item.title}" to connected services!',
+                                    l.addedToConnectedServices(item.title),
                                   ),
                                   behavior: SnackBarBehavior.floating,
                                 ),
@@ -226,14 +236,16 @@ class _SearchMediaDialogState extends ConsumerState<SearchMediaDialog> {
                               messenger.showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                    'Could not add to connected services: $error',
+                                    l.couldNotAddToConnectedServices(
+                                      error.toString(),
+                                    ),
                                   ),
                                   behavior: SnackBarBehavior.floating,
                                 ),
                               );
                             }
                           },
-                          child: const Text('Add'),
+                          child: Text(l.add),
                         ),
                       );
                     },

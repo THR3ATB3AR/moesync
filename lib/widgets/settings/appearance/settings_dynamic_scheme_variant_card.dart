@@ -1,4 +1,5 @@
 import 'package:moesync/providers/providers.dart';
+import 'package:moesync/l10n/gen/app_localizations.dart';
 import 'package:moesync/widgets/settings/settings_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,22 +20,23 @@ class SettingsDynamicSchemeVariantCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeSettings = ref.watch(themeSettingsProvider);
 
-    const variants = <DynamicSchemeVariant, String>{
-      DynamicSchemeVariant.tonalSpot: 'Tonal Spot',
-      DynamicSchemeVariant.fidelity: 'Fidelity',
-      DynamicSchemeVariant.vibrant: 'Vibrant',
-      DynamicSchemeVariant.expressive: 'Expressive',
-      DynamicSchemeVariant.neutral: 'Neutral',
-      DynamicSchemeVariant.monochrome: 'Monochrome',
-      DynamicSchemeVariant.fruitSalad: 'Fruit Salad',
-      DynamicSchemeVariant.rainbow: 'Rainbow',
-      DynamicSchemeVariant.content: 'Content',
+    final l = AppLocalizations.of(context);
+    final variants = <DynamicSchemeVariant, String>{
+      DynamicSchemeVariant.tonalSpot: l.variantTonalSpot,
+      DynamicSchemeVariant.fidelity: l.variantFidelity,
+      DynamicSchemeVariant.vibrant: l.variantVibrant,
+      DynamicSchemeVariant.expressive: l.variantExpressive,
+      DynamicSchemeVariant.neutral: l.variantNeutral,
+      DynamicSchemeVariant.monochrome: l.variantMonochrome,
+      DynamicSchemeVariant.fruitSalad: l.variantFruitSalad,
+      DynamicSchemeVariant.rainbow: l.variantRainbow,
+      DynamicSchemeVariant.content: l.variantContent,
     };
 
     return SettingsCard(
       icon: Icons.tune_rounded,
-      title: "Variant Material 3",
-      subtitle: "Controls tone and contrast generation algorithm",
+      title: l.material3Variant,
+      subtitle: l.material3VariantDescription,
       content: DropdownButtonFormField<DynamicSchemeVariant>(
         key: ValueKey('scheme_variant_${themeSettings.schemeVariant.name}'),
         initialValue: variants.containsKey(themeSettings.schemeVariant)

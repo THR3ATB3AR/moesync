@@ -316,6 +316,421 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notOnList => 'Not on list';
 
   @override
+  String get episodes => 'Episodes';
+
+  @override
+  String get chapters => 'Chapters';
+
+  @override
+  String get watchedEpisodes => 'Watched episodes';
+
+  @override
+  String get readChapters => 'Read chapters';
+
+  @override
+  String get scoreOutOfTen => 'Score (0–10)';
+
+  @override
+  String get saveAndSync => 'Save & Sync';
+
+  @override
+  String removedFromConnectedServices(Object title) {
+    return '\"$title\" removed from connected services';
+  }
+
+  @override
+  String updatedOnConnectedServices(Object title) {
+    return 'Updated \"$title\" on connected services';
+  }
+
+  @override
+  String couldNotUpdateConnectedServices(Object error) {
+    return 'Could not update connected services: $error';
+  }
+
+  @override
+  String failedToSearch(Object error) {
+    return 'Failed to search: $error';
+  }
+
+  @override
+  String get enterTitleExample => 'Enter a title (e.g. Frieren, Berserk)...';
+
+  @override
+  String get typeNameAndPressSearch => 'Type a name and press search';
+
+  @override
+  String get ongoing => 'Ongoing';
+
+  @override
+  String addedToConnectedServices(Object title) {
+    return 'Added \"$title\" to connected services';
+  }
+
+  @override
+  String couldNotAddToConnectedServices(Object error) {
+    return 'Could not add to connected services: $error';
+  }
+
+  @override
+  String get openBrowserManually =>
+      'Could not open the system browser automatically. Please open the URL manually.';
+
+  @override
+  String failedToInitiateAuthorization(Object error) {
+    return 'Failed to initiate authorization: $error';
+  }
+
+  @override
+  String get enterCodeOrUrl => 'Please enter or paste the code or URL';
+
+  @override
+  String get openLoginPageFirst => 'Please open the login page first';
+
+  @override
+  String get enterEmailUsernamePassword =>
+      'Please enter both email/username and password';
+
+  @override
+  String get enterUsernamePassword => 'Please enter both username and password';
+
+  @override
+  String savedDeveloperCredentials(Object serviceName) {
+    return 'Saved developer credentials for $serviceName';
+  }
+
+  @override
+  String get tokenCannotBeEmpty => 'Token cannot be empty';
+
+  @override
+  String successfullyConnectedToService(Object serviceName) {
+    return 'Successfully connected to $serviceName!';
+  }
+
+  @override
+  String successfullyConnectedToServiceAs(Object serviceName, Object username) {
+    return 'Successfully connected to $serviceName as $username!';
+  }
+
+  @override
+  String connectService(Object serviceName) {
+    return 'Connect $serviceName';
+  }
+
+  @override
+  String connectionError(Object error) {
+    return 'Connection error: $error';
+  }
+
+  @override
+  String connectedAsUser(Object username) {
+    return 'Connected as $username';
+  }
+
+  @override
+  String get loginToSyncLists => 'Log in to sync your anime and manga lists';
+
+  @override
+  String get advancedConfigurationManualEntry =>
+      'Advanced configuration & manual entry';
+
+  @override
+  String get customClientIdOptional => 'Custom client ID (optional override)';
+
+  @override
+  String get configuredInEnvByDefault => 'Configured in .env by default';
+
+  @override
+  String get customClientSecretOptional =>
+      'Custom client secret (optional override)';
+
+  @override
+  String get saveCustomClientCredentials => 'Save custom client ID/secret';
+
+  @override
+  String get accessToken => 'Access token';
+
+  @override
+  String get pasteToken => 'Paste token here';
+
+  @override
+  String get usernameOptional => 'Username (optional)';
+
+  @override
+  String get exampleUsername => 'e.g. username';
+
+  @override
+  String get saveManualToken => 'Save manual token';
+
+  @override
+  String loggedOutFromService(Object serviceName) {
+    return 'Logged out from $serviceName';
+  }
+
+  @override
+  String logoutService(Object serviceName) {
+    return 'Log out of $serviceName';
+  }
+
+  @override
+  String logoutFromServiceTooltip(Object serviceName) {
+    return 'Log out of $serviceName';
+  }
+
+  @override
+  String logoutFromServiceQuestion(Object serviceName) {
+    return 'Log out of $serviceName?';
+  }
+
+  @override
+  String confirmDisconnectService(Object serviceName) {
+    return 'Are you sure you want to disconnect $serviceName?';
+  }
+
+  @override
+  String get notConnectedTapToConfigure => 'Not connected (tap to configure)';
+
+  @override
+  String get connectedWithToken => 'Connected with token';
+
+  @override
+  String reopenServiceInBrowser(Object serviceName) {
+    return 'Re-open $serviceName in browser';
+  }
+
+  @override
+  String get openLoginPageInBrowser => '1. Open login page in browser';
+
+  @override
+  String get copiedAuthorizationLink =>
+      'Copied authorization link to clipboard!';
+
+  @override
+  String get copyAuthLink => 'Copy auth link';
+
+  @override
+  String get howToConnect => 'How to connect:';
+
+  @override
+  String get clickToLoginOnShikimori => 'Click above to log in on Shikimori.';
+
+  @override
+  String get allowOnAuthorizationPage =>
+      'Click \"Allow\" on the authorization page.';
+
+  @override
+  String get shikimoriDisplayCode =>
+      'Shikimori will display your code. Copy and paste it below.';
+
+  @override
+  String get clickLoginApproveBrowser =>
+      'Click above to log in and approve access in your browser.';
+
+  @override
+  String get redirectLocalhostExpected =>
+      'You will be redirected to localhost (the page might say \"Cannot connect\"; that is expected).';
+
+  @override
+  String get copyEntireUrlOrCode =>
+      'Copy the entire URL from your browser address bar (or just the code) and paste it below.';
+
+  @override
+  String get pasteAuthorizationCodeOrRedirectUrl =>
+      '2. Paste authorization code or redirect URL:';
+
+  @override
+  String get exampleAuthorizationCode => 'e.g. 783ab29... or code';
+
+  @override
+  String get localhostCodeExample => 'http://localhost/?code=... or raw code';
+
+  @override
+  String get pasteFromClipboard => 'Paste from clipboard';
+
+  @override
+  String get completeConnection => 'Complete connection';
+
+  @override
+  String get loginWithKitsuCredentials =>
+      'Log in with your Kitsu email/username and password:';
+
+  @override
+  String get emailOrUsername => 'Email or username';
+
+  @override
+  String get password => 'Password';
+
+  @override
+  String get loginToKitsu => 'Log in to Kitsu';
+
+  @override
+  String get loginWithMangaUpdatesCredentials =>
+      'Log in with your MangaUpdates username and password:';
+
+  @override
+  String get username => 'Username';
+
+  @override
+  String get loginToMangaUpdates => 'Log in to MangaUpdates';
+
+  @override
+  String get serviceLoadErrorsTitle => 'Errors loading services';
+
+  @override
+  String get antiPhantomProtectionDescription =>
+      'Anti-phantom protection is active: services with errors have been excluded from comparison to prevent empty data from overwriting your lists.';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get themeModeSystem => 'System';
+
+  @override
+  String get themeModeLight => 'Light';
+
+  @override
+  String get themeModeDark => 'Dark';
+
+  @override
+  String get displayStyle => 'Display style';
+
+  @override
+  String get setDisplayStyleForCollections =>
+      'Set the display style for anime and manga collections';
+
+  @override
+  String get iconStyle => 'Icon';
+
+  @override
+  String get monoIconStyle => 'Mono icon';
+
+  @override
+  String get livePreview => 'Live preview:';
+
+  @override
+  String get setLayoutStyleForCollections =>
+      'Set the layout style for anime and manga collections';
+
+  @override
+  String get gridView => 'Grid';
+
+  @override
+  String get listView => 'List';
+
+  @override
+  String get colorTheme => 'Color theme';
+
+  @override
+  String get dynamicFromWallpaper => 'Dynamic from wallpaper';
+
+  @override
+  String get dynamicFromWallpaperMaterialYou =>
+      'Dynamic from wallpaper (Material You)';
+
+  @override
+  String get material3Variant => 'Material 3 variant';
+
+  @override
+  String get material3VariantDescription =>
+      'Controls the tone and contrast generation algorithm';
+
+  @override
+  String get variantTonalSpot => 'Tonal Spot';
+
+  @override
+  String get variantFidelity => 'Fidelity';
+
+  @override
+  String get variantVibrant => 'Vibrant';
+
+  @override
+  String get variantExpressive => 'Expressive';
+
+  @override
+  String get variantNeutral => 'Neutral';
+
+  @override
+  String get variantMonochrome => 'Monochrome';
+
+  @override
+  String get variantFruitSalad => 'Fruit Salad';
+
+  @override
+  String get variantRainbow => 'Rainbow';
+
+  @override
+  String get variantContent => 'Content';
+
+  @override
+  String get colorPurpleM3 => 'Purple (M3)';
+
+  @override
+  String get colorIndigo => 'Indigo';
+
+  @override
+  String get colorBlue => 'Blue';
+
+  @override
+  String get colorCyan => 'Cyan';
+
+  @override
+  String get colorTeal => 'Teal';
+
+  @override
+  String get colorGreen => 'Green';
+
+  @override
+  String get colorLime => 'Lime';
+
+  @override
+  String get colorAmber => 'Amber';
+
+  @override
+  String get colorOrange => 'Orange';
+
+  @override
+  String get colorDeepOrange => 'Deep Orange';
+
+  @override
+  String get colorRed => 'Red';
+
+  @override
+  String get colorPink => 'Pink';
+
+  @override
+  String get colorSakuraRose => 'Sakura Rose';
+
+  @override
+  String get colorDeepPurple => 'Deep Purple';
+
+  @override
+  String get colorBlueGrey => 'Blue Grey';
+
+  @override
+  String get colorBrown => 'Brown';
+
+  @override
+  String get searchSettingsPlaceholder => 'Search settings...';
+
+  @override
+  String serviceErrorMessage(Object error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get themeModeDescription => 'Light, dark, or system';
+
+  @override
+  String get user => 'User';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get fribbIdMappingDatabase => 'Fribb ID mapping database';
+
+  @override
   String watchingProgressTotal(Object progress, Object total) {
     return 'Watching ($progress/$total)';
   }
@@ -545,9 +960,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get themeMode => 'Theme mode';
-
-  @override
-  String get colorTheme => 'Color theme';
 
   @override
   String get m3Variant => 'M3 Variant';

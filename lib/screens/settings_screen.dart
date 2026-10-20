@@ -126,7 +126,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             icon: const Icon(Icons.search),
             tooltip: AppLocalizations.of(context).searchSettings,
             onPressed: () {
-              showSearch(context: context, delegate: SettingsSearchDelegate());
+              showSearch(
+                context: context,
+                delegate: SettingsSearchDelegate(
+                  searchFieldLabel: AppLocalizations.of(
+                    context,
+                  ).searchSettingsPlaceholder,
+                ),
+              );
             },
           ),
         ],

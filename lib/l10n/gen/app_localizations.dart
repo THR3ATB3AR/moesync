@@ -667,6 +667,720 @@ abstract class AppLocalizations {
   /// **'Not on list'**
   String get notOnList;
 
+  /// No description provided for @episodes.
+  ///
+  /// In en, this message translates to:
+  /// **'Episodes'**
+  String get episodes;
+
+  /// No description provided for @chapters.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapters'**
+  String get chapters;
+
+  /// No description provided for @watchedEpisodes.
+  ///
+  /// In en, this message translates to:
+  /// **'Watched episodes'**
+  String get watchedEpisodes;
+
+  /// No description provided for @readChapters.
+  ///
+  /// In en, this message translates to:
+  /// **'Read chapters'**
+  String get readChapters;
+
+  /// No description provided for @scoreOutOfTen.
+  ///
+  /// In en, this message translates to:
+  /// **'Score (0–10)'**
+  String get scoreOutOfTen;
+
+  /// No description provided for @saveAndSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Save & Sync'**
+  String get saveAndSync;
+
+  /// No description provided for @removedFromConnectedServices.
+  ///
+  /// In en, this message translates to:
+  /// **'\"{title}\" removed from connected services'**
+  String removedFromConnectedServices(Object title);
+
+  /// No description provided for @updatedOnConnectedServices.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated \"{title}\" on connected services'**
+  String updatedOnConnectedServices(Object title);
+
+  /// No description provided for @couldNotUpdateConnectedServices.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update connected services: {error}'**
+  String couldNotUpdateConnectedServices(Object error);
+
+  /// No description provided for @failedToSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to search: {error}'**
+  String failedToSearch(Object error);
+
+  /// No description provided for @enterTitleExample.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a title (e.g. Frieren, Berserk)...'**
+  String get enterTitleExample;
+
+  /// No description provided for @typeNameAndPressSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Type a name and press search'**
+  String get typeNameAndPressSearch;
+
+  /// No description provided for @ongoing.
+  ///
+  /// In en, this message translates to:
+  /// **'Ongoing'**
+  String get ongoing;
+
+  /// No description provided for @addedToConnectedServices.
+  ///
+  /// In en, this message translates to:
+  /// **'Added \"{title}\" to connected services'**
+  String addedToConnectedServices(Object title);
+
+  /// No description provided for @couldNotAddToConnectedServices.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not add to connected services: {error}'**
+  String couldNotAddToConnectedServices(Object error);
+
+  /// No description provided for @openBrowserManually.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the system browser automatically. Please open the URL manually.'**
+  String get openBrowserManually;
+
+  /// No description provided for @failedToInitiateAuthorization.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to initiate authorization: {error}'**
+  String failedToInitiateAuthorization(Object error);
+
+  /// No description provided for @enterCodeOrUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter or paste the code or URL'**
+  String get enterCodeOrUrl;
+
+  /// No description provided for @openLoginPageFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Please open the login page first'**
+  String get openLoginPageFirst;
+
+  /// No description provided for @enterEmailUsernamePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter both email/username and password'**
+  String get enterEmailUsernamePassword;
+
+  /// No description provided for @enterUsernamePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter both username and password'**
+  String get enterUsernamePassword;
+
+  /// No description provided for @savedDeveloperCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved developer credentials for {serviceName}'**
+  String savedDeveloperCredentials(Object serviceName);
+
+  /// No description provided for @tokenCannotBeEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Token cannot be empty'**
+  String get tokenCannotBeEmpty;
+
+  /// No description provided for @successfullyConnectedToService.
+  ///
+  /// In en, this message translates to:
+  /// **'Successfully connected to {serviceName}!'**
+  String successfullyConnectedToService(Object serviceName);
+
+  /// No description provided for @successfullyConnectedToServiceAs.
+  ///
+  /// In en, this message translates to:
+  /// **'Successfully connected to {serviceName} as {username}!'**
+  String successfullyConnectedToServiceAs(Object serviceName, Object username);
+
+  /// No description provided for @connectService.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect {serviceName}'**
+  String connectService(Object serviceName);
+
+  /// No description provided for @connectionError.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection error: {error}'**
+  String connectionError(Object error);
+
+  /// No description provided for @connectedAsUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected as {username}'**
+  String connectedAsUser(Object username);
+
+  /// No description provided for @loginToSyncLists.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in to sync your anime and manga lists'**
+  String get loginToSyncLists;
+
+  /// No description provided for @advancedConfigurationManualEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced configuration & manual entry'**
+  String get advancedConfigurationManualEntry;
+
+  /// No description provided for @customClientIdOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom client ID (optional override)'**
+  String get customClientIdOptional;
+
+  /// No description provided for @configuredInEnvByDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Configured in .env by default'**
+  String get configuredInEnvByDefault;
+
+  /// No description provided for @customClientSecretOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom client secret (optional override)'**
+  String get customClientSecretOptional;
+
+  /// No description provided for @saveCustomClientCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Save custom client ID/secret'**
+  String get saveCustomClientCredentials;
+
+  /// No description provided for @accessToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Access token'**
+  String get accessToken;
+
+  /// No description provided for @pasteToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste token here'**
+  String get pasteToken;
+
+  /// No description provided for @usernameOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Username (optional)'**
+  String get usernameOptional;
+
+  /// No description provided for @exampleUsername.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. username'**
+  String get exampleUsername;
+
+  /// No description provided for @saveManualToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Save manual token'**
+  String get saveManualToken;
+
+  /// No description provided for @loggedOutFromService.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged out from {serviceName}'**
+  String loggedOutFromService(Object serviceName);
+
+  /// No description provided for @logoutService.
+  ///
+  /// In en, this message translates to:
+  /// **'Log out of {serviceName}'**
+  String logoutService(Object serviceName);
+
+  /// No description provided for @logoutFromServiceTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Log out of {serviceName}'**
+  String logoutFromServiceTooltip(Object serviceName);
+
+  /// No description provided for @logoutFromServiceQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Log out of {serviceName}?'**
+  String logoutFromServiceQuestion(Object serviceName);
+
+  /// No description provided for @confirmDisconnectService.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to disconnect {serviceName}?'**
+  String confirmDisconnectService(Object serviceName);
+
+  /// No description provided for @notConnectedTapToConfigure.
+  ///
+  /// In en, this message translates to:
+  /// **'Not connected (tap to configure)'**
+  String get notConnectedTapToConfigure;
+
+  /// No description provided for @connectedWithToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected with token'**
+  String get connectedWithToken;
+
+  /// No description provided for @reopenServiceInBrowser.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-open {serviceName} in browser'**
+  String reopenServiceInBrowser(Object serviceName);
+
+  /// No description provided for @openLoginPageInBrowser.
+  ///
+  /// In en, this message translates to:
+  /// **'1. Open login page in browser'**
+  String get openLoginPageInBrowser;
+
+  /// No description provided for @copiedAuthorizationLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied authorization link to clipboard!'**
+  String get copiedAuthorizationLink;
+
+  /// No description provided for @copyAuthLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy auth link'**
+  String get copyAuthLink;
+
+  /// No description provided for @howToConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'How to connect:'**
+  String get howToConnect;
+
+  /// No description provided for @clickToLoginOnShikimori.
+  ///
+  /// In en, this message translates to:
+  /// **'Click above to log in on Shikimori.'**
+  String get clickToLoginOnShikimori;
+
+  /// No description provided for @allowOnAuthorizationPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Click \"Allow\" on the authorization page.'**
+  String get allowOnAuthorizationPage;
+
+  /// No description provided for @shikimoriDisplayCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Shikimori will display your code. Copy and paste it below.'**
+  String get shikimoriDisplayCode;
+
+  /// No description provided for @clickLoginApproveBrowser.
+  ///
+  /// In en, this message translates to:
+  /// **'Click above to log in and approve access in your browser.'**
+  String get clickLoginApproveBrowser;
+
+  /// No description provided for @redirectLocalhostExpected.
+  ///
+  /// In en, this message translates to:
+  /// **'You will be redirected to localhost (the page might say \"Cannot connect\"; that is expected).'**
+  String get redirectLocalhostExpected;
+
+  /// No description provided for @copyEntireUrlOrCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy the entire URL from your browser address bar (or just the code) and paste it below.'**
+  String get copyEntireUrlOrCode;
+
+  /// No description provided for @pasteAuthorizationCodeOrRedirectUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'2. Paste authorization code or redirect URL:'**
+  String get pasteAuthorizationCodeOrRedirectUrl;
+
+  /// No description provided for @exampleAuthorizationCode.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 783ab29... or code'**
+  String get exampleAuthorizationCode;
+
+  /// No description provided for @localhostCodeExample.
+  ///
+  /// In en, this message translates to:
+  /// **'http://localhost/?code=... or raw code'**
+  String get localhostCodeExample;
+
+  /// No description provided for @pasteFromClipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste from clipboard'**
+  String get pasteFromClipboard;
+
+  /// No description provided for @completeConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete connection'**
+  String get completeConnection;
+
+  /// No description provided for @loginWithKitsuCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in with your Kitsu email/username and password:'**
+  String get loginWithKitsuCredentials;
+
+  /// No description provided for @emailOrUsername.
+  ///
+  /// In en, this message translates to:
+  /// **'Email or username'**
+  String get emailOrUsername;
+
+  /// No description provided for @password.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get password;
+
+  /// No description provided for @loginToKitsu.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in to Kitsu'**
+  String get loginToKitsu;
+
+  /// No description provided for @loginWithMangaUpdatesCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in with your MangaUpdates username and password:'**
+  String get loginWithMangaUpdatesCredentials;
+
+  /// No description provided for @username.
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get username;
+
+  /// No description provided for @loginToMangaUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in to MangaUpdates'**
+  String get loginToMangaUpdates;
+
+  /// No description provided for @serviceLoadErrorsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Errors loading services'**
+  String get serviceLoadErrorsTitle;
+
+  /// No description provided for @antiPhantomProtectionDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Anti-phantom protection is active: services with errors have been excluded from comparison to prevent empty data from overwriting your lists.'**
+  String get antiPhantomProtectionDescription;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @themeModeSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get themeModeSystem;
+
+  /// No description provided for @themeModeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get themeModeLight;
+
+  /// No description provided for @themeModeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get themeModeDark;
+
+  /// No description provided for @displayStyle.
+  ///
+  /// In en, this message translates to:
+  /// **'Display style'**
+  String get displayStyle;
+
+  /// No description provided for @setDisplayStyleForCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'Set the display style for anime and manga collections'**
+  String get setDisplayStyleForCollections;
+
+  /// No description provided for @iconStyle.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon'**
+  String get iconStyle;
+
+  /// No description provided for @monoIconStyle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mono icon'**
+  String get monoIconStyle;
+
+  /// No description provided for @livePreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Live preview:'**
+  String get livePreview;
+
+  /// No description provided for @setLayoutStyleForCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'Set the layout style for anime and manga collections'**
+  String get setLayoutStyleForCollections;
+
+  /// No description provided for @gridView.
+  ///
+  /// In en, this message translates to:
+  /// **'Grid'**
+  String get gridView;
+
+  /// No description provided for @listView.
+  ///
+  /// In en, this message translates to:
+  /// **'List'**
+  String get listView;
+
+  /// No description provided for @colorTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Color theme'**
+  String get colorTheme;
+
+  /// No description provided for @dynamicFromWallpaper.
+  ///
+  /// In en, this message translates to:
+  /// **'Dynamic from wallpaper'**
+  String get dynamicFromWallpaper;
+
+  /// No description provided for @dynamicFromWallpaperMaterialYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Dynamic from wallpaper (Material You)'**
+  String get dynamicFromWallpaperMaterialYou;
+
+  /// No description provided for @material3Variant.
+  ///
+  /// In en, this message translates to:
+  /// **'Material 3 variant'**
+  String get material3Variant;
+
+  /// No description provided for @material3VariantDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Controls the tone and contrast generation algorithm'**
+  String get material3VariantDescription;
+
+  /// No description provided for @variantTonalSpot.
+  ///
+  /// In en, this message translates to:
+  /// **'Tonal Spot'**
+  String get variantTonalSpot;
+
+  /// No description provided for @variantFidelity.
+  ///
+  /// In en, this message translates to:
+  /// **'Fidelity'**
+  String get variantFidelity;
+
+  /// No description provided for @variantVibrant.
+  ///
+  /// In en, this message translates to:
+  /// **'Vibrant'**
+  String get variantVibrant;
+
+  /// No description provided for @variantExpressive.
+  ///
+  /// In en, this message translates to:
+  /// **'Expressive'**
+  String get variantExpressive;
+
+  /// No description provided for @variantNeutral.
+  ///
+  /// In en, this message translates to:
+  /// **'Neutral'**
+  String get variantNeutral;
+
+  /// No description provided for @variantMonochrome.
+  ///
+  /// In en, this message translates to:
+  /// **'Monochrome'**
+  String get variantMonochrome;
+
+  /// No description provided for @variantFruitSalad.
+  ///
+  /// In en, this message translates to:
+  /// **'Fruit Salad'**
+  String get variantFruitSalad;
+
+  /// No description provided for @variantRainbow.
+  ///
+  /// In en, this message translates to:
+  /// **'Rainbow'**
+  String get variantRainbow;
+
+  /// No description provided for @variantContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Content'**
+  String get variantContent;
+
+  /// No description provided for @colorPurpleM3.
+  ///
+  /// In en, this message translates to:
+  /// **'Purple (M3)'**
+  String get colorPurpleM3;
+
+  /// No description provided for @colorIndigo.
+  ///
+  /// In en, this message translates to:
+  /// **'Indigo'**
+  String get colorIndigo;
+
+  /// No description provided for @colorBlue.
+  ///
+  /// In en, this message translates to:
+  /// **'Blue'**
+  String get colorBlue;
+
+  /// No description provided for @colorCyan.
+  ///
+  /// In en, this message translates to:
+  /// **'Cyan'**
+  String get colorCyan;
+
+  /// No description provided for @colorTeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Teal'**
+  String get colorTeal;
+
+  /// No description provided for @colorGreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Green'**
+  String get colorGreen;
+
+  /// No description provided for @colorLime.
+  ///
+  /// In en, this message translates to:
+  /// **'Lime'**
+  String get colorLime;
+
+  /// No description provided for @colorAmber.
+  ///
+  /// In en, this message translates to:
+  /// **'Amber'**
+  String get colorAmber;
+
+  /// No description provided for @colorOrange.
+  ///
+  /// In en, this message translates to:
+  /// **'Orange'**
+  String get colorOrange;
+
+  /// No description provided for @colorDeepOrange.
+  ///
+  /// In en, this message translates to:
+  /// **'Deep Orange'**
+  String get colorDeepOrange;
+
+  /// No description provided for @colorRed.
+  ///
+  /// In en, this message translates to:
+  /// **'Red'**
+  String get colorRed;
+
+  /// No description provided for @colorPink.
+  ///
+  /// In en, this message translates to:
+  /// **'Pink'**
+  String get colorPink;
+
+  /// No description provided for @colorSakuraRose.
+  ///
+  /// In en, this message translates to:
+  /// **'Sakura Rose'**
+  String get colorSakuraRose;
+
+  /// No description provided for @colorDeepPurple.
+  ///
+  /// In en, this message translates to:
+  /// **'Deep Purple'**
+  String get colorDeepPurple;
+
+  /// No description provided for @colorBlueGrey.
+  ///
+  /// In en, this message translates to:
+  /// **'Blue Grey'**
+  String get colorBlueGrey;
+
+  /// No description provided for @colorBrown.
+  ///
+  /// In en, this message translates to:
+  /// **'Brown'**
+  String get colorBrown;
+
+  /// No description provided for @searchSettingsPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Search settings...'**
+  String get searchSettingsPlaceholder;
+
+  /// No description provided for @serviceErrorMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String serviceErrorMessage(Object error);
+
+  /// No description provided for @themeModeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Light, dark, or system'**
+  String get themeModeDescription;
+
+  /// No description provided for @user.
+  ///
+  /// In en, this message translates to:
+  /// **'User'**
+  String get user;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// No description provided for @fribbIdMappingDatabase.
+  ///
+  /// In en, this message translates to:
+  /// **'Fribb ID mapping database'**
+  String get fribbIdMappingDatabase;
+
   /// No description provided for @watchingProgressTotal.
   ///
   /// In en, this message translates to:
@@ -1038,12 +1752,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Theme mode'**
   String get themeMode;
-
-  /// No description provided for @colorTheme.
-  ///
-  /// In en, this message translates to:
-  /// **'Color theme'**
-  String get colorTheme;
 
   /// No description provided for @m3Variant.
   ///

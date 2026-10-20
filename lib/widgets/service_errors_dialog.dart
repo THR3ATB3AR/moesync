@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:moesync/l10n/gen/app_localizations.dart';
 import '../models/media_item.dart';
 import 'service_badge.dart';
 
@@ -29,6 +30,7 @@ class ServiceErrorsDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
 
     return AlertDialog(
       title: Row(
@@ -48,7 +50,7 @@ class ServiceErrorsDialog extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'Errors loading services',
+              l.serviceLoadErrorsTitle,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -82,7 +84,7 @@ class ServiceErrorsDialog extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Antiphantom protection active: Services with errors have been disabled from comparison to avoid overwriting your lists with empty data.',
+                      l.antiPhantomProtectionDescription,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
@@ -142,7 +144,7 @@ class ServiceErrorsDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Close'),
+          child: Text(l.close),
         ),
         if (onRetry != null)
           FilledButton.icon(
@@ -151,7 +153,7 @@ class ServiceErrorsDialog extends StatelessWidget {
               onRetry!();
             },
             icon: const Icon(Icons.refresh_rounded, size: 18),
-            label: const Text('Retry'),
+            label: Text(l.retry),
           ),
       ],
     );

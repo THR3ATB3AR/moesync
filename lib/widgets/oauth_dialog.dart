@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:moesync/l10n/gen/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -126,8 +127,7 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
       final opened = await oauth.openUrlInBrowser(url);
       if (!opened && mounted) {
         setState(() {
-          _errorMessage =
-              'Could not open system browser automatically. Please open the URL manually.';
+          _errorMessage = AppLocalizations.of(context).openBrowserManually;
         });
       }
 
@@ -138,7 +138,9 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
     } catch (e) {
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Failed to initiate authorization: $e';
+        _errorMessage = AppLocalizations.of(
+          context,
+        ).failedToInitiateAuthorization(e.toString());
       });
     }
   }
@@ -155,7 +157,9 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
   Future<void> _submitOAuth() async {
     final rawInput = _codeController.text.trim();
     if (rawInput.isEmpty) {
-      setState(() => _errorMessage = 'Please enter or paste the code/URL');
+      setState(
+        () => _errorMessage = AppLocalizations.of(context).enterCodeOrUrl,
+      );
       return;
     }
 
@@ -170,7 +174,7 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
       switch (widget.service) {
         case ServiceType.mal:
           if (_codeVerifier == null) {
-            throw Exception('Please click "Open Login Page" first');
+            throw Exception(AppLocalizations.of(context).openLoginPageFirst);
           }
           creds = await oauth.exchangeMalToken(
             rawCodeOrUrl: rawInput,
@@ -185,7 +189,7 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
           break;
         case ServiceType.simkl:
           if (_codeVerifier == null) {
-            throw Exception('Please click "Open Login Page" first');
+            throw Exception(AppLocalizations.of(context).openLoginPageFirst);
           }
           creds = await oauth.exchangeSimklToken(
             rawCodeOrUrl: rawInput,
@@ -194,7 +198,7 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
           break;
         case ServiceType.mangabaka:
           if (_codeVerifier == null) {
-            throw Exception('Please click "Open Login Page" first');
+            throw Exception(AppLocalizations.of(context).openLoginPageFirst);
           }
           creds = await oauth.exchangeMangaBakaToken(
             rawCodeOrUrl: rawInput,
@@ -221,7 +225,11 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
     final username = _kitsuUser.text.trim();
     final password = _kitsuPass.text;
     if (username.isEmpty || password.isEmpty) {
-      setState(() => _errorMessage = 'Please enter both email/username and password');
+      setState(
+        () => _errorMessage = AppLocalizations.of(
+          context,
+        ).enterEmailUsernamePassword,
+      );
       return;
     }
 
@@ -251,7 +259,11 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
     final username = _muUser.text.trim();
     final password = _muPass.text;
     if (username.isEmpty || password.isEmpty) {
-      setState(() => _errorMessage = 'Please enter both username and password');
+      setState(
+        () => _errorMessage = AppLocalizations.of(
+          context,
+        ).enterUsernamePassword,
+      );
       return;
     }
 
@@ -279,6 +291,7 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
 
 
   Future<void> _saveCustomAppCredentials() async {
+    final l = AppLocalizations.of(context);
     final customCId = _customClientId.text.trim();
     final customCSecret = _customClientSecret.text.trim();
     final currentCreds = ref.read(authProvider).credentials[widget.service] ??
@@ -292,7 +305,7 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Saved developer credentials for ${widget.service.displayName}',
+            l.savedDeveloperCredentials(widget.service.displayName),
           ),
           behavior: SnackBarBehavior.floating,
         ),
@@ -303,7 +316,9 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
   Future<void> _submitManual() async {
     final token = _manualTokenController.text.trim();
     if (token.isEmpty) {
-      setState(() => _errorMessage = 'Token cannot be empty');
+      setState(
+        () => _errorMessage = AppLocalizations.of(context).tokenCannotBeEmpty,
+      );
       return;
     }
 
@@ -326,6 +341,7 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
   }
 
   Future<void> _finishLogin(ServiceCredentials creds) async {
+    final l = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
     final nav = Navigator.of(context);
     await ref.read(authProvider.notifier).saveCredentials(widget.service, creds);
@@ -334,14 +350,15 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
     ref.read(syncProvider.notifier).scanDiffs();
 
     if (mounted) {
-      final userText = creds.username != null && creds.username!.isNotEmpty
-          ? ' as ${creds.username}'
-          : '';
+      final message = creds.username != null && creds.username!.isNotEmpty
+          ? l.successfullyConnectedToServiceAs(
+              widget.service.displayName,
+              creds.username!,
+            )
+          : l.successfullyConnectedToService(widget.service.displayName);
       messenger.showSnackBar(
         SnackBar(
-          content: Text(
-            '✓ Successfully connected to ${widget.service.displayName}$userText!',
-          ),
+          content: Text(message),
           backgroundColor: Colors.green.shade800,
           behavior: SnackBarBehavior.floating,
         ),
@@ -353,6 +370,7 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
     final auth = ref.watch(authProvider);
     final isConnected = auth.isConnected(widget.service);
     final currentCreds = auth.credentials[widget.service];
@@ -395,17 +413,19 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Connect ${widget.service.displayName}',
+                          l.connectService(widget.service.displayName),
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
                           hasError
-                              ? 'Connection error: $serviceError'
+                              ? l.connectionError(serviceError ?? '')
                               : (isConnected
-                                  ? 'Connected as ${currentCreds?.username ?? "User"}'
-                                  : 'Log in to sync your anime & manga lists'),
+                                  ? l.connectedAsUser(
+                                      currentCreds?.username ?? l.user,
+                                    )
+                                  : l.loginToSyncLists),
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: hasError
                                 ? theme.colorScheme.error
@@ -472,7 +492,7 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
                 child: ExpansionTile(
                   tilePadding: EdgeInsets.zero,
                   title: Text(
-                    'Advanced Configuration & Manual Entry',
+                    l.advancedConfigurationManualEntry,
                     style: theme.textTheme.labelMedium?.copyWith(
                       color: theme.colorScheme.primary,
                     ),
@@ -483,9 +503,9 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
                       const SizedBox(height: 8),
                       TextField(
                         controller: _customClientId,
-                        decoration: const InputDecoration(
-                          labelText: 'Custom Client ID (Optional override)',
-                          hintText: 'Configured in .env by default',
+                        decoration: InputDecoration(
+                          labelText: l.customClientIdOptional,
+                          hintText: l.configuredInEnvByDefault,
                           border: OutlineInputBorder(),
                           contentPadding:
                               EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -494,9 +514,9 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
                       const SizedBox(height: 10),
                       TextField(
                         controller: _customClientSecret,
-                        decoration: const InputDecoration(
-                          labelText: 'Custom Client Secret (Optional override)',
-                          hintText: 'Configured in .env by default',
+                        decoration: InputDecoration(
+                          labelText: l.customClientSecretOptional,
+                          hintText: l.configuredInEnvByDefault,
                           border: OutlineInputBorder(),
                           contentPadding:
                               EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -507,7 +527,7 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
                         alignment: Alignment.centerLeft,
                         child: OutlinedButton(
                           onPressed: _saveCustomAppCredentials,
-                          child: const Text('Save Custom Client ID/Secret'),
+                          child: Text(l.saveCustomClientCredentials),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -516,20 +536,20 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
                     ],
                     TextField(
                       controller: _manualTokenController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Access Token / Bearer Token',
-                        hintText: 'Paste token here',
+                        hintText: l.pasteToken,
                         border: OutlineInputBorder(),
                         contentPadding:
                             EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                      ),
+                      ).copyWith(labelText: l.accessToken),
                     ),
                     const SizedBox(height: 10),
                     TextField(
                       controller: _manualUserController,
-                      decoration: const InputDecoration(
-                        labelText: 'Username (Optional)',
-                        hintText: 'e.g. username',
+                      decoration: InputDecoration(
+                        labelText: l.usernameOptional,
+                        hintText: l.exampleUsername,
                         border: OutlineInputBorder(),
                         contentPadding:
                             EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -538,7 +558,7 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
                     const SizedBox(height: 12),
                     FilledButton.tonal(
                       onPressed: _isLoading ? null : _submitManual,
-                      child: const Text('Save Manual Token'),
+                      child: Text(l.saveManualToken),
                     ),
                   ],
                 ),
@@ -568,7 +588,9 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
                             messenger.showSnackBar(
                               SnackBar(
                                 content: Text(
-                                  'Logged out from ${widget.service.displayName}',
+                                  l.loggedOutFromService(
+                                    widget.service.displayName,
+                                  ),
                                 ),
                                 behavior: SnackBarBehavior.floating,
                               ),
@@ -577,7 +599,11 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
                           }
                         },
                   icon: const Icon(Icons.logout_rounded, size: 18),
-                  label: Text('Logout (${widget.service.displayName})'),
+                  label: Text(
+                    AppLocalizations.of(context).logoutService(
+                      widget.service.displayName,
+                    ),
+                  ),
                 ),
               ],
             ],
@@ -588,6 +614,7 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
   }
 
   Widget _buildOAuthContent(ThemeData theme) {
+    final l = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -611,8 +638,8 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
               : const Icon(Icons.open_in_browser_rounded),
           label: Text(
             _hasOpenedBrowser
-                ? 'Re-open ${widget.service.displayName} in Browser'
-                : '1. Open Login Page in Browser',
+                ? l.reopenServiceInBrowser(widget.service.displayName)
+                : l.openLoginPageInBrowser,
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
         ),
@@ -629,15 +656,18 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
                 final messenger = ScaffoldMessenger.of(context);
                 await Clipboard.setData(ClipboardData(text: _authUrl!));
                 messenger.showSnackBar(
-                  const SnackBar(
-                    content: Text('Copied authorization link to clipboard!'),
+                  SnackBar(
+                    content: Text(l.copiedAuthorizationLink),
                     duration: Duration(seconds: 2),
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
               },
               icon: const Icon(Icons.copy_rounded, size: 14),
-              label: const Text('Copy Auth Link', style: TextStyle(fontSize: 12)),
+              label: Text(
+                l.copyAuthLink,
+                style: const TextStyle(fontSize: 12),
+              ),
             ),
           ),
         ],
@@ -656,24 +686,26 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'How to connect:',
+                l.howToConnect,
                 style: theme.textTheme.labelMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 6),
               if (widget.service == ServiceType.shikimori) ...[
-                _buildInstructionRow('1', 'Click above to log in on Shikimori.'),
-                _buildInstructionRow('2', 'Click "Allow" on the authorization page.'),
+                _buildInstructionRow('1', l.clickToLoginOnShikimori),
+                _buildInstructionRow('2', l.allowOnAuthorizationPage),
                 _buildInstructionRow(
-                    '3', 'Shikimori will display your code. Copy & paste it below.'),
+                  '3',
+                  l.shikimoriDisplayCode,
+                ),
               ] else ...[
                 _buildInstructionRow(
-                    '1', 'Click above to log in and approve access in your browser.'),
-                _buildInstructionRow('2',
-                    'You will be redirected to localhost (the page might say "Cannot connect", that is expected).'),
-                _buildInstructionRow('3',
-                    'Copy the entire URL from your browser address bar (or just the code) and paste below.'),
+                  '1',
+                  l.clickLoginApproveBrowser,
+                ),
+                _buildInstructionRow('2', l.redirectLocalhostExpected),
+                _buildInstructionRow('3', l.copyEntireUrlOrCode),
               ],
             ],
           ),
@@ -681,7 +713,7 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
         const SizedBox(height: 16),
 
         Text(
-          '2. Paste Authorization Code or Redirect URL:',
+          l.pasteAuthorizationCodeOrRedirectUrl,
           style: theme.textTheme.labelMedium?.copyWith(
             fontWeight: FontWeight.bold,
           ),
@@ -691,8 +723,8 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
           controller: _codeController,
           decoration: InputDecoration(
             hintText: widget.service == ServiceType.shikimori
-                ? 'e.g. 783ab29... or code'
-                : 'http://localhost/?code=... or raw code',
+                ? l.exampleAuthorizationCode
+                : l.localhostCodeExample,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -705,7 +737,7 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
                     onPressed: () => setState(() => _codeController.clear()),
                   ),
                 IconButton(
-                  tooltip: 'Paste from clipboard',
+                  tooltip: l.pasteFromClipboard,
                   icon: const Icon(Icons.paste_rounded, size: 20),
                   onPressed: _pasteFromClipboard,
                 ),
@@ -737,8 +769,8 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
                   ),
                 )
               : const Icon(Icons.check_circle_rounded),
-          label: const Text(
-            'Complete Connection',
+          label: Text(
+            l.completeConnection,
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
         ),
@@ -747,11 +779,12 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
   }
 
   Widget _buildKitsuContent(ThemeData theme) {
+    final l = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'Log in with your Kitsu email / username and password:',
+          l.loginWithKitsuCredentials,
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
@@ -760,7 +793,7 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
         TextField(
           controller: _kitsuUser,
           decoration: InputDecoration(
-            labelText: 'Email or Username',
+            labelText: l.emailOrUsername,
             prefixIcon: const Icon(Icons.person_outline, size: 20),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
           ),
@@ -770,7 +803,7 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
           controller: _kitsuPass,
           obscureText: _obscurePassword,
           decoration: InputDecoration(
-            labelText: 'Password',
+            labelText: l.password,
             prefixIcon: const Icon(Icons.lock_outline, size: 20),
             suffixIcon: IconButton(
               icon: Icon(
@@ -804,8 +837,8 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
                   ),
                 )
               : const Icon(Icons.login_rounded),
-          label: const Text(
-            'Log In to Kitsu',
+          label: Text(
+            l.loginToKitsu,
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
         ),
@@ -814,11 +847,12 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
   }
 
   Widget _buildMangaUpdatesContent(ThemeData theme) {
+    final l = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'Log in with your MangaUpdates username and password:',
+          l.loginWithMangaUpdatesCredentials,
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
@@ -827,7 +861,7 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
         TextField(
           controller: _muUser,
           decoration: InputDecoration(
-            labelText: 'Username',
+            labelText: l.username,
             prefixIcon: const Icon(Icons.person_outline, size: 20),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
           ),
@@ -837,7 +871,7 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
           controller: _muPass,
           obscureText: _obscureMuPassword,
           decoration: InputDecoration(
-            labelText: 'Password',
+            labelText: l.password,
             prefixIcon: const Icon(Icons.lock_outline, size: 20),
             suffixIcon: IconButton(
               icon: Icon(
@@ -871,8 +905,8 @@ class _OAuthDialogState extends ConsumerState<OAuthDialog> {
                   ),
                 )
               : const Icon(Icons.login_rounded),
-          label: const Text(
-            'Log In to MangaUpdates',
+          label: Text(
+            l.loginToMangaUpdates,
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
         ),

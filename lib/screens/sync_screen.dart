@@ -776,6 +776,19 @@ class SyncGroupHeader extends StatelessWidget {
   }
 }
 
+String _localizedSyncStatus(String status, AppLocalizations l) {
+  return switch (status.toLowerCase().replaceAll(' ', '_')) {
+    'watching' => l.watching,
+    'reading' => l.reading,
+    'completed' => l.completed,
+    'on_hold' => l.onHold,
+    'dropped' => l.dropped,
+    'plan_to_watch' => l.planToWatch,
+    'plan_to_read' => l.planToRead,
+    _ => status,
+  };
+}
+
 class SyncActionTitle extends StatelessWidget {
   const SyncActionTitle({
     super.key,
@@ -794,6 +807,7 @@ class SyncActionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     final notifier = ref.read(syncProvider.notifier);
 
     return InkWell(
@@ -876,8 +890,8 @@ class SyncActionTitle extends StatelessWidget {
                     ),
                     child: Text(
                       action.isAdd
-                          ? AppLocalizations.of(context).add.toUpperCase()
-                          : AppLocalizations.of(context).update.toUpperCase(),
+                          ? l.add.toUpperCase()
+                          : l.update.toUpperCase(),
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
@@ -908,14 +922,14 @@ class SyncActionTitle extends StatelessWidget {
               const SizedBox(height: 4),
               if (action.isAdd)
                 Text(
-                  '${AppLocalizations.of(context).status}: ${action.newStatus} • ${AppLocalizations.of(context).score}: ${action.newScore} • ${AppLocalizations.of(context).episodesShort}: ${action.newProgress}',
+                  '${l.status}: ${_localizedSyncStatus(action.newStatus, l)} • ${l.score}: ${action.newScore} • ${l.episodesShort}: ${action.newProgress}',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
                 )
               else
                 Text(
-                  '${AppLocalizations.of(context).differenceShort}: ${action.oldStatus} ➔ ${action.newStatus} | ${AppLocalizations.of(context).score}: ${action.oldScore} ➔ ${action.newScore} | ${AppLocalizations.of(context).episodesShort}: ${action.oldProgress} ➔ ${action.newProgress}',
+                  '${l.differenceShort}: ${_localizedSyncStatus(action.oldStatus ?? '', l)} ➔ ${_localizedSyncStatus(action.newStatus, l)} | ${l.score}: ${action.oldScore} ➔ ${action.newScore} | ${l.episodesShort}: ${action.oldProgress} ➔ ${action.newProgress}',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                     fontSize: 11,

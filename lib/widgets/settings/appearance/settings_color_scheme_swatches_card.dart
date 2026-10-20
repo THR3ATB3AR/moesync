@@ -1,4 +1,5 @@
 import 'package:moesync/providers/providers.dart';
+import 'package:moesync/l10n/gen/app_localizations.dart';
 import 'package:moesync/theme.dart';
 import 'package:moesync/widgets/settings/appearance/settings_swatch_item.dart';
 import 'package:moesync/widgets/settings/settings_card.dart';
@@ -21,17 +22,18 @@ class SettingsColorSchemeSwatchesCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeSettings = ref.watch(themeSettingsProvider);
+    final l = AppLocalizations.of(context);
     final activePreset = themeColorPresets.firstWhere(
       (p) => p.color.toARGB32() == themeSettings.seedColor.toARGB32(),
       orElse: () => themeColorPresets.first,
     );
     final activeSchemeName = themeSettings.useDynamicColor
-        ? 'Dynamic from wallpaper (Material You)'
-        : activePreset.name;
+        ? l.dynamicFromWallpaperMaterialYou
+        : _localizedPresetName(l, activePreset.name);
 
     return SettingsCard(
       icon: Icons.palette_outlined,
-      title: "Color theme",
+      title: l.colorTheme,
       subtitle: activeSchemeName,
       content: DynamicColorBuilder(
         builder: (dynamicLight, dynamicDark) {
@@ -56,7 +58,7 @@ class SettingsColorSchemeSwatchesCard extends StatelessWidget {
                   return SettingsSwatchItem(
                     context: context,
                     isSelected: isSelected,
-                    tooltip: 'Dynamic from wallpaper',
+                    tooltip: l.dynamicFromWallpaper,
                     colors: [p, s, t, surf],
                     centerIcon: Icons.wallpaper_rounded,
                     onTap: () {
@@ -82,7 +84,7 @@ class SettingsColorSchemeSwatchesCard extends StatelessWidget {
                 return SettingsSwatchItem(
                   context: context,
                   isSelected: isSelected,
-                  tooltip: preset.name,
+                  tooltip: _localizedPresetName(l, preset.name),
                   colors: [
                     cs.primary,
                     cs.secondary,
@@ -102,4 +104,25 @@ class SettingsColorSchemeSwatchesCard extends StatelessWidget {
       ),
     );
   }
+
+  String _localizedPresetName(AppLocalizations l, String presetName) =>
+      switch (presetName) {
+        'Purple (M3)' => l.colorPurpleM3,
+        'Indigo' => l.colorIndigo,
+        'Blue' => l.colorBlue,
+        'Cyan' => l.colorCyan,
+        'Teal' => l.colorTeal,
+        'Green' => l.colorGreen,
+        'Lime' => l.colorLime,
+        'Amber' => l.colorAmber,
+        'Orange' => l.colorOrange,
+        'Deep Orange' => l.colorDeepOrange,
+        'Red' => l.colorRed,
+        'Pink' => l.colorPink,
+        'Sakura Rose' => l.colorSakuraRose,
+        'Deep Purple' => l.colorDeepPurple,
+        'Blue Grey' => l.colorBlueGrey,
+        'Brown' => l.colorBrown,
+        _ => presetName,
+      };
 }

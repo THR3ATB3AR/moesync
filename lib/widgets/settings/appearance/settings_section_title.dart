@@ -1,4 +1,5 @@
 import 'package:moesync/providers/providers.dart';
+import 'package:moesync/l10n/gen/app_localizations.dart';
 import 'package:moesync/widgets/settings/settings_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,30 +19,31 @@ class SettingsThemeModeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeSettings = ref.watch(themeSettingsProvider);
+    final l = AppLocalizations.of(context);
 
     return SettingsCard(
       icon: Icons.brightness_6_outlined,
-      title: "Theme mode",
-      subtitle: 'Light, dark or system',
+      title: l.themeMode,
+      subtitle: l.themeModeDescription,
       content: SizedBox(
         width: double.infinity,
         child: SegmentedButton<ThemeMode>(
           showSelectedIcon: false,
-          segments: const [
+          segments: [
             ButtonSegment(
               value: ThemeMode.system,
               icon: Icon(Icons.brightness_auto_rounded, size: 16),
-              label: Text('System'),
+              label: Text(l.themeModeSystem),
             ),
             ButtonSegment(
               value: ThemeMode.light,
               icon: Icon(Icons.light_mode_rounded, size: 16),
-              label: Text('Light'),
+              label: Text(l.themeModeLight),
             ),
             ButtonSegment(
               value: ThemeMode.dark,
               icon: Icon(Icons.dark_mode_rounded, size: 16),
-              label: Text('Dark'),
+              label: Text(l.themeModeDark),
             ),
           ],
           selected: {themeSettings.themeMode},

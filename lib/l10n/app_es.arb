@@ -94,6 +94,226 @@
   "viewAll": "Ver todo",
   "addToList": "Añadir a la lista",
   "notOnList": "No está en la lista",
+  "episodes": "Episodios",
+  "chapters": "Capítulos",
+  "watchedEpisodes": "Episodios vistos",
+  "readChapters": "Capítulos leídos",
+  "scoreOutOfTen": "Puntuación (0–10)",
+  "saveAndSync": "Guardar y sincronizar",
+  "removedFromConnectedServices": "Se eliminó \"{title}\" de los servicios conectados",
+  "@removedFromConnectedServices": {
+    "placeholders": {
+      "title": {}
+    }
+  },
+  "updatedOnConnectedServices": "Se actualizó \"{title}\" en los servicios conectados",
+  "@updatedOnConnectedServices": {
+    "placeholders": {
+      "title": {}
+    }
+  },
+  "couldNotUpdateConnectedServices": "No se pudieron actualizar los servicios conectados: {error}",
+  "@couldNotUpdateConnectedServices": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "failedToSearch": "No se pudo buscar: {error}",
+  "@failedToSearch": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "enterTitleExample": "Introduce un título (p. ej., Frieren, Berserk)...",
+  "typeNameAndPressSearch": "Escribe un nombre y pulsa buscar",
+  "ongoing": "En curso",
+  "addedToConnectedServices": "Se añadió \"{title}\" a los servicios conectados",
+  "@addedToConnectedServices": {
+    "placeholders": {
+      "title": {}
+    }
+  },
+  "couldNotAddToConnectedServices": "No se pudo añadir a los servicios conectados: {error}",
+  "@couldNotAddToConnectedServices": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "openBrowserManually": "No se pudo abrir el navegador del sistema automáticamente. Abre la URL manualmente.",
+  "failedToInitiateAuthorization": "No se pudo iniciar la autorización: {error}",
+  "@failedToInitiateAuthorization": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "enterCodeOrUrl": "Introduce o pega el código o la URL",
+  "openLoginPageFirst": "Abre primero la página de inicio de sesión",
+  "enterEmailUsernamePassword": "Introduce el correo o nombre de usuario y la contraseña",
+  "enterUsernamePassword": "Introduce el nombre de usuario y la contraseña",
+  "savedDeveloperCredentials": "Se guardaron las credenciales de desarrollador de {serviceName}",
+  "@savedDeveloperCredentials": {
+    "placeholders": {
+      "serviceName": {}
+    }
+  },
+  "tokenCannotBeEmpty": "El token no puede estar vacío",
+  "successfullyConnectedToService": "Se conectó correctamente a {serviceName}",
+  "@successfullyConnectedToService": {
+    "placeholders": {
+      "serviceName": {}
+    }
+  },
+  "successfullyConnectedToServiceAs": "Se conectó correctamente a {serviceName} como {username}",
+  "@successfullyConnectedToServiceAs": {
+    "placeholders": {
+      "serviceName": {},
+      "username": {}
+    }
+  },
+  "connectService": "Conectar {serviceName}",
+  "@connectService": {
+    "placeholders": {
+      "serviceName": {}
+    }
+  },
+  "connectionError": "Error de conexión: {error}",
+  "@connectionError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "connectedAsUser": "Conectado como {username}",
+  "@connectedAsUser": {
+    "placeholders": {
+      "username": {}
+    }
+  },
+  "loginToSyncLists": "Inicia sesión para sincronizar tus listas de anime y manga",
+  "advancedConfigurationManualEntry": "Configuración avanzada y entrada manual",
+  "customClientIdOptional": "ID de cliente personalizado (opcional)",
+  "configuredInEnvByDefault": "Configurado en .env de forma predeterminada",
+  "customClientSecretOptional": "Secreto de cliente personalizado (opcional)",
+  "saveCustomClientCredentials": "Guardar ID y secreto de cliente",
+  "accessToken": "Token de acceso",
+  "pasteToken": "Pega el token aquí",
+  "usernameOptional": "Nombre de usuario (opcional)",
+  "exampleUsername": "p. ej., nombre de usuario",
+  "saveManualToken": "Guardar token manual",
+  "loggedOutFromService": "Se cerró la sesión de {serviceName}",
+  "@loggedOutFromService": {
+    "placeholders": {
+      "serviceName": {}
+    }
+  },
+  "logoutService": "Cerrar sesión en {serviceName}",
+  "@logoutService": {
+    "placeholders": {
+      "serviceName": {}
+    }
+  },
+  "logoutFromServiceTooltip": "Cerrar sesión en {serviceName}",
+  "@logoutFromServiceTooltip": {
+    "placeholders": {
+      "serviceName": {}
+    }
+  },
+  "logoutFromServiceQuestion": "¿Cerrar sesión en {serviceName}?",
+  "@logoutFromServiceQuestion": {
+    "placeholders": {
+      "serviceName": {}
+    }
+  },
+  "confirmDisconnectService": "¿Seguro que quieres desconectar {serviceName}?",
+  "@confirmDisconnectService": {
+    "placeholders": {
+      "serviceName": {}
+    }
+  },
+  "notConnectedTapToConfigure": "No conectado (pulsa para configurar)",
+  "connectedWithToken": "Conectado con un token",
+  "reopenServiceInBrowser": "Volver a abrir {serviceName} en el navegador",
+  "@reopenServiceInBrowser": {
+    "placeholders": {
+      "serviceName": {}
+    }
+  },
+  "openLoginPageInBrowser": "1. Abrir la página de inicio de sesión en el navegador",
+  "copiedAuthorizationLink": "¡Enlace de autorización copiado al portapapeles!",
+  "copyAuthLink": "Copiar enlace de autorización",
+  "howToConnect": "Cómo conectarse:",
+  "clickToLoginOnShikimori": "Pulsa arriba para iniciar sesión en Shikimori.",
+  "allowOnAuthorizationPage": "Pulsa \"Permitir\" en la página de autorización.",
+  "shikimoriDisplayCode": "Shikimori mostrará tu código. Cópialo y pégalo abajo.",
+  "clickLoginApproveBrowser": "Pulsa arriba para iniciar sesión y aprobar el acceso en el navegador.",
+  "redirectLocalhostExpected": "Se te redirigirá a localhost (puede aparecer \"No se puede conectar\"; es normal).",
+  "copyEntireUrlOrCode": "Copia la URL completa de la barra del navegador (o solo el código) y pégala abajo.",
+  "pasteAuthorizationCodeOrRedirectUrl": "2. Pega el código de autorización o la URL de redirección:",
+  "exampleAuthorizationCode": "p. ej., 783ab29... o código",
+  "localhostCodeExample": "http://localhost/?code=... o código",
+  "pasteFromClipboard": "Pegar desde el portapapeles",
+  "completeConnection": "Completar conexión",
+  "loginWithKitsuCredentials": "Inicia sesión en Kitsu con tu correo/nombre de usuario y contraseña:",
+  "emailOrUsername": "Correo o nombre de usuario",
+  "password": "Contraseña",
+  "loginToKitsu": "Iniciar sesión en Kitsu",
+  "loginWithMangaUpdatesCredentials": "Inicia sesión en MangaUpdates con tu nombre de usuario y contraseña:",
+  "username": "Nombre de usuario",
+  "loginToMangaUpdates": "Iniciar sesión en MangaUpdates",
+  "serviceLoadErrorsTitle": "Errores al cargar los servicios",
+  "antiPhantomProtectionDescription": "La protección contra listas fantasma está activa: los servicios con errores se excluyeron de la comparación para evitar que datos vacíos sobrescriban tus listas.",
+  "close": "Cerrar",
+  "themeModeSystem": "Sistema",
+  "themeModeLight": "Claro",
+  "themeModeDark": "Oscuro",
+  "displayStyle": "Estilo de visualización",
+  "setDisplayStyleForCollections": "Establecer el estilo de visualización de las colecciones de anime y manga",
+  "iconStyle": "Icono",
+  "monoIconStyle": "Icono monocromático",
+  "livePreview": "Vista previa:",
+  "setLayoutStyleForCollections": "Establecer el diseño de las colecciones de anime y manga",
+  "gridView": "Cuadrícula",
+  "listView": "Lista",
+  "colorTheme": "Tema de color",
+  "dynamicFromWallpaper": "Dinámico desde el fondo de pantalla",
+  "dynamicFromWallpaperMaterialYou": "Dinámico desde el fondo de pantalla (Material You)",
+  "material3Variant": "Variante de Material 3",
+  "material3VariantDescription": "Controla el algoritmo de generación de tono y contraste",
+  "variantTonalSpot": "Tonal Spot",
+  "variantFidelity": "Fidelidad",
+  "variantVibrant": "Vibrante",
+  "variantExpressive": "Expresivo",
+  "variantNeutral": "Neutro",
+  "variantMonochrome": "Monocromo",
+  "variantFruitSalad": "Ensalada de frutas",
+  "variantRainbow": "Arcoíris",
+  "variantContent": "Contenido",
+  "colorPurpleM3": "Morado (M3)",
+  "colorIndigo": "Índigo",
+  "colorBlue": "Azul",
+  "colorCyan": "Cian",
+  "colorTeal": "Verde azulado",
+  "colorGreen": "Verde",
+  "colorLime": "Lima",
+  "colorAmber": "Ámbar",
+  "colorOrange": "Naranja",
+  "colorDeepOrange": "Naranja oscuro",
+  "colorRed": "Rojo",
+  "colorPink": "Rosa",
+  "colorSakuraRose": "Rosa sakura",
+  "colorDeepPurple": "Morado oscuro",
+  "colorBlueGrey": "Azul grisáceo",
+  "colorBrown": "Marrón",
+  "searchSettingsPlaceholder": "Buscar en ajustes...",
+  "serviceErrorMessage": "Error: {error}",
+  "@serviceErrorMessage": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "themeModeDescription": "Claro, oscuro o sistema",
+  "user": "Usuario",
+  "retry": "Reintentar",
+  "fribbIdMappingDatabase": "Base de datos de mapeo de ID de Fribb",
   "watchingProgressTotal": "Viendo ({progress}/{total})",
   "watchingProgress": "Viendo ({progress})",
   "readingProgressTotal": "Leyendo ({progress}/{total})",

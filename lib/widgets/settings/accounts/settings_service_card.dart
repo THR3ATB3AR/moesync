@@ -1,4 +1,5 @@
 import 'package:moesync/models/media_item.dart';
+import 'package:moesync/l10n/gen/app_localizations.dart';
 import 'package:moesync/providers/providers.dart';
 import 'package:moesync/widgets/oauth_dialog.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +25,7 @@ class SettingsServiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     final serviceErrors = ref.watch(serviceErrorsProvider);
     final hasError = isConnected && serviceErrors.containsKey(service);
     final errorMsg = serviceErrors[service];
@@ -43,7 +45,7 @@ class SettingsServiceCard extends StatelessWidget {
         width: 1.2,
       );
       subtitleWidget = Text(
-        'Błąd: $errorMsg',
+        l.serviceErrorMessage(errorMsg ?? ''),
         style: theme.textTheme.bodySmall?.copyWith(
           color: theme.colorScheme.error,
           fontWeight: FontWeight.w600,
@@ -60,8 +62,8 @@ class SettingsServiceCard extends StatelessWidget {
       );
       subtitleWidget = Text(
         creds.username != null && creds.username!.isNotEmpty
-            ? 'Connected as ${creds.username}'
-            : 'Connected with token',
+            ? l.connectedAsUser(creds.username!)
+            : l.connectedWithToken,
         style: theme.textTheme.bodySmall?.copyWith(
           color: Colors.green.shade700,
           fontWeight: FontWeight.w500,
@@ -75,7 +77,7 @@ class SettingsServiceCard extends StatelessWidget {
         color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
       );
       subtitleWidget = Text(
-        'Not connected (tap to configure)',
+        l.notConnectedTapToConfigure,
         style: theme.textTheme.bodySmall,
       );
     }
@@ -107,7 +109,7 @@ class SettingsServiceCard extends StatelessWidget {
           children: [
             if (isConnected) ...[
               IconButton(
-                tooltip: 'Logout from ${service.displayName}',
+                tooltip: l.logoutFromServiceTooltip(service.displayName),
                 icon: Icon(
                   Icons.logout_rounded,
                   color: theme.colorScheme.error,
@@ -117,21 +119,23 @@ class SettingsServiceCard extends StatelessWidget {
                   final confirm = await showDialog<bool>(
                     context: context,
                     builder: (ctx) => AlertDialog(
-                      title: Text('Logout from ${service.displayName}?'),
+                      title: Text(
+                        l.logoutFromServiceQuestion(service.displayName),
+                      ),
                       content: Text(
-                        'Are you sure you want to disconnect ${service.displayName}?',
+                        l.confirmDisconnectService(service.displayName),
                       ),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.of(ctx).pop(false),
-                          child: const Text('Cancel'),
+                          child: Text(l.cancel),
                         ),
                         FilledButton(
                           style: FilledButton.styleFrom(
                             backgroundColor: theme.colorScheme.error,
                           ),
                           onPressed: () => Navigator.of(ctx).pop(true),
-                          child: const Text('Logout'),
+                          child: Text(l.logoutService(service.displayName)),
                         ),
                       ],
                     ),
@@ -144,7 +148,7 @@ class SettingsServiceCard extends StatelessWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            '✓ Logged out of ${service.displayName}',
+                            l.loggedOutFromService(service.displayName),
                           ),
                           behavior: SnackBarBehavior.floating,
                         ),
@@ -165,7 +169,9 @@ class SettingsServiceCard extends StatelessWidget {
                 context: context,
                 builder: (_) => OAuthDialog(service: service),
               ),
-              child: Text(isConnected ? 'Manage' : 'Connect'),
+              child: Text(
+                isConnected ? l.manage : l.connectService(service.displayName),
+              ),
             ),
           ],
         ),

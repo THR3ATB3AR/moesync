@@ -1,4 +1,5 @@
 import 'package:moesync/models/media_item.dart';
+import 'package:moesync/l10n/gen/app_localizations.dart';
 import 'package:moesync/providers/providers.dart';
 import 'package:moesync/widgets/settings/settings_card.dart';
 import 'package:flutter/material.dart';
@@ -19,23 +20,24 @@ class SettingsMediaViewModeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentMode = ref.watch(mediaViewModeProvider);
+    final l = AppLocalizations.of(context);
 
     return SettingsCard(
       icon: Icons.dashboard_customize_rounded,
-      title: "Layout style",
-      subtitle: 'Set layout style for anime and manga collections',
+      title: l.layoutStyle,
+      subtitle: l.setLayoutStyleForCollections,
       content: SegmentedButton<MediaViewMode>(
         showSelectedIcon: false,
-        segments: const [
+        segments: [
           ButtonSegment(
             value: MediaViewMode.grid,
             icon: Icon(Icons.grid_view_rounded, size: 16),
-            label: Text('Siatka (Grid)'),
+            label: Text(l.gridView),
           ),
           ButtonSegment(
             value: MediaViewMode.list,
             icon: Icon(Icons.view_agenda_rounded, size: 16),
-            label: Text('Lista (List)'),
+            label: Text(l.listView),
           ),
         ],
         selected: {currentMode},

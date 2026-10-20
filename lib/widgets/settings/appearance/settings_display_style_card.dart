@@ -1,4 +1,5 @@
 import 'package:moesync/models/media_item.dart';
+import 'package:moesync/l10n/gen/app_localizations.dart';
 import 'package:moesync/providers/providers.dart';
 import 'package:moesync/widgets/service_badge.dart';
 import 'package:moesync/widgets/settings/settings_card.dart';
@@ -20,11 +21,12 @@ class SettingsDisplayStyleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentStyle = ref.watch(serviceDisplayStyleProvider);
+    final l = AppLocalizations.of(context);
 
     return SettingsCard(
       icon: Icons.style_rounded,
-      title: "Display style",
-      subtitle: 'Set display style for anime and manga collections',
+      title: l.displayStyle,
+      subtitle: l.setDisplayStyleForCollections,
       content: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -32,21 +34,21 @@ class SettingsDisplayStyleCard extends StatelessWidget {
             width: double.infinity,
             child: SegmentedButton<ServiceDisplayStyle>(
               showSelectedIcon: false,
-              segments: const [
+              segments: [
                 ButtonSegment(
                   value: ServiceDisplayStyle.text,
                   icon: Icon(Icons.title_rounded, size: 16),
-                  label: Text('Text'),
+                  label: Text(l.text),
                 ),
                 ButtonSegment(
                   value: ServiceDisplayStyle.icon,
                   icon: Icon(Icons.palette_outlined, size: 16),
-                  label: Text('Icon'),
+                  label: Text(l.iconStyle),
                 ),
                 ButtonSegment(
                   value: ServiceDisplayStyle.monoIcon,
                   icon: Icon(Icons.contrast_rounded, size: 16),
-                  label: Text('Mono Icon'),
+                  label: Text(l.monoIconStyle),
                 ),
               ],
               selected: {currentStyle},
@@ -84,7 +86,7 @@ class SettingsDisplayStyleCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      'Live Preview:',
+                      l.livePreview,
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                         fontWeight: FontWeight.w600,

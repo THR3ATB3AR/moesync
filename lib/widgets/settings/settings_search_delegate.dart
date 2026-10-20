@@ -3,6 +3,9 @@ import 'package:moesync/l10n/gen/app_localizations.dart';
 import 'package:moesync/screens/settings_screen.dart';
 
 class SettingsSearchDelegate extends SearchDelegate<void> {
+  SettingsSearchDelegate({required String searchFieldLabel})
+    : super(searchFieldLabel: searchFieldLabel);
+
   List<SettingsSearchItem> searchableItems(BuildContext context) => [
     SettingsSearchItem(
       title: AppLocalizations.of(context).languageSettings,
@@ -83,7 +86,7 @@ class SettingsSearchDelegate extends SearchDelegate<void> {
       icon: Icons.cloud_done_rounded,
     ),
     SettingsSearchItem(
-      title: 'Fribb ID Mapping Database',
+      title: AppLocalizations.of(context).fribbIdMappingDatabase,
       subtitle: AppLocalizations.of(context).crossPlatformAnimeAndMangaIdMapping,
       categoryKey: 'database',
       icon: Icons.storage_rounded,
@@ -95,9 +98,6 @@ class SettingsSearchDelegate extends SearchDelegate<void> {
       icon: Icons.info_outline,
     ),
   ];
-
-  @override
-  String get searchFieldLabel => 'Search settings...';
 
   @override
   List<Widget>? buildActions(BuildContext context) {

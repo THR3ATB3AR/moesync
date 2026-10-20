@@ -50,6 +50,7 @@ class _EditMediaDialogState extends ConsumerState<EditMediaDialog> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
     final isAnime = widget.item.mediaType == MediaType.anime;
 
     final totalEpisodes =
@@ -59,36 +60,26 @@ class _EditMediaDialogState extends ConsumerState<EditMediaDialog> {
         : (_progress > 100 ? _progress + 50 : 100);
     final int effectiveMax = maxLimit > 0 ? maxLimit : 1;
     final statusItems = isAnime
-        ? const [
-            DropdownMenuItem(value: 'watching', child: Text('Watching')),
-            DropdownMenuItem(value: 'completed', child: Text('Completed')),
-            DropdownMenuItem(value: 'on_hold', child: Text('On Hold')),
-            DropdownMenuItem(value: 'dropped', child: Text('Dropped')),
+        ? [
+            DropdownMenuItem(value: 'watching', child: Text(l.watching)),
+            DropdownMenuItem(value: 'completed', child: Text(l.completed)),
+            DropdownMenuItem(value: 'on_hold', child: Text(l.onHold)),
+            DropdownMenuItem(value: 'dropped', child: Text(l.dropped)),
             DropdownMenuItem(
               value: 'plan_to_watch',
-              child: Text('Plan to Watch'),
+              child: Text(l.planToWatch),
             ),
           ]
-        : const [
-            DropdownMenuItem(value: 'reading', child: Text('Reading')),
-            DropdownMenuItem(value: 'completed', child: Text('Completed')),
-            DropdownMenuItem(value: 'on_hold', child: Text('On Hold')),
-            DropdownMenuItem(value: 'dropped', child: Text('Dropped')),
-            DropdownMenuItem(
-              value: 'plan_to_read',
-              child: Text('Plan to Read'),
-            ),
+        : [
+            DropdownMenuItem(value: 'reading', child: Text(l.reading)),
+            DropdownMenuItem(value: 'completed', child: Text(l.completed)),
+            DropdownMenuItem(value: 'on_hold', child: Text(l.onHold)),
+            DropdownMenuItem(value: 'dropped', child: Text(l.dropped)),
+            DropdownMenuItem(value: 'plan_to_read', child: Text(l.planToRead)),
           ];
-    final localizations = Localizations.of<AppLocalizations>(
-      context,
-      AppLocalizations,
-    );
     final editableStatusItems = [
       ...statusItems,
-      DropdownMenuItem(
-        value: 'not_on_list',
-        child: Text(localizations?.notOnList ?? 'Not on list'),
-      ),
+      DropdownMenuItem(value: 'not_on_list', child: Text(l.notOnList)),
     ];
 
     return Dialog(
@@ -290,8 +281,8 @@ class _EditMediaDialogState extends ConsumerState<EditMediaDialog> {
                                                 children: [
                                                   Text(
                                                     isAnime
-                                                        ? 'Episodes'
-                                                        : 'Chapters',
+                                                        ? l.episodes
+                                                        : l.chapters,
                                                     style: theme
                                                         .textTheme
                                                         .bodyMedium,
@@ -387,7 +378,7 @@ class _EditMediaDialogState extends ConsumerState<EditMediaDialog> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    isAnime ? 'Watched Episodes' : 'Read Chapters',
+                    isAnime ? l.watchedEpisodes : l.readChapters,
                     style: theme.textTheme.labelLarge,
                   ),
                   Text(
@@ -433,7 +424,7 @@ class _EditMediaDialogState extends ConsumerState<EditMediaDialog> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Score (0 - 10)', style: theme.textTheme.labelLarge),
+                  Text(l.scoreOutOfTen, style: theme.textTheme.labelLarge),
                   Row(
                     children: [
                       const Icon(
@@ -467,13 +458,13 @@ class _EditMediaDialogState extends ConsumerState<EditMediaDialog> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel'),
+                    child: Text(l.cancel),
                   ),
                   const SizedBox(width: 8),
                   FilledButton.icon(
                     onPressed: _save,
                     icon: const Icon(Icons.check),
-                    label: const Text('Save & Sync'),
+                    label: Text(l.saveAndSync),
                   ),
                 ],
               ),
@@ -485,6 +476,7 @@ class _EditMediaDialogState extends ConsumerState<EditMediaDialog> {
   }
 
   Future<void> _save() async {
+    final l = AppLocalizations.of(context);
     final notifier = ref.read(mediaLibraryProvider.notifier);
     final messenger = ScaffoldMessenger.of(context);
     final isTracked = ref
@@ -523,8 +515,8 @@ class _EditMediaDialogState extends ConsumerState<EditMediaDialog> {
         SnackBar(
           content: Text(
             _status == 'not_on_list'
-                ? '"${widget.item.title}" removed from connected services'
-                : 'Updated "${widget.item.title}" on connected services',
+                ? l.removedFromConnectedServices(widget.item.title)
+                : l.updatedOnConnectedServices(widget.item.title),
           ),
           behavior: SnackBarBehavior.floating,
         ),
@@ -533,7 +525,7 @@ class _EditMediaDialogState extends ConsumerState<EditMediaDialog> {
       if (!mounted) return;
       messenger.showSnackBar(
         SnackBar(
-          content: Text('Could not update connected services: $error'),
+          content: Text(l.couldNotUpdateConnectedServices(error.toString())),
           behavior: SnackBarBehavior.floating,
         ),
       );

@@ -94,6 +94,226 @@
   "viewAll": "View All",
   "addToList": "Add to list",
   "notOnList": "Not on list",
+  "episodes": "Episodes",
+  "chapters": "Chapters",
+  "watchedEpisodes": "Watched episodes",
+  "readChapters": "Read chapters",
+  "scoreOutOfTen": "Score (0–10)",
+  "saveAndSync": "Save & Sync",
+  "removedFromConnectedServices": "\"{title}\" removed from connected services",
+  "@removedFromConnectedServices": {
+    "placeholders": {
+      "title": {}
+    }
+  },
+  "updatedOnConnectedServices": "Updated \"{title}\" on connected services",
+  "@updatedOnConnectedServices": {
+    "placeholders": {
+      "title": {}
+    }
+  },
+  "couldNotUpdateConnectedServices": "Could not update connected services: {error}",
+  "@couldNotUpdateConnectedServices": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "failedToSearch": "Failed to search: {error}",
+  "@failedToSearch": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "enterTitleExample": "Enter a title (e.g. Frieren, Berserk)...",
+  "typeNameAndPressSearch": "Type a name and press search",
+  "ongoing": "Ongoing",
+  "addedToConnectedServices": "Added \"{title}\" to connected services",
+  "@addedToConnectedServices": {
+    "placeholders": {
+      "title": {}
+    }
+  },
+  "couldNotAddToConnectedServices": "Could not add to connected services: {error}",
+  "@couldNotAddToConnectedServices": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "openBrowserManually": "Could not open the system browser automatically. Please open the URL manually.",
+  "failedToInitiateAuthorization": "Failed to initiate authorization: {error}",
+  "@failedToInitiateAuthorization": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "enterCodeOrUrl": "Please enter or paste the code or URL",
+  "openLoginPageFirst": "Please open the login page first",
+  "enterEmailUsernamePassword": "Please enter both email/username and password",
+  "enterUsernamePassword": "Please enter both username and password",
+  "savedDeveloperCredentials": "Saved developer credentials for {serviceName}",
+  "@savedDeveloperCredentials": {
+    "placeholders": {
+      "serviceName": {}
+    }
+  },
+  "tokenCannotBeEmpty": "Token cannot be empty",
+  "successfullyConnectedToService": "Successfully connected to {serviceName}!",
+  "@successfullyConnectedToService": {
+    "placeholders": {
+      "serviceName": {}
+    }
+  },
+  "successfullyConnectedToServiceAs": "Successfully connected to {serviceName} as {username}!",
+  "@successfullyConnectedToServiceAs": {
+    "placeholders": {
+      "serviceName": {},
+      "username": {}
+    }
+  },
+  "connectService": "Connect {serviceName}",
+  "@connectService": {
+    "placeholders": {
+      "serviceName": {}
+    }
+  },
+  "connectionError": "Connection error: {error}",
+  "@connectionError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "connectedAsUser": "Connected as {username}",
+  "@connectedAsUser": {
+    "placeholders": {
+      "username": {}
+    }
+  },
+  "loginToSyncLists": "Log in to sync your anime and manga lists",
+  "advancedConfigurationManualEntry": "Advanced configuration & manual entry",
+  "customClientIdOptional": "Custom client ID (optional override)",
+  "configuredInEnvByDefault": "Configured in .env by default",
+  "customClientSecretOptional": "Custom client secret (optional override)",
+  "saveCustomClientCredentials": "Save custom client ID/secret",
+  "accessToken": "Access token",
+  "pasteToken": "Paste token here",
+  "usernameOptional": "Username (optional)",
+  "exampleUsername": "e.g. username",
+  "saveManualToken": "Save manual token",
+  "loggedOutFromService": "Logged out from {serviceName}",
+  "@loggedOutFromService": {
+    "placeholders": {
+      "serviceName": {}
+    }
+  },
+  "logoutService": "Log out of {serviceName}",
+  "@logoutService": {
+    "placeholders": {
+      "serviceName": {}
+    }
+  },
+  "logoutFromServiceTooltip": "Log out of {serviceName}",
+  "@logoutFromServiceTooltip": {
+    "placeholders": {
+      "serviceName": {}
+    }
+  },
+  "logoutFromServiceQuestion": "Log out of {serviceName}?",
+  "@logoutFromServiceQuestion": {
+    "placeholders": {
+      "serviceName": {}
+    }
+  },
+  "confirmDisconnectService": "Are you sure you want to disconnect {serviceName}?",
+  "@confirmDisconnectService": {
+    "placeholders": {
+      "serviceName": {}
+    }
+  },
+  "notConnectedTapToConfigure": "Not connected (tap to configure)",
+  "connectedWithToken": "Connected with token",
+  "reopenServiceInBrowser": "Re-open {serviceName} in browser",
+  "@reopenServiceInBrowser": {
+    "placeholders": {
+      "serviceName": {}
+    }
+  },
+  "openLoginPageInBrowser": "1. Open login page in browser",
+  "copiedAuthorizationLink": "Copied authorization link to clipboard!",
+  "copyAuthLink": "Copy auth link",
+  "howToConnect": "How to connect:",
+  "clickToLoginOnShikimori": "Click above to log in on Shikimori.",
+  "allowOnAuthorizationPage": "Click \"Allow\" on the authorization page.",
+  "shikimoriDisplayCode": "Shikimori will display your code. Copy and paste it below.",
+  "clickLoginApproveBrowser": "Click above to log in and approve access in your browser.",
+  "redirectLocalhostExpected": "You will be redirected to localhost (the page might say \"Cannot connect\"; that is expected).",
+  "copyEntireUrlOrCode": "Copy the entire URL from your browser address bar (or just the code) and paste it below.",
+  "pasteAuthorizationCodeOrRedirectUrl": "2. Paste authorization code or redirect URL:",
+  "exampleAuthorizationCode": "e.g. 783ab29... or code",
+  "localhostCodeExample": "http://localhost/?code=... or raw code",
+  "pasteFromClipboard": "Paste from clipboard",
+  "completeConnection": "Complete connection",
+  "loginWithKitsuCredentials": "Log in with your Kitsu email/username and password:",
+  "emailOrUsername": "Email or username",
+  "password": "Password",
+  "loginToKitsu": "Log in to Kitsu",
+  "loginWithMangaUpdatesCredentials": "Log in with your MangaUpdates username and password:",
+  "username": "Username",
+  "loginToMangaUpdates": "Log in to MangaUpdates",
+  "serviceLoadErrorsTitle": "Errors loading services",
+  "antiPhantomProtectionDescription": "Anti-phantom protection is active: services with errors have been excluded from comparison to prevent empty data from overwriting your lists.",
+  "close": "Close",
+  "themeModeSystem": "System",
+  "themeModeLight": "Light",
+  "themeModeDark": "Dark",
+  "displayStyle": "Display style",
+  "setDisplayStyleForCollections": "Set the display style for anime and manga collections",
+  "iconStyle": "Icon",
+  "monoIconStyle": "Mono icon",
+  "livePreview": "Live preview:",
+  "setLayoutStyleForCollections": "Set the layout style for anime and manga collections",
+  "gridView": "Grid",
+  "listView": "List",
+  "colorTheme": "Color theme",
+  "dynamicFromWallpaper": "Dynamic from wallpaper",
+  "dynamicFromWallpaperMaterialYou": "Dynamic from wallpaper (Material You)",
+  "material3Variant": "Material 3 variant",
+  "material3VariantDescription": "Controls the tone and contrast generation algorithm",
+  "variantTonalSpot": "Tonal Spot",
+  "variantFidelity": "Fidelity",
+  "variantVibrant": "Vibrant",
+  "variantExpressive": "Expressive",
+  "variantNeutral": "Neutral",
+  "variantMonochrome": "Monochrome",
+  "variantFruitSalad": "Fruit Salad",
+  "variantRainbow": "Rainbow",
+  "variantContent": "Content",
+  "colorPurpleM3": "Purple (M3)",
+  "colorIndigo": "Indigo",
+  "colorBlue": "Blue",
+  "colorCyan": "Cyan",
+  "colorTeal": "Teal",
+  "colorGreen": "Green",
+  "colorLime": "Lime",
+  "colorAmber": "Amber",
+  "colorOrange": "Orange",
+  "colorDeepOrange": "Deep Orange",
+  "colorRed": "Red",
+  "colorPink": "Pink",
+  "colorSakuraRose": "Sakura Rose",
+  "colorDeepPurple": "Deep Purple",
+  "colorBlueGrey": "Blue Grey",
+  "colorBrown": "Brown",
+  "searchSettingsPlaceholder": "Search settings...",
+  "serviceErrorMessage": "Error: {error}",
+  "@serviceErrorMessage": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "themeModeDescription": "Light, dark, or system",
+  "user": "User",
+  "retry": "Retry",
+  "fribbIdMappingDatabase": "Fribb ID mapping database",
   "watchingProgressTotal": "Watching ({progress}/{total})",
   "watchingProgress": "Watching ({progress})",
   "readingProgressTotal": "Reading ({progress}/{total})",

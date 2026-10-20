@@ -94,6 +94,226 @@
   "viewAll": "Wyświetl wszystkie",
   "addToList": "Dodaj do listy",
   "notOnList": "Nie ma na liście",
+  "episodes": "Odcinki",
+  "chapters": "Rozdziały",
+  "watchedEpisodes": "Obejrzane odcinki",
+  "readChapters": "Przeczytane rozdziały",
+  "scoreOutOfTen": "Ocena (0–10)",
+  "saveAndSync": "Zapisz i synchronizuj",
+  "removedFromConnectedServices": "„{title}” usunięto z połączonych serwisów",
+  "@removedFromConnectedServices": {
+    "placeholders": {
+      "title": {}
+    }
+  },
+  "updatedOnConnectedServices": "Zaktualizowano „{title}” w połączonych serwisach",
+  "@updatedOnConnectedServices": {
+    "placeholders": {
+      "title": {}
+    }
+  },
+  "couldNotUpdateConnectedServices": "Nie udało się zaktualizować połączonych serwisów: {error}",
+  "@couldNotUpdateConnectedServices": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "failedToSearch": "Nie udało się wyszukać: {error}",
+  "@failedToSearch": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "enterTitleExample": "Wpisz tytuł (np. Frieren, Berserk)...",
+  "typeNameAndPressSearch": "Wpisz nazwę i rozpocznij wyszukiwanie",
+  "ongoing": "W trakcie",
+  "addedToConnectedServices": "Dodano „{title}” do połączonych serwisów",
+  "@addedToConnectedServices": {
+    "placeholders": {
+      "title": {}
+    }
+  },
+  "couldNotAddToConnectedServices": "Nie udało się dodać do połączonych serwisów: {error}",
+  "@couldNotAddToConnectedServices": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "openBrowserManually": "Nie udało się automatycznie otworzyć przeglądarki. Otwórz ręcznie podany adres URL.",
+  "failedToInitiateAuthorization": "Nie udało się rozpocząć autoryzacji: {error}",
+  "@failedToInitiateAuthorization": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "enterCodeOrUrl": "Wpisz lub wklej kod albo adres URL",
+  "openLoginPageFirst": "Najpierw otwórz stronę logowania",
+  "enterEmailUsernamePassword": "Wpisz adres e-mail lub nazwę użytkownika oraz hasło",
+  "enterUsernamePassword": "Wpisz nazwę użytkownika i hasło",
+  "savedDeveloperCredentials": "Zapisano dane deweloperskie serwisu {serviceName}",
+  "@savedDeveloperCredentials": {
+    "placeholders": {
+      "serviceName": {}
+    }
+  },
+  "tokenCannotBeEmpty": "Token nie może być pusty",
+  "successfullyConnectedToService": "Połączono z serwisem {serviceName}!",
+  "@successfullyConnectedToService": {
+    "placeholders": {
+      "serviceName": {}
+    }
+  },
+  "successfullyConnectedToServiceAs": "Połączono z serwisem {serviceName} jako {username}!",
+  "@successfullyConnectedToServiceAs": {
+    "placeholders": {
+      "serviceName": {},
+      "username": {}
+    }
+  },
+  "connectService": "Połącz z serwisem {serviceName}",
+  "@connectService": {
+    "placeholders": {
+      "serviceName": {}
+    }
+  },
+  "connectionError": "Błąd połączenia: {error}",
+  "@connectionError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "connectedAsUser": "Połączono jako {username}",
+  "@connectedAsUser": {
+    "placeholders": {
+      "username": {}
+    }
+  },
+  "loginToSyncLists": "Zaloguj się, aby synchronizować listy anime i mang",
+  "advancedConfigurationManualEntry": "Zaawansowana konfiguracja i ręczne wprowadzanie",
+  "customClientIdOptional": "Własny identyfikator klienta (opcjonalne nadpisanie)",
+  "configuredInEnvByDefault": "Domyślnie skonfigurowano w pliku .env",
+  "customClientSecretOptional": "Własny klucz klienta (opcjonalne nadpisanie)",
+  "saveCustomClientCredentials": "Zapisz własny identyfikator i klucz klienta",
+  "accessToken": "Token dostępu",
+  "pasteToken": "Wklej token",
+  "usernameOptional": "Nazwa użytkownika (opcjonalnie)",
+  "exampleUsername": "np. nazwa użytkownika",
+  "saveManualToken": "Zapisz token",
+  "loggedOutFromService": "Wylogowano z serwisu {serviceName}",
+  "@loggedOutFromService": {
+    "placeholders": {
+      "serviceName": {}
+    }
+  },
+  "logoutService": "Wyloguj z serwisu {serviceName}",
+  "@logoutService": {
+    "placeholders": {
+      "serviceName": {}
+    }
+  },
+  "logoutFromServiceTooltip": "Wyloguj z serwisu {serviceName}",
+  "@logoutFromServiceTooltip": {
+    "placeholders": {
+      "serviceName": {}
+    }
+  },
+  "logoutFromServiceQuestion": "Wylogować z serwisu {serviceName}?",
+  "@logoutFromServiceQuestion": {
+    "placeholders": {
+      "serviceName": {}
+    }
+  },
+  "confirmDisconnectService": "Czy na pewno chcesz rozłączyć serwis {serviceName}?",
+  "@confirmDisconnectService": {
+    "placeholders": {
+      "serviceName": {}
+    }
+  },
+  "notConnectedTapToConfigure": "Nie połączono (dotknij, aby skonfigurować)",
+  "connectedWithToken": "Połączono za pomocą tokenu",
+  "reopenServiceInBrowser": "Otwórz ponownie {serviceName} w przeglądarce",
+  "@reopenServiceInBrowser": {
+    "placeholders": {
+      "serviceName": {}
+    }
+  },
+  "openLoginPageInBrowser": "1. Otwórz stronę logowania w przeglądarce",
+  "copiedAuthorizationLink": "Skopiowano link autoryzacyjny do schowka!",
+  "copyAuthLink": "Kopiuj link autoryzacyjny",
+  "howToConnect": "Jak się połączyć:",
+  "clickToLoginOnShikimori": "Kliknij powyżej, aby zalogować się do Shikimori.",
+  "allowOnAuthorizationPage": "Kliknij „Zezwól” na stronie autoryzacji.",
+  "shikimoriDisplayCode": "Shikimori wyświetli kod. Skopiuj go i wklej poniżej.",
+  "clickLoginApproveBrowser": "Kliknij powyżej, aby zalogować się i zatwierdzić dostęp w przeglądarce.",
+  "redirectLocalhostExpected": "Nastąpi przekierowanie na localhost (strona może wyświetlić „Nie można połączyć” — to oczekiwane).",
+  "copyEntireUrlOrCode": "Skopiuj cały adres z paska przeglądarki (lub sam kod) i wklej go poniżej.",
+  "pasteAuthorizationCodeOrRedirectUrl": "2. Wklej kod autoryzacyjny lub przekierowany adres URL:",
+  "exampleAuthorizationCode": "np. 783ab29... lub kod",
+  "localhostCodeExample": "http://localhost/?code=... lub sam kod",
+  "pasteFromClipboard": "Wklej ze schowka",
+  "completeConnection": "Zakończ łączenie",
+  "loginWithKitsuCredentials": "Zaloguj się do Kitsu za pomocą adresu e-mail/nazwy użytkownika i hasła:",
+  "emailOrUsername": "Adres e-mail lub nazwa użytkownika",
+  "password": "Hasło",
+  "loginToKitsu": "Zaloguj do Kitsu",
+  "loginWithMangaUpdatesCredentials": "Zaloguj się do MangaUpdates za pomocą nazwy użytkownika i hasła:",
+  "username": "Nazwa użytkownika",
+  "loginToMangaUpdates": "Zaloguj do MangaUpdates",
+  "serviceLoadErrorsTitle": "Błędy wczytywania serwisów",
+  "antiPhantomProtectionDescription": "Ochrona przed pustymi listami jest aktywna: serwisy z błędami wyłączono z porównywania, aby nie nadpisały list pustymi danymi.",
+  "close": "Zamknij",
+  "themeModeSystem": "Systemowy",
+  "themeModeLight": "Jasny",
+  "themeModeDark": "Ciemny",
+  "displayStyle": "Styl wyświetlania",
+  "setDisplayStyleForCollections": "Ustaw styl wyświetlania kolekcji anime i mang",
+  "iconStyle": "Ikona",
+  "monoIconStyle": "Ikona monochromatyczna",
+  "livePreview": "Podgląd na żywo:",
+  "setLayoutStyleForCollections": "Ustaw układ kolekcji anime i mang",
+  "gridView": "Siatka",
+  "listView": "Lista",
+  "colorTheme": "Motyw kolorystyczny",
+  "dynamicFromWallpaper": "Dynamiczne z tapety",
+  "dynamicFromWallpaperMaterialYou": "Dynamiczne z tapety (Material You)",
+  "material3Variant": "Wariant Material 3",
+  "material3VariantDescription": "Steruje algorytmem generowania tonu i kontrastu",
+  "variantTonalSpot": "Tonal Spot",
+  "variantFidelity": "Wierność",
+  "variantVibrant": "Żywy",
+  "variantExpressive": "Ekspresyjny",
+  "variantNeutral": "Neutralny",
+  "variantMonochrome": "Monochromatyczny",
+  "variantFruitSalad": "Sałatka owocowa",
+  "variantRainbow": "Tęcza",
+  "variantContent": "Treść",
+  "colorPurpleM3": "Fioletowy (M3)",
+  "colorIndigo": "Indygo",
+  "colorBlue": "Niebieski",
+  "colorCyan": "Cyjan",
+  "colorTeal": "Morski",
+  "colorGreen": "Zielony",
+  "colorLime": "Limonkowy",
+  "colorAmber": "Bursztynowy",
+  "colorOrange": "Pomarańczowy",
+  "colorDeepOrange": "Ciemnopomarańczowy",
+  "colorRed": "Czerwony",
+  "colorPink": "Różowy",
+  "colorSakuraRose": "Róż sakury",
+  "colorDeepPurple": "Ciemnofioletowy",
+  "colorBlueGrey": "Niebieskoszary",
+  "colorBrown": "Brązowy",
+  "searchSettingsPlaceholder": "Szukaj w ustawieniach...",
+  "serviceErrorMessage": "Błąd: {error}",
+  "@serviceErrorMessage": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "themeModeDescription": "Jasny, ciemny lub systemowy",
+  "user": "Użytkownik",
+  "retry": "Ponów",
+  "fribbIdMappingDatabase": "Baza mapowania ID Fribb",
   "watchingProgressTotal": "Oglądam ({progress}/{total})",
   "watchingProgress": "Oglądam ({progress})",
   "readingProgressTotal": "Czytam ({progress}/{total})",

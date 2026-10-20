@@ -1,4 +1,5 @@
 import 'package:moesync/models/media_item.dart';
+import 'package:moesync/l10n/gen/app_localizations.dart';
 import 'package:moesync/providers/providers.dart';
 import 'package:moesync/widgets/media/edit_media_dialog.dart';
 import 'package:moesync/widgets/service_badge.dart';
@@ -23,6 +24,7 @@ class HomeHorizontalMediaList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     final titleLanguage = ref.watch(languageSettingsProvider).titleLanguage;
     return SizedBox(
       height: 245,
@@ -128,7 +130,7 @@ class HomeHorizontalMediaList extends StatelessWidget {
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
-                            'EP $progress',
+                            '${l.episodesShort} $progress',
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
