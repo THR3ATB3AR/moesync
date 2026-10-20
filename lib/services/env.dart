@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
 class Env {
@@ -15,15 +16,22 @@ class Env {
     try {
       final file = File('.env');
       if (file.existsSync()) {
-        final lines = file.readAsLinesSync();
-        for (final line in lines) {
-          final trimmed = line.trim();
-          if (trimmed.isEmpty || trimmed.startsWith('#')) continue;
-          final eqIdx = trimmed.indexOf('=');
-          if (eqIdx != -1) {
-            final key = trimmed.substring(0, eqIdx).trim();
-            final val = trimmed.substring(eqIdx + 1).trim();
-            _dotenv[key] = val;
+        final contents = file.readAsStringSync().trim();
+        if (contents.startsWith('{')) {
+          final values = jsonDecode(contents) as Map<String, dynamic>;
+          for (final entry in values.entries) {
+            _dotenv[entry.key] = entry.value.toString();
+          }
+        } else {
+          for (final line in contents.split('\n')) {
+            final trimmed = line.trim();
+            if (trimmed.isEmpty || trimmed.startsWith('#')) continue;
+            final eqIdx = trimmed.indexOf('=');
+            if (eqIdx != -1) {
+              final key = trimmed.substring(0, eqIdx).trim();
+              final val = trimmed.substring(eqIdx + 1).trim();
+              _dotenv[key] = val;
+            }
           }
         }
       }
@@ -34,6 +42,7 @@ class Env {
   static void setForTesting(String key, String value) {
     _testOverrides[key] = value;
   }
+
   @visibleForTesting
   static void resetForTesting() {
     _testOverrides.clear();

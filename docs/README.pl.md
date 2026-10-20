@@ -53,10 +53,15 @@ Dostępne wersje MoeSync pobierzesz ze strony [GitHub Releases](https://github.c
 git clone https://github.com/THR3ATB3AR/moesync.git
 cd moesync
 flutter pub get
-flutter run --release --dart-define-from-file=.env
+python3 scripts/prepare_dart_defines.py
+flutter run --release --dart-define-from-file=.dart-defines.json
 ```
 
-Przed uruchomieniem utwórz i skonfiguruj lokalnie wymagany plik `.env`. Nie dodawaj go do repozytorium ani nie udostępniaj danych logowania, kluczy API lub sekretów.
+Przed uruchomieniem utwórz `.env` na podstawie `.env.example` i skonfiguruj
+wartości. Skrypt konwertuje plik dotenv do formatu JSON wymaganego przez Fluttera
+w opcji `--dart-define-from-file`. Oba pliki są ignorowane przez Git. Nie
+dodawaj ich do repozytorium ani nie udostępniaj danych logowania, kluczy API
+lub sekretów.
 
 Polecenie uruchamia aplikację w trybie release na wybranym urządzeniu lub celu Fluttera. Flutter musi być skonfigurowany dla wybranej platformy.
 

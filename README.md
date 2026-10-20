@@ -53,10 +53,14 @@ Download available MoeSync builds from [GitHub Releases](https://github.com/THR3
 git clone https://github.com/THR3ATB3AR/moesync.git
 cd moesync
 flutter pub get
-flutter run --release --dart-define-from-file=.env
+python3 scripts/prepare_dart_defines.py
+flutter run --release --dart-define-from-file=.dart-defines.json
 ```
 
-Create and configure the required `.env` file locally before running the command. Do not commit it or share API credentials and secrets.
+Create `.env` from `.env.example` and configure it before running the commands.
+The helper converts the dotenv file into the JSON format Flutter requires for
+`--dart-define-from-file`. Both files are ignored by Git; do not commit or share
+API credentials and secrets.
 
 The command runs the app in release mode on the selected Flutter device or target. Flutter must be configured for the platform you want to run.
 

@@ -1,0 +1,275 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag to build (for example v1.2.3)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  linux:
+    name: Build Linux and AppImage
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev libsecret-1-dev libstdc++-12-dev
+      - name: Prepare version and environment
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+          MOESYNC_ENV: ${{ secrets.MOESYNC_ENV }}
+        run: |
+          TAG="$RELEASE_TAG"
+          VERSION="${TAG#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Tag must look like v1.2.3 (optional prerelease suffix is allowed)." >&2
+            exit 1
+          fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "BUILD_NUMBER=$GITHUB_RUN_NUMBER" >> "$GITHUB_ENV"
+          if [ -n "${MOESYNC_ENV:-}" ]; then
+            printf '%s' "$MOESYNC_ENV" > .env
+          else
+            cp .env.example .env
+          fi
+          python3 scripts/prepare_dart_defines.py
+      - run: flutter pub get
+      - name: Build Linux release bundle
+        run: |
+          flutter build linux --release \
+            --build-name "$VERSION" \
+            --build-number "$BUILD_NUMBER" \
+            --dart-define-from-file=.dart-defines.json
+      - name: Package Linux bundle
+        run: |
+          mkdir -p dist
+          tar -C build/linux/x64/release -czf "dist/moesync-linux-x64-${VERSION}+${BUILD_NUMBER}.tar.gz" bundle
+      - name: Package AppImage
+        run: |
+          APPDIR="$RUNNER_TEMP/MoeSync.AppDir"
+          mkdir -p "$APPDIR/usr/bin" "$APPDIR/usr/share/applications"
+          cp -a build/linux/x64/release/bundle/. "$APPDIR/usr/bin/"
+          cat > "$APPDIR/usr/share/applications/moesync.desktop" <<'EOF'
+          [Desktop Entry]
+          Name=MoeSync
+          Exec=moesync
+          Icon=moesync
+          Type=Application
+          Categories=Utility;
+          Terminal=false
+          EOF
+          curl -fsSL \
+            https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage \
+            -o "$RUNNER_TEMP/linuxdeploy"
+          chmod +x "$RUNNER_TEMP/linuxdeploy"
+          "$RUNNER_TEMP/linuxdeploy" \
+            --appdir "$APPDIR" \
+            --executable "$APPDIR/usr/bin/moesync" \
+            --desktop-file "$APPDIR/usr/share/applications/moesync.desktop" \
+            --icon-file assets/icon/png/moesync-icon.png \
+            --output appimage
+          APPIMAGE="$(find . -maxdepth 1 -type f -name '*.AppImage' -print -quit)"
+          test -n "$APPIMAGE"
+          mv "$APPIMAGE" "dist/moesync-${VERSION}+${BUILD_NUMBER}-linux-x86_64.AppImage"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-release
+          path: dist/*
+          if-no-files-found: error
+
+  android:
+    name: Build Android APKs
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Prepare version and environment
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+          MOESYNC_ENV: ${{ secrets.MOESYNC_ENV }}
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+        run: |
+          TAG="$RELEASE_TAG"
+          VERSION="${TAG#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Tag must look like v1.2.3 (optional prerelease suffix is allowed)." >&2
+            exit 1
+          fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "BUILD_NUMBER=$GITHUB_RUN_NUMBER" >> "$GITHUB_ENV"
+          if [ -n "${MOESYNC_ENV:-}" ]; then
+            printf '%s' "$MOESYNC_ENV" > .env
+          else
+            cp .env.example .env
+          fi
+          python3 scripts/prepare_dart_defines.py
+          test -n "$ANDROID_KEYSTORE_BASE64"
+          test -n "$ANDROID_KEY_ALIAS"
+          test -n "$ANDROID_KEY_PASSWORD"
+          test -n "$ANDROID_STORE_PASSWORD"
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/upload-keystore.jks
+          cat > android/key.properties <<EOF
+          storePassword=$ANDROID_STORE_PASSWORD
+          keyPassword=$ANDROID_KEY_PASSWORD
+          keyAlias=$ANDROID_KEY_ALIAS
+          storeFile=upload-keystore.jks
+          EOF
+      - run: flutter pub get
+      - name: Build universal APK
+        run: |
+          flutter build apk --release \
+            --build-name "$VERSION" \
+            --build-number "$BUILD_NUMBER" \
+            --dart-define-from-file=.dart-defines.json
+          mkdir -p dist
+          cp build/app/outputs/flutter-apk/app-release.apk \
+            "dist/moesync-${VERSION}+${BUILD_NUMBER}-android-universal.apk"
+      - name: Build per-ABI APKs
+        run: |
+          flutter build apk --release --split-per-abi \
+            --build-name "$VERSION" \
+            --build-number "$BUILD_NUMBER" \
+            --dart-define-from-file=.dart-defines.json
+          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk \
+            "dist/moesync-${VERSION}+${BUILD_NUMBER}-android-armeabi-v7a.apk"
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk \
+            "dist/moesync-${VERSION}+${BUILD_NUMBER}-android-arm64-v8a.apk"
+          cp build/app/outputs/flutter-apk/app-x86_64-release.apk \
+            "dist/moesync-${VERSION}+${BUILD_NUMBER}-android-x86_64.apk"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-release
+          path: dist/*
+          if-no-files-found: error
+
+  windows:
+    name: Build Windows
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Prepare version and environment
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+          MOESYNC_ENV: ${{ secrets.MOESYNC_ENV }}
+        shell: pwsh
+        run: |
+          $tag = $env:RELEASE_TAG
+          $version = $tag -replace '^v', ''
+          if ($version -notmatch '^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$') {
+            throw "Tag must look like v1.2.3 (optional prerelease suffix is allowed)."
+          }
+          "VERSION=$version" >> $env:GITHUB_ENV
+          "BUILD_NUMBER=$env:GITHUB_RUN_NUMBER" >> $env:GITHUB_ENV
+          if ($env:MOESYNC_ENV) {
+            [System.IO.File]::WriteAllText(".env", $env:MOESYNC_ENV)
+          } else {
+            Copy-Item .env.example .env
+          }
+          python scripts/prepare_dart_defines.py
+      - run: flutter pub get
+      - name: Build Windows release
+        run: |
+          flutter build windows --release `
+            --build-name "$env:VERSION" `
+            --build-number "$env:BUILD_NUMBER" `
+            --dart-define-from-file=.dart-defines.json
+      - name: Package Windows release
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Compress-Archive -Path build/windows/x64/runner/Release/* `
+            -DestinationPath "dist/moesync-$env:VERSION+$env:BUILD_NUMBER-windows-x64.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-release
+          path: dist/*
+          if-no-files-found: error
+
+  publish:
+    name: Publish GitHub Release
+    needs: [linux, android, windows]
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Create checksums and optional signatures
+        env:
+          RELEASE_GPG_PRIVATE_KEY: ${{ secrets.RELEASE_GPG_PRIVATE_KEY }}
+          RELEASE_GPG_PASSPHRASE: ${{ secrets.RELEASE_GPG_PASSPHRASE }}
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          cd dist
+          sha256sum * > SHA256SUMS
+          if [ -n "${RELEASE_GPG_PRIVATE_KEY:-}" ]; then
+            printf '%s' "$RELEASE_GPG_PRIVATE_KEY" | gpg --batch --import
+            for file in *; do
+              [ -f "$file" ] || continue
+              if [ -n "${RELEASE_GPG_PASSPHRASE:-}" ]; then
+                gpg --batch --yes --pinentry-mode loopback \
+                  --passphrase "$RELEASE_GPG_PASSPHRASE" --armor --detach-sign "$file"
+              else
+                gpg --batch --yes --armor --detach-sign "$file"
+              fi
+            done
+          else
+            echo "::notice::GPG signing is disabled; configure RELEASE_GPG_PRIVATE_KEY to sign release assets."
+          fi
+      - name: Publish release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          TAG="$RELEASE_TAG"
+          VERSION="${TAG#v}"
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" --title "MoeSync $VERSION" --generate-notes
+          fi
+          gh release upload "$TAG" dist/* --clobber

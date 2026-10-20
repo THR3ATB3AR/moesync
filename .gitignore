@@ -48,5 +48,10 @@ app.*.map.json
 .env
 .env.*
 !.env.example
+.dart-defines.json
+/android/key.properties
+/android/upload-keystore.jks
 
 /test/
+docs/WYDANIA.md
+docs/RELEASING.md
