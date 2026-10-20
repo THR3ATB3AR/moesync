@@ -178,12 +178,6 @@ class MediaDetailSkeleton extends StatelessWidget {
 
           Row(
             children: [
-              Icon(
-                Icons.insights_rounded,
-                size: 16,
-                color: theme.colorScheme.primary,
-              ),
-              const SizedBox(width: 6),
               MediaSectionHeader(
                 theme: theme,
                 title: AppLocalizations.of(context).serviceScores,
