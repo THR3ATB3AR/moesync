@@ -32,6 +32,11 @@ class _SyncScreenState extends ConsumerState<SyncScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final serviceDisplayStyle = ref.watch(serviceDisplayStyleProvider);
+    final primaryServiceDisplayStyle =
+        serviceDisplayStyle == ServiceDisplayStyle.text
+        ? ServiceDisplayStyle.icon
+        : serviceDisplayStyle;
     final auth = ref.watch(authProvider);
     final sync = ref.watch(syncProvider);
     final notifier = ref.read(syncProvider.notifier);
@@ -167,7 +172,12 @@ class _SyncScreenState extends ConsumerState<SyncScreen> {
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      ServiceBadge(service: s, size: 18),
+                                      ServiceBadge(
+                                        service: s,
+                                        size: 18,
+                                        styleOverride:
+                                            primaryServiceDisplayStyle,
+                                      ),
                                       const SizedBox(width: 8),
                                       Text(s.displayName),
                                     ],
