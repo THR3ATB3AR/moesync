@@ -10,6 +10,34 @@ val signingPropertiesFile = rootProject.file("key.properties")
 val signingProperties = Properties()
 if (signingPropertiesFile.exists()) {
     signingPropertiesFile.inputStream().use(signingProperties::load)
+
+    val requiredSigningProperties = listOf(
+        "storePassword",
+        "keyPassword",
+        "keyAlias",
+        "storeFile",
+    )
+    val missingSigningProperties = requiredSigningProperties.filter {
+        signingProperties.getProperty(it).isNullOrBlank()
+    }
+    require(missingSigningProperties.isEmpty()) {
+        "Missing ${missingSigningProperties.joinToString()} in android/key.properties."
+    }
+
+    val keystoreFile = rootProject.file(signingProperties.getProperty("storeFile"))
+    require(keystoreFile.isFile) {
+        "Android signing keystore not found: ${keystoreFile.path}"
+    }
+}
+
+val releaseBuildRequested = gradle.startParameter.taskNames.any {
+    it.contains("release", ignoreCase = true)
+}
+if (releaseBuildRequested && !signingPropertiesFile.isFile) {
+    error(
+        "Release builds require android/key.properties and the GitHub Actions " +
+            "upload keystore. See docs/WYDANIA.md.",
+    )
 }
 
 android {
@@ -36,20 +64,18 @@ android {
     if (signingPropertiesFile.exists()) {
         signingConfigs {
             create("release") {
-                keyAlias = signingProperties["keyAlias"] as String
-                keyPassword = signingProperties["keyPassword"] as String
-                storeFile = rootProject.file(signingProperties["storeFile"] as String)
-                storePassword = signingProperties["storePassword"] as String
+                keyAlias = signingProperties.getProperty("keyAlias")
+                keyPassword = signingProperties.getProperty("keyPassword")
+                storeFile = rootProject.file(signingProperties.getProperty("storeFile"))
+                storePassword = signingProperties.getProperty("storePassword")
             }
         }
     }
 
     buildTypes {
         release {
-            signingConfig = if (signingPropertiesFile.exists()) {
-                signingConfigs.getByName("release")
-            } else {
-                signingConfigs.getByName("debug")
+            if (signingPropertiesFile.exists()) {
+                signingConfig = signingConfigs.getByName("release")
             }
         }
     }
