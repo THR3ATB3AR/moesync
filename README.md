@@ -54,7 +54,8 @@ git clone https://github.com/THR3ATB3AR/moesync.git
 cd moesync
 flutter pub get
 python3 scripts/prepare_dart_defines.py
-flutter run --release --dart-define-from-file=.dart-defines.json
+flutter run --release --build-name 1.2.3 --build-number <build-number> \
+  --dart-define-from-file=.dart-defines.json
 ```
 
 Create `.env` from `.env.example` and configure it before running the commands.
