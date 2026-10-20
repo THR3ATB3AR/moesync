@@ -55,3 +55,4 @@ app.*.map.json
 /test/
 docs/WYDANIA.md
 docs/RELEASING.md
+run-android.fish
