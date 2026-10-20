@@ -70,10 +70,24 @@ class _MediaDetailScreenState extends ConsumerState<MediaDetailScreen> {
     final library = ref.watch(mediaLibraryProvider);
     final match = library.unifiedItems.firstWhere(
       (u) =>
-          u.malId == widget.item.malId && u.mediaType == widget.item.mediaType,
+          u.mediaType == widget.item.mediaType &&
+          ((widget.item.malId > 0 && u.malId == widget.item.malId) ||
+              u.title.toLowerCase() == widget.item.title.toLowerCase()),
       orElse: () => widget.item,
     );
     return match;
+  }
+
+  UnifiedMediaItem? _getLibraryItem() {
+    final library = ref.watch(mediaLibraryProvider);
+    for (final item in library.unifiedItems) {
+      if (item.mediaType == widget.item.mediaType &&
+          ((widget.item.malId > 0 && item.malId == widget.item.malId) ||
+              item.title.toLowerCase() == widget.item.title.toLowerCase())) {
+        return item;
+      }
+    }
+    return null;
   }
 
   List<ServiceType> _getSupportedServices() {
@@ -231,6 +245,9 @@ class _MediaDetailScreenState extends ConsumerState<MediaDetailScreen> {
   }
 
   String _getUserStatusLabel(UnifiedMediaItem liveItem) {
+    if (_getLibraryItem() == null) {
+      return AppLocalizations.of(context).notOnList;
+    }
     final firstItem = liveItem.services.values.firstOrNull;
     if (firstItem == null) return AppLocalizations.of(context).addToList;
 
@@ -408,7 +425,8 @@ class _MediaDetailScreenState extends ConsumerState<MediaDetailScreen> {
                   }
                 },
                 items: supportedServices.map((s) {
-                  final isTracked = liveItem.services.containsKey(s);
+                  final isTracked =
+                      _getLibraryItem()?.services.containsKey(s) ?? false;
                   return DropdownMenuItem<ServiceType>(
                     value: s,
                     child: Row(

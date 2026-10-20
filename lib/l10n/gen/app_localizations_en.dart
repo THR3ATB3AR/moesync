@@ -313,6 +313,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addToList => 'Add to list';
 
   @override
+  String get notOnList => 'Not on list';
+
+  @override
   String watchingProgressTotal(Object progress, Object total) {
     return 'Watching ($progress/$total)';
   }

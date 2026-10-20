@@ -521,6 +521,39 @@ class SimklService {
     }
   }
 
+  Future<void> removeItem({
+    required int id,
+    int? malId,
+    required String title,
+  }) async {
+    if (!isAuthenticated) throw Exception('Simkl is not authenticated');
+    if (id <= 0 && (malId == null || malId <= 0) && title.trim().isEmpty) {
+      throw ArgumentError('A Simkl ID, MAL ID, or title is required.');
+    }
+
+    final ids = <String, dynamic>{
+      if (id > 0) 'simkl': id,
+      if (malId != null && malId > 0) 'mal': malId.toString(),
+    };
+    final show = <String, dynamic>{
+      if (title.trim().isNotEmpty) 'title': title,
+      if (ids.isNotEmpty) 'ids': ids,
+    };
+    final resp = await _rateLimitedPost(
+      Uri.parse('$_baseUrl/sync/remove-from-list'),
+      body: jsonEncode({'shows': [show]}),
+      action: 'Simkl remove from list',
+    );
+    _checkResponse(resp, 'Simkl remove from list');
+
+    _lastActivitiesAnimeAll = null;
+    _cachedAnimeList?.removeWhere(
+      (item) =>
+          (id > 0 && item.id == id) ||
+          (malId != null && malId > 0 && item.malId == malId),
+    );
+  }
+
   void _checkResponse(http.Response resp, String action) {
     if (resp.statusCode == 200 || resp.statusCode == 201) return;
 

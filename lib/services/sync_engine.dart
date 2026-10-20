@@ -653,6 +653,56 @@ class SyncEngine {
     return actions;
   }
 
+  Future<void> removeItem({
+    required ServiceType service,
+    required MediaItem item,
+    required int malId,
+    required String title,
+  }) async {
+    if (!service.supportsMediaType(item.mediaType)) {
+      throw ArgumentError(
+        '${service.displayName} does not support this media type.',
+      );
+    }
+
+    switch (service) {
+      case ServiceType.mal:
+        await mal.removeItem(id: item.id, type: item.mediaType);
+        break;
+      case ServiceType.anilist:
+        final listEntryId = item.listEntryId;
+        if (listEntryId == null || listEntryId <= 0) {
+          throw Exception('AniList list entry ID is unavailable.');
+        }
+        await anilist.removeItem(
+          listEntryId: listEntryId,
+          type: item.mediaType,
+        );
+        break;
+      case ServiceType.kitsu:
+        await kitsu.removeItem(id: item.id, type: item.mediaType);
+        break;
+      case ServiceType.shikimori:
+        await shikimori.removeItem(id: item.id, type: item.mediaType);
+        break;
+      case ServiceType.simkl:
+        await simkl.removeItem(id: item.id, malId: malId, title: title);
+        break;
+      case ServiceType.mangabaka:
+        if (mangabaka == null) {
+          throw Exception('MangaBaka service is unavailable.');
+        }
+        await mangabaka!.removeItem(id: item.id);
+        break;
+      case ServiceType.mangaupdates:
+        if (mangaupdates == null) {
+          throw Exception('MangaUpdates service is unavailable.');
+        }
+        await mangaupdates!.removeItem(id: item.id);
+        break;
+    }
+  }
+
   Future<bool> executeAction(SyncAction action) async {
     try {
       switch (action.targetService) {

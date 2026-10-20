@@ -141,13 +141,15 @@ class _SearchMediaDialogState extends ConsumerState<SearchMediaDialog> {
                       return ListTile(
                         onTap: () {
                           final unified = UnifiedMediaItem(
-                            malId: item.malId ?? item.id,
+                            malId: item.malId ?? 0,
                             title: item.title,
                             posterImage: item.posterImage,
                             mediaType: widget.mediaType,
                             services: {item.service: item},
                           );
-                          context.push('/mediaDetails', extra: unified);
+                          final router = GoRouter.of(context);
+                          Navigator.of(context).pop();
+                          router.push('/mediaDetails', extra: unified);
                         },
                         leading: ClipRRect(
                           borderRadius: BorderRadius.circular(8),
@@ -191,32 +193,45 @@ class _SearchMediaDialogState extends ConsumerState<SearchMediaDialog> {
                           style: theme.textTheme.bodySmall,
                         ),
                         trailing: FilledButton.tonal(
-                          onPressed: () {
+                          onPressed: () async {
                             final unified = UnifiedMediaItem(
-                              malId: item.id,
+                              malId: item.malId ?? 0,
                               title: item.title,
                               posterImage: item.posterImage,
                               mediaType: widget.mediaType,
                               services: {item.service: item},
                             );
-
-                            ref
-                                .read(mediaLibraryProvider.notifier)
-                                .updateItemDetails(
+                            final messenger = ScaffoldMessenger.of(context);
+                            try {
+                              await ref
+                                  .read(mediaLibraryProvider.notifier)
+                                  .addItemToAllServices(
                                   item: unified,
-                                  status: 'watching',
+                                  status: isAnime ? 'watching' : 'reading',
                                   score: 8,
                                   progress: 1,
                                 );
-                            Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Added "${item.title}" to library!',
+                              if (!mounted) return;
+                              Navigator.pop(context);
+                              messenger.showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Added "${item.title}" to connected services!',
+                                  ),
+                                  behavior: SnackBarBehavior.floating,
                                 ),
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
+                              );
+                            } catch (error) {
+                              if (!mounted) return;
+                              messenger.showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Could not add to connected services: $error',
+                                  ),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            }
                           },
                           child: const Text('Add'),
                         ),

@@ -661,6 +661,12 @@ abstract class AppLocalizations {
   /// **'Add to list'**
   String get addToList;
 
+  /// No description provided for @notOnList.
+  ///
+  /// In en, this message translates to:
+  /// **'Not on list'**
+  String get notOnList;
+
   /// No description provided for @watchingProgressTotal.
   ///
   /// In en, this message translates to:

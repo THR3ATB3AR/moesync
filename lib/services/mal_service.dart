@@ -315,6 +315,22 @@ class MalService {
     }
   }
 
+  Future<void> removeItem({
+    required int id,
+    required MediaType type,
+  }) async {
+    if (!isAuthenticated) throw Exception('MAL is not authenticated');
+
+    final endpoint = type == MediaType.anime ? 'anime' : 'manga';
+    final url = Uri.parse(
+      'https://api.myanimelist.net/v2/$endpoint/$id/my_list_status',
+    );
+    final resp = await _sendRequest((headers) => http.delete(url, headers: headers));
+    if (resp.statusCode != 200 && resp.statusCode != 204) {
+      throw Exception('Failed to remove MAL entry: ${resp.body}');
+    }
+  }
+
   Future<List<MediaItem>> search(String query, MediaType type) async {
     final clientId = credentials.clientId ?? StorageService.defaultMalClientId;
     final endpoint = type == MediaType.anime ? 'anime' : 'manga';

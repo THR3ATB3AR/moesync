@@ -315,6 +315,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get addToList => 'Añadir a la lista';
 
   @override
+  String get notOnList => 'No está en la lista';
+
+  @override
   String watchingProgressTotal(Object progress, Object total) {
     return 'Viendo ($progress/$total)';
   }

@@ -306,6 +306,45 @@ class ShikimoriService {
     }
   }
 
+  Future<void> removeItem({
+    required int id,
+    required MediaType type,
+  }) async {
+    if (!isAuthenticated) throw Exception('Shikimori is not authenticated');
+
+    final userId = await fetchUserId();
+    if (userId == null) throw Exception('Could not fetch Shikimori user id');
+    final targetType = type == MediaType.anime ? 'Anime' : 'Manga';
+    final checkUrl = Uri.parse(
+      '$_baseUrl/v2/user_rates?user_id=$userId&target_id=$id&target_type=$targetType',
+    );
+    final checkResp = await _sendRequest(
+      (headers) => http.get(checkUrl, headers: headers),
+    );
+    if (checkResp.statusCode != 200) {
+      throw Exception(
+        'Failed to find Shikimori entry (${checkResp.statusCode}): ${checkResp.body}',
+      );
+    }
+
+    final entries = jsonDecode(checkResp.body) as List<dynamic>;
+    for (final entry in entries) {
+      final rateId = (entry['id'] as num?)?.toInt();
+      if (rateId == null || rateId <= 0) continue;
+      final resp = await _sendRequest(
+        (headers) => http.delete(
+          Uri.parse('$_baseUrl/v2/user_rates/$rateId'),
+          headers: headers,
+        ),
+      );
+      if (resp.statusCode != 200 && resp.statusCode != 204) {
+        throw Exception(
+          'Failed to remove Shikimori entry (${resp.statusCode}): ${resp.body}',
+        );
+      }
+    }
+  }
+
   Future<List<MediaItem>> search(String query, MediaType type) async {
     final endpoint = type == MediaType.anime ? 'animes' : 'mangas';
     final url = Uri.parse(

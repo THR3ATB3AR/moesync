@@ -363,6 +363,36 @@ class KitsuService {
     }
   }
 
+  Future<void> removeItem({required int id, required MediaType type}) async {
+    if (!isAuthenticated) throw Exception('Kitsu is not authenticated');
+
+    final userId = await fetchUserId();
+    if (userId == null) throw Exception('Could not fetch Kitsu user id');
+
+    final idParam = type == MediaType.anime ? 'animeId' : 'mangaId';
+    final checkUrl = Uri.parse(
+      '$_baseUrl/library-entries?filter[userId]=$userId&filter[$idParam]=$id',
+    );
+    final checkResp = await http.get(checkUrl, headers: _headers());
+    if (checkResp.statusCode != 200) {
+      throw Exception('Failed to find Kitsu library entry: ${checkResp.body}');
+    }
+
+    final data = jsonDecode(checkResp.body) as Map<String, dynamic>;
+    final entries = (data['data'] as List<dynamic>?) ?? [];
+    for (final entry in entries) {
+      final entryId = entry['id'] as String?;
+      if (entryId == null || entryId.isEmpty) continue;
+      final resp = await http.delete(
+        Uri.parse('$_baseUrl/library-entries/$entryId'),
+        headers: _headers(),
+      );
+      if (resp.statusCode != 200 && resp.statusCode != 204) {
+        throw Exception('Failed to remove Kitsu entry: ${resp.body}');
+      }
+    }
+  }
+
   Future<List<MediaItem>> search(String query, MediaType type) async {
     final kind = type == MediaType.anime ? 'anime' : 'manga';
     final url = Uri.parse(

@@ -11,7 +11,7 @@ class MangaUpdatesService {
   static const String baseUrl = 'https://api.mangaupdates.com/v1';
 
   MangaUpdatesService(this._storage, {http.Client? client})
-      : _client = client ?? http.Client();
+    : _client = client ?? http.Client();
 
   bool get isAuthenticated {
     final creds = _storage.getCredentials(ServiceType.mangaupdates);
@@ -38,7 +38,8 @@ class MangaUpdatesService {
       trimmed = 'https:$trimmed';
     } else if (trimmed.startsWith('http://')) {
       trimmed = 'https://${trimmed.substring(7)}';
-    } else if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+    } else if (!trimmed.startsWith('http://') &&
+        !trimmed.startsWith('https://')) {
       trimmed = 'https://$trimmed';
     }
     return trimmed;
@@ -75,13 +76,15 @@ class MangaUpdatesService {
       if (cached != null && cached.isNotEmpty) {
         return cached;
       }
-      final resp = await _client.get(
-        Uri.parse('$baseUrl/series/$seriesId'),
-        headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'AniSync/1.0.0',
-        },
-      ).timeout(const Duration(seconds: 5));
+      final resp = await _client
+          .get(
+            Uri.parse('$baseUrl/series/$seriesId'),
+            headers: {
+              'Accept': 'application/json',
+              'User-Agent': 'AniSync/1.0.0',
+            },
+          )
+          .timeout(const Duration(seconds: 5));
 
       if (resp.statusCode == 200) {
         final data = jsonDecode(resp.body) as Map<String, dynamic>;
@@ -180,10 +183,7 @@ class MangaUpdatesService {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
-      body: jsonEncode({
-        'username': username,
-        'password': password,
-      }),
+      body: jsonEncode({'username': username, 'password': password}),
     );
 
     if (resp.statusCode != 200) {
@@ -250,10 +250,7 @@ class MangaUpdatesService {
         final resp = await _client.post(
           Uri.parse('$baseUrl/lists/$listId/search'),
           headers: _buildHeaders(),
-          body: jsonEncode({
-            'page': page,
-            'perpage': 100,
-          }),
+          body: jsonEncode({'page': page, 'perpage': 100}),
         );
 
         if (resp.statusCode != 200) {
@@ -271,35 +268,43 @@ class MangaUpdatesService {
           if (res is! Map) continue;
           final record = res['record'] is Map ? res['record'] as Map : {};
           final metadata = res['metadata'] is Map ? res['metadata'] as Map : {};
-          final seriesRecord =
-              record['series'] is Map ? record['series'] as Map : {};
-          final seriesMeta =
-              metadata['series'] is Map ? metadata['series'] as Map : {};
+          final seriesRecord = record['series'] is Map
+              ? record['series'] as Map
+              : {};
+          final seriesMeta = metadata['series'] is Map
+              ? metadata['series'] as Map
+              : {};
 
-          final seriesId = (seriesRecord['id'] as num?)?.toInt() ??
+          final seriesId =
+              (seriesRecord['id'] as num?)?.toInt() ??
               int.tryParse(seriesRecord['id']?.toString() ?? '') ??
               (seriesMeta['series_id'] as num?)?.toInt() ??
               int.tryParse(seriesMeta['series_id']?.toString() ?? '') ??
               0;
           if (seriesId <= 0) continue;
 
-          final title = seriesRecord['title']?.toString() ??
+          final title =
+              seriesRecord['title']?.toString() ??
               seriesMeta['title']?.toString() ??
               'Manga #$seriesId';
 
-          final statusObj =
-              record['status'] is Map ? record['status'] as Map : null;
-          final rawChapter = (statusObj?['chapter'] as num?)?.toInt() ??
+          final statusObj = record['status'] is Map
+              ? record['status'] as Map
+              : null;
+          final rawChapter =
+              (statusObj?['chapter'] as num?)?.toInt() ??
               int.tryParse(statusObj?['chapter']?.toString() ?? '') ??
               0;
 
           final isComplete = normalizedStatus == 'completed';
           final progress = (!isComplete && rawChapter <= 1) ? 0 : rawChapter;
-          final effectiveStatus = (!isComplete && rawChapter <= 1 && normalizedStatus == 'watching')
+          final effectiveStatus =
+              (!isComplete && rawChapter <= 1 && normalizedStatus == 'watching')
               ? 'plan_to_watch'
               : normalizedStatus;
 
-          final userRating = (metadata['user_rating'] as num?)?.round() ??
+          final userRating =
+              (metadata['user_rating'] as num?)?.round() ??
               int.tryParse(metadata['user_rating']?.toString() ?? '') ??
               0;
 
@@ -369,19 +374,23 @@ class MangaUpdatesService {
       const batchSize = 6;
       for (var i = 0; i < missingPosters.length; i += batchSize) {
         final batch = missingPosters.skip(i).take(batchSize);
-        await Future.wait(batch.map((it) async {
-          final p = await fetchSeriesPoster(it.id);
-          if (p.isNotEmpty) {
-            final idx = items.indexWhere((x) => x.id == it.id);
-            if (idx != -1) {
-              items[idx] = items[idx].copyWith(posterImage: p);
+        await Future.wait(
+          batch.map((it) async {
+            final p = await fetchSeriesPoster(it.id);
+            if (p.isNotEmpty) {
+              final idx = items.indexWhere((x) => x.id == it.id);
+              if (idx != -1) {
+                items[idx] = items[idx].copyWith(posterImage: p);
+              }
             }
-          }
-        }));
+          }),
+        );
       }
     }
 
-    return limit != null && items.length > limit ? items.sublist(0, limit) : items;
+    return limit != null && items.length > limit
+        ? items.sublist(0, limit)
+        : items;
   }
 
   Future<void> updateItem({
@@ -406,10 +415,8 @@ class MangaUpdatesService {
       {
         'series': {'id': id},
         'list_id': targetListId,
-        'status': {
-          'chapter': effectiveChapter,
-        },
-      }
+        'status': {'chapter': effectiveChapter},
+      },
     ];
 
     final headers = _buildHeaders();
@@ -438,13 +445,29 @@ class MangaUpdatesService {
         await _client.put(
           Uri.parse('$baseUrl/series/$id/rating'),
           headers: headers,
-          body: jsonEncode({
-            'rating': score,
-          }),
+          body: jsonEncode({'rating': score}),
         );
       } catch (e) {
         debugPrint('Failed to update MangaUpdates rating for $id: $e');
       }
     }
+  }
+
+  Future<void> removeItem({required int id}) async {
+    if (!isAuthenticated) {
+      throw Exception('MangaUpdates is not authenticated');
+    }
+
+    final resp = await _client.post(
+      Uri.parse('$baseUrl/lists/series/delete'),
+      headers: _buildHeaders(),
+      body: jsonEncode([id]),
+    );
+    if (resp.statusCode != 200) {
+      throw Exception(
+        'Failed to remove MangaUpdates entry (${resp.statusCode}): ${resp.body}',
+      );
+    }
+    clearCache();
   }
 }

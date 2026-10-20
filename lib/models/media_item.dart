@@ -168,6 +168,7 @@ enum SortDirection { ascending, descending }
 
 class MediaItem {
   final int id;
+  final int? listEntryId;
   final int? malId;
   final String title;
   final String? englishTitle;
@@ -191,6 +192,7 @@ class MediaItem {
 
   const MediaItem({
     required this.id,
+    this.listEntryId,
     this.malId,
     required this.title,
     this.englishTitle,
@@ -215,6 +217,7 @@ class MediaItem {
 
   MediaItem copyWith({
     int? id,
+    int? listEntryId,
     int? malId,
     String? title,
     String? englishTitle,
@@ -238,6 +241,7 @@ class MediaItem {
   }) {
     return MediaItem(
       id: id ?? this.id,
+      listEntryId: listEntryId ?? this.listEntryId,
       malId: malId ?? this.malId,
       title: title ?? this.title,
       englishTitle: englishTitle ?? this.englishTitle,
@@ -263,6 +267,7 @@ class MediaItem {
 
   Map<String, dynamic> toJson() => {
     'id': id,
+    'listEntryId': listEntryId,
     'malId': malId,
     'title': title,
     'englishTitle': englishTitle,
@@ -287,6 +292,7 @@ class MediaItem {
 
   factory MediaItem.fromJson(Map<String, dynamic> json) => MediaItem(
     id: json['id'] as int,
+    listEntryId: (json['listEntryId'] as num?)?.toInt(),
     malId: (json['malId'] as num?)?.toInt(),
     title: json['title'] as String? ?? 'Unknown',
     englishTitle: json['englishTitle'] as String?,

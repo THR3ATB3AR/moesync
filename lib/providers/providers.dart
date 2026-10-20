@@ -445,26 +445,35 @@ class MediaLibraryNotifier extends Notifier<MediaLibraryState> {
     required int progress,
     Map<ServiceType, String> serviceStatuses = const {},
     Map<ServiceType, int> serviceProgresses = const {},
+    Set<ServiceType>? servicesToUpdate,
   }) async {
     final engine = ref.read(syncEngineProvider);
     final pendingFutures = <Future<bool>>[];
+    Map<ServiceType, MediaItem> servicesToCommit = {};
 
     final existingIndex = state.unifiedItems.indexWhere(
       (u) =>
-          (item.malId > 0 && u.malId == item.malId) ||
-          (u.title.toLowerCase() == item.title.toLowerCase()),
+          u.mediaType == item.mediaType &&
+          ((item.malId > 0 && u.malId == item.malId) ||
+              u.title.toLowerCase() == item.title.toLowerCase()),
     );
 
     if (existingIndex >= 0) {
       final u = state.unifiedItems[existingIndex];
       final updatedServices = Map<ServiceType, MediaItem>.from(u.services);
-      for (final entry in updatedServices.entries) {
-        final oldProg = entry.value.progress;
-        final oldStat = entry.value.status;
-        final oldSc = entry.value.score;
-        final serviceStatus = serviceStatuses[entry.key] ?? status;
-        final serviceProgress = serviceProgresses[entry.key] ?? progress;
-        updatedServices[entry.key] = entry.value.copyWith(
+      final targetServices = servicesToUpdate ?? u.services.keys.toSet();
+      for (final service in targetServices) {
+        final existingServiceItem = updatedServices[service];
+        final sourceServiceItem = item.services[service];
+        final serviceItem = existingServiceItem ?? sourceServiceItem;
+        if (serviceItem == null) continue;
+
+        final oldProg = serviceItem.progress;
+        final oldStat = serviceItem.status;
+        final oldSc = serviceItem.score;
+        final serviceStatus = serviceStatuses[service] ?? status;
+        final serviceProgress = serviceProgresses[service] ?? progress;
+        updatedServices[service] = serviceItem.copyWith(
           status: serviceStatus,
           score: score,
           progress: serviceProgress,
@@ -472,9 +481,9 @@ class MediaLibraryNotifier extends Notifier<MediaLibraryState> {
         pendingFutures.add(
           engine.executeAction(
             SyncAction(
-              targetService: entry.key,
-              targetId: entry.value.id,
-              targetMalId: entry.value.malId ?? (u.malId != 0 ? u.malId : null),
+              targetService: service,
+              targetId: serviceItem.id,
+              targetMalId: serviceItem.malId ?? (u.malId != 0 ? u.malId : null),
               title: u.title,
               posterImage: u.posterImage,
               mediaType: u.mediaType,
@@ -484,23 +493,24 @@ class MediaLibraryNotifier extends Notifier<MediaLibraryState> {
               oldProgress: oldProg,
               oldStatus: oldStat,
               oldScore: oldSc,
-              isAdd: false,
+              isAdd: existingServiceItem == null,
             ),
           ),
         );
       }
-      final updatedList = List<UnifiedMediaItem>.from(state.unifiedItems);
-      updatedList[existingIndex] = u.copyWith(services: updatedServices);
-      state = state.copyWith(unifiedItems: updatedList);
+      servicesToCommit = updatedServices;
     } else {
       final updatedServices = Map<ServiceType, MediaItem>.from(item.services);
-      for (final entry in updatedServices.entries) {
-        final oldProg = entry.value.progress;
-        final oldStat = entry.value.status;
-        final oldSc = entry.value.score;
-        final serviceStatus = serviceStatuses[entry.key] ?? status;
-        final serviceProgress = serviceProgresses[entry.key] ?? progress;
-        updatedServices[entry.key] = entry.value.copyWith(
+      final targetServices = servicesToUpdate ?? item.services.keys.toSet();
+      for (final service in targetServices) {
+        final serviceItem = updatedServices[service];
+        if (serviceItem == null) continue;
+        final oldProg = serviceItem.progress;
+        final oldStat = serviceItem.status;
+        final oldSc = serviceItem.score;
+        final serviceStatus = serviceStatuses[service] ?? status;
+        final serviceProgress = serviceProgresses[service] ?? progress;
+        updatedServices[service] = serviceItem.copyWith(
           status: serviceStatus,
           score: score,
           progress: serviceProgress,
@@ -508,10 +518,10 @@ class MediaLibraryNotifier extends Notifier<MediaLibraryState> {
         pendingFutures.add(
           engine.executeAction(
             SyncAction(
-              targetService: entry.key,
-              targetId: entry.value.id,
+              targetService: service,
+              targetId: serviceItem.id,
               targetMalId:
-                  entry.value.malId ?? (item.malId != 0 ? item.malId : null),
+                  serviceItem.malId ?? (item.malId != 0 ? item.malId : null),
               title: item.title,
               posterImage: item.posterImage,
               mediaType: item.mediaType,
@@ -526,11 +536,208 @@ class MediaLibraryNotifier extends Notifier<MediaLibraryState> {
           ),
         );
       }
-      final newItem = item.copyWith(services: updatedServices);
-      state = state.copyWith(unifiedItems: [newItem, ...state.unifiedItems]);
+      servicesToCommit = updatedServices;
     }
 
-    await Future.wait(pendingFutures);
+    final results = await Future.wait(pendingFutures);
+    if (results.any((success) => !success)) {
+      throw Exception('Failed to update one or more connected services.');
+    }
+
+    final latestIndex = state.unifiedItems.indexWhere(
+      (u) =>
+          u.mediaType == item.mediaType &&
+          ((item.malId > 0 && u.malId == item.malId) ||
+              u.title.toLowerCase() == item.title.toLowerCase()),
+    );
+    final updatedItems = List<UnifiedMediaItem>.from(state.unifiedItems);
+    if (latestIndex >= 0) {
+      final latestItem = updatedItems[latestIndex];
+      updatedItems[latestIndex] = latestItem.copyWith(
+        services: {...latestItem.services, ...servicesToCommit},
+      );
+    } else {
+      updatedItems.insert(0, item.copyWith(services: servicesToCommit));
+    }
+    state = state.copyWith(unifiedItems: updatedItems);
+  }
+
+  Future<void> addItemToAllServices({
+    required UnifiedMediaItem item,
+    required String status,
+    required int score,
+    required int progress,
+  }) async {
+    final engine = ref.read(syncEngineProvider);
+    var malId = item.malId > 0
+        ? item.malId
+        : (item.services[ServiceType.mal]?.id ??
+              item.services[ServiceType.shikimori]?.id ??
+              item.services.values
+                  .map((serviceItem) => serviceItem.malId ?? 0)
+                  .firstWhere((id) => id > 0, orElse: () => 0));
+
+    if (malId <= 0 && item.services.isNotEmpty) {
+      final mal = ref.read(malServiceProvider);
+      final source = item.services.values.first;
+      final normalizedTitle = _normalizeMediaTitle(item.title);
+      final malResults = await mal.search(item.title, item.mediaType);
+      for (final result in malResults) {
+        final titles = [
+          result.title,
+          result.englishTitle,
+          result.japaneseTitle,
+          result.romajiTitle,
+          ...result.alternativeTitles,
+        ].whereType<String>();
+        if (titles.any(
+          (title) =>
+              title.trim().toLowerCase() == item.title.trim().toLowerCase() ||
+              (normalizedTitle.isNotEmpty &&
+                  _normalizeMediaTitle(title) == normalizedTitle),
+        )) {
+          malId = result.id;
+          break;
+        }
+      }
+      if (malId <= 0 &&
+          (source.service == ServiceType.mal ||
+              source.service == ServiceType.shikimori)) {
+        malId = source.id;
+      }
+    }
+
+    final existingIndex = state.unifiedItems.indexWhere(
+      (candidate) =>
+          candidate.mediaType == item.mediaType &&
+          ((malId > 0 && candidate.malId == malId) ||
+              candidate.title.toLowerCase() == item.title.toLowerCase()),
+    );
+    final existingServices = existingIndex >= 0
+        ? state.unifiedItems[existingIndex].services
+        : const <ServiceType, MediaItem>{};
+    final targetServices = <ServiceType, MediaItem>{};
+    for (final service in ServiceType.forMediaType(item.mediaType)) {
+      if (!engine.isServiceConnected(service)) continue;
+
+      final existing = existingServices[service] ?? item.services[service];
+      final targetId =
+          existing?.id ??
+          (malId > 0
+              ? await engine.resolveTargetId(
+                  malId: malId,
+                  targetService: service,
+                  mediaType: item.mediaType,
+                )
+              : 0);
+      if (targetId <= 0) continue;
+
+      targetServices[service] =
+          (existing ??
+                  MediaItem(
+                    id: targetId,
+                    malId: malId > 0 ? malId : null,
+                    title: item.title,
+                    status: status,
+                    score: score,
+                    progress: progress,
+                    totalProgress: item.resolvedTotalProgress,
+                    posterImage: item.posterImage,
+                    service: service,
+                    mediaType: item.mediaType,
+                  ))
+              .copyWith(
+                id: targetId,
+                malId: malId > 0 ? malId : existing?.malId,
+                status: status,
+                score: score,
+                progress: progress,
+              );
+    }
+
+    if (targetServices.isEmpty) {
+      throw Exception(
+        malId > 0
+            ? 'No connected service could resolve this title.'
+            : 'This title could not be matched to a MyAnimeList ID.',
+      );
+    }
+
+    final unifiedItem = UnifiedMediaItem(
+      malId: malId,
+      title: item.title,
+      posterImage: item.posterImage,
+      mediaType: item.mediaType,
+      services: targetServices,
+    );
+    await updateItemDetails(
+      item: unifiedItem,
+      status: status,
+      score: score,
+      progress: progress,
+      servicesToUpdate: targetServices.keys.toSet(),
+    );
+  }
+
+  String _normalizeMediaTitle(String title) =>
+      title.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+
+  Future<void> removeItemFromAllServices(UnifiedMediaItem item) async {
+    final libraryIndex = state.unifiedItems.indexWhere(
+      (candidate) =>
+          candidate.mediaType == item.mediaType &&
+          ((item.malId > 0 && candidate.malId == item.malId) ||
+              candidate.title.toLowerCase() == item.title.toLowerCase()),
+    );
+    if (libraryIndex < 0) return;
+
+    final libraryItem = state.unifiedItems[libraryIndex];
+    if (libraryItem.services.isEmpty) return;
+
+    final engine = ref.read(syncEngineProvider);
+    final results = await Future.wait(
+      libraryItem.services.entries.map((entry) async {
+        try {
+          await engine.removeItem(
+            service: entry.key,
+            item: entry.value,
+            malId: libraryItem.malId,
+            title: libraryItem.title,
+          );
+          return (service: entry.key, error: null as Object?);
+        } catch (error) {
+          return (service: entry.key, error: error);
+        }
+      }),
+    );
+
+    final removedServices = results
+        .where((result) => result.error == null)
+        .map((result) => result.service)
+        .toSet();
+    final errors = results
+        .where((result) => result.error != null)
+        .map(
+          (result) =>
+              '${result.service.displayName}: ${result.error}',
+        )
+        .toList();
+    final updatedServices = Map<ServiceType, MediaItem>.from(
+      libraryItem.services,
+    )..removeWhere((service, _) => removedServices.contains(service));
+    final updatedItems = List<UnifiedMediaItem>.from(state.unifiedItems);
+    if (updatedServices.isEmpty) {
+      updatedItems.removeAt(libraryIndex);
+    } else {
+      updatedItems[libraryIndex] = libraryItem.copyWith(
+        services: updatedServices,
+      );
+    }
+    state = state.copyWith(unifiedItems: updatedItems);
+
+    if (errors.isNotEmpty) {
+      throw Exception('Some services could not remove the item: ${errors.join('; ')}');
+    }
   }
 
   void clearServiceError(ServiceType service) {

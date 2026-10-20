@@ -93,6 +93,7 @@
   "serviceNotConnected": "${serviceName} (no conectado)",
   "viewAll": "Ver todo",
   "addToList": "Añadir a la lista",
+  "notOnList": "No está en la lista",
   "watchingProgressTotal": "Viendo ({progress}/{total})",
   "watchingProgress": "Viendo ({progress})",
   "readingProgressTotal": "Leyendo ({progress}/{total})",

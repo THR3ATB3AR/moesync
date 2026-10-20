@@ -79,6 +79,17 @@ class _EditMediaDialogState extends ConsumerState<EditMediaDialog> {
               child: Text('Plan to Read'),
             ),
           ];
+    final localizations = Localizations.of<AppLocalizations>(
+      context,
+      AppLocalizations,
+    );
+    final editableStatusItems = [
+      ...statusItems,
+      DropdownMenuItem(
+        value: 'not_on_list',
+        child: Text(localizations?.notOnList ?? 'Not on list'),
+      ),
+    ];
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
@@ -355,7 +366,7 @@ class _EditMediaDialogState extends ConsumerState<EditMediaDialog> {
                     vertical: 8,
                   ),
                 ),
-                items: statusItems,
+                items: editableStatusItems,
                 onChanged: (val) {
                   if (val != null) {
                     setState(() {
@@ -460,25 +471,7 @@ class _EditMediaDialogState extends ConsumerState<EditMediaDialog> {
                   ),
                   const SizedBox(width: 8),
                   FilledButton.icon(
-                    onPressed: () {
-                      ref
-                          .read(mediaLibraryProvider.notifier)
-                          .updateItemDetails(
-                            item: widget.item,
-                            status: _status,
-                            score: _score,
-                            progress: _progress,
-                            serviceStatuses: _serviceStatusOverrides,
-                            serviceProgresses: _serviceProgressOverrides,
-                          );
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Updated "${widget.item.title}"'),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    },
+                    onPressed: _save,
                     icon: const Icon(Icons.check),
                     label: const Text('Save & Sync'),
                   ),
@@ -489,5 +482,61 @@ class _EditMediaDialogState extends ConsumerState<EditMediaDialog> {
         ),
       ),
     );
+  }
+
+  Future<void> _save() async {
+    final notifier = ref.read(mediaLibraryProvider.notifier);
+    final messenger = ScaffoldMessenger.of(context);
+    final isTracked = ref
+        .read(mediaLibraryProvider)
+        .unifiedItems
+        .any(
+          (item) =>
+              item.mediaType == widget.item.mediaType &&
+              ((widget.item.malId > 0 && item.malId == widget.item.malId) ||
+                  item.title.toLowerCase() == widget.item.title.toLowerCase()),
+        );
+
+    try {
+      if (_status == 'not_on_list') {
+        await notifier.removeItemFromAllServices(widget.item);
+      } else if (isTracked) {
+        await notifier.updateItemDetails(
+          item: widget.item,
+          status: _status,
+          score: _score,
+          progress: _progress,
+          serviceStatuses: _serviceStatusOverrides,
+          serviceProgresses: _serviceProgressOverrides,
+        );
+      } else {
+        await notifier.addItemToAllServices(
+          item: widget.item,
+          status: _status,
+          score: _score,
+          progress: _progress,
+        );
+      }
+      if (!mounted) return;
+      Navigator.pop(context);
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            _status == 'not_on_list'
+                ? '"${widget.item.title}" removed from connected services'
+                : 'Updated "${widget.item.title}" on connected services',
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('Could not update connected services: $error'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 }

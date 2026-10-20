@@ -14,8 +14,8 @@ class MangaBakaService {
   void Function(Map<String, dynamic> series)? onSeriesFetched;
 
   MangaBakaService(this._storage, {OAuthService? oauth, http.Client? client})
-      : _oauth = oauth ?? OAuthService(_storage),
-        _client = client ?? http.Client();
+    : _oauth = oauth ?? OAuthService(_storage),
+      _client = client ?? http.Client();
 
   bool get isAuthenticated {
     final creds = _storage.getCredentials(ServiceType.mangabaka);
@@ -64,7 +64,11 @@ class MangaBakaService {
     var resp = await makeRequest(_buildHeaders());
 
     if (resp.statusCode == 401 &&
-        _storage.getCredentials(ServiceType.mangabaka).refreshToken?.isNotEmpty == true) {
+        _storage
+                .getCredentials(ServiceType.mangabaka)
+                .refreshToken
+                ?.isNotEmpty ==
+            true) {
       try {
         await _oauth.refreshMangaBakaToken();
         resp = await makeRequest(_buildHeaders());
@@ -131,18 +135,12 @@ class MangaBakaService {
     bool hasMore = true;
 
     while (hasMore) {
-      final uri = Uri.parse('$baseUrl/v2/my/library').replace(
-        queryParameters: {
-          'page': '$page',
-          'limit': '50',
-        },
-      );
+      final uri = Uri.parse(
+        '$baseUrl/v2/my/library',
+      ).replace(queryParameters: {'page': '$page', 'limit': '50'});
 
       final response = await _sendAuthedRequest(
-        (headers) => _client.get(
-          uri,
-          headers: headers,
-        ),
+        (headers) => _client.get(uri, headers: headers),
       );
 
       if (response.statusCode != 200) {
@@ -160,7 +158,8 @@ class MangaBakaService {
         final entry = raw['entry'] is Map ? raw['entry'] as Map : {};
         final series = raw['series'] is Map ? raw['series'] as Map : {};
 
-        final seriesId = _asInt(entry['series_id']) ??
+        final seriesId =
+            _asInt(entry['series_id']) ??
             _asInt(series['id']) ??
             _asInt(entry['id']) ??
             0;
@@ -174,7 +173,8 @@ class MangaBakaService {
           continue;
         }
 
-        final rawRating = (entry['rating'] as num?)?.toDouble() ??
+        final rawRating =
+            (entry['rating'] as num?)?.toDouble() ??
             double.tryParse(entry['rating']?.toString() ?? '');
         final score = rawRating != null && rawRating > 0
             ? (rawRating / 10).round()
@@ -185,7 +185,8 @@ class MangaBakaService {
         final poster = _extractPoster(series['cover']);
         final title = _extractTitle(series, seriesId);
         final malId = _extractMalId(series['source']);
-        final totalChapters = _asInt(series['total_chapters']) ??
+        final totalChapters =
+            _asInt(series['total_chapters']) ??
             _asInt(series['available_chapters']);
 
         if (series.isNotEmpty) {
@@ -338,11 +339,7 @@ class MangaBakaService {
 
     final putUri = Uri.parse('$baseUrl/v1/my/library/$id');
     final putResp = await _sendAuthedRequest(
-      (headers) => _client.put(
-        putUri,
-        headers: headers,
-        body: body,
-      ),
+      (headers) => _client.put(putUri, headers: headers, body: body),
     );
 
     if (putResp.statusCode == 200 ||
@@ -353,11 +350,7 @@ class MangaBakaService {
 
     if (putResp.statusCode == 404) {
       final postResp = await _sendAuthedRequest(
-        (headers) => _client.post(
-          putUri,
-          headers: headers,
-          body: body,
-        ),
+        (headers) => _client.post(putUri, headers: headers, body: body),
       );
       if (postResp.statusCode == 200 ||
           postResp.statusCode == 201 ||
@@ -374,6 +367,28 @@ class MangaBakaService {
     );
   }
 
+  Future<void> removeItem({required int id}) async {
+    if (!isAuthenticated) {
+      throw Exception('MangaBaka is not authenticated');
+    }
+
+    final uri = Uri.parse('$baseUrl/v1/my/library/$id');
+    final resp = await _sendAuthedRequest(
+      (headers) => _client.delete(uri, headers: headers),
+    );
+    if (resp.statusCode != 200 && resp.statusCode != 204) {
+      throw Exception(
+        'Failed to remove MangaBaka entry (${resp.statusCode}): ${resp.body}',
+      );
+    }
+    if (resp.statusCode == 200) {
+      final response = jsonDecode(resp.body) as Map<String, dynamic>;
+      if (response['data'] != true) {
+        throw Exception('MangaBaka did not remove the library entry.');
+      }
+    }
+  }
+
   Future<Map<String, dynamic>?> fetchSourceSeries(
     String sourceName,
     dynamic sourceId,
@@ -385,20 +400,18 @@ class MangaBakaService {
           idStr = sourceId.toRadixString(36);
         } else {
           final parsed = int.tryParse(sourceId.toString());
-          idStr =
-              parsed != null ? parsed.toRadixString(36) : sourceId.toString();
+          idStr = parsed != null
+              ? parsed.toRadixString(36)
+              : sourceId.toString();
         }
       } else {
         idStr = sourceId.toString();
       }
 
       final uri = Uri.parse('$baseUrl/v1/source/$sourceName/$idStr');
-      final resp = await _client.get(
-        uri,
-        headers: {
-          'Accept': 'application/json',
-        },
-      ).timeout(const Duration(seconds: 5));
+      final resp = await _client
+          .get(uri, headers: {'Accept': 'application/json'})
+          .timeout(const Duration(seconds: 5));
 
       if (resp.statusCode != 200) {
         return null;
@@ -419,8 +432,7 @@ class MangaBakaService {
           return mapped;
         }
       }
-    } catch (_) {
-    }
+    } catch (_) {}
     return null;
   }
 }

@@ -318,6 +318,7 @@ class AnilistService {
           results.add(
             MediaItem(
               id: mediaId,
+              listEntryId: (e['id'] as num?)?.toInt(),
               malId: idMal != null && idMal > 0 ? idMal : null,
               title: title,
               englishTitle: englishTitle,
@@ -394,6 +395,50 @@ class AnilistService {
 
     if (resp.statusCode != 200) {
       throw Exception('Failed to update AniList entry: ${resp.body}');
+    }
+
+    _listCache.remove(type);
+    _listCacheTime.remove(type);
+  }
+
+  Future<void> removeItem({
+    required int listEntryId,
+    required MediaType type,
+  }) async {
+    if (!isAuthenticated) throw Exception('AniList is not authenticated');
+
+    const mutation = r'''
+      mutation ($id: Int!) {
+        DeleteMediaListEntry(id: $id) {
+          deleted
+        }
+      }
+    ''';
+
+    final resp = await AnilistRateLimiter.post(
+      url: Uri.parse(_graphqlUrl),
+      headers: _headers(),
+      body: {
+        'query': mutation,
+        'variables': {'id': listEntryId},
+      },
+    );
+
+    if (resp.statusCode != 200) {
+      throw Exception('Failed to remove AniList entry: ${resp.body}');
+    }
+
+    final response = jsonDecode(resp.body) as Map<String, dynamic>;
+    final errors = response['errors'] as List<dynamic>?;
+    if (errors != null && errors.isNotEmpty) {
+      throw Exception('Failed to remove AniList entry: ${errors.first}');
+    }
+    final deleted =
+        (response['data']?['DeleteMediaListEntry']
+                as Map<String, dynamic>?)?['deleted']
+            as bool?;
+    if (deleted != true) {
+      throw Exception('AniList did not remove the list entry.');
     }
 
     _listCache.remove(type);
