@@ -51,8 +51,8 @@ class SimklService {
       'simkl-api-key': clientId,
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      'User-Agent': 'anisync-flutter/1.0',
-      'app-name': 'anisync-flutter',
+      'User-Agent': 'MoeSync/1.0',
+      'app-name': 'MoeSync',
       'app-version': '1.0',
     };
     if (isAuthenticated) {
@@ -541,7 +541,9 @@ class SimklService {
     };
     final resp = await _rateLimitedPost(
       Uri.parse('$_baseUrl/sync/remove-from-list'),
-      body: jsonEncode({'shows': [show]}),
+      body: jsonEncode({
+        'shows': [show],
+      }),
       action: 'Simkl remove from list',
     );
     _checkResponse(resp, 'Simkl remove from list');

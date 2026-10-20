@@ -81,7 +81,7 @@ class MangaUpdatesService {
             Uri.parse('$baseUrl/series/$seriesId'),
             headers: {
               'Accept': 'application/json',
-              'User-Agent': 'AniSync/1.0.0',
+              'User-Agent': 'MoeSync/1.0.0',
             },
           )
           .timeout(const Duration(seconds: 5));

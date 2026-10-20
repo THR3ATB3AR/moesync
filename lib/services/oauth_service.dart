@@ -278,7 +278,7 @@ class OAuthService {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'User-Agent': 'AniSync/1.0.0',
+          'User-Agent': 'MoeSync/1.0.0',
         },
         body: jsonEncode({
           'grant_type': 'authorization_code',
@@ -309,7 +309,7 @@ class OAuthService {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'User-Agent': 'AniSync/1.0.0',
+          'User-Agent': 'MoeSync/1.0.0',
         },
         body: jsonEncode({'query': 'query { Viewer { id name } }'}),
       );
@@ -370,7 +370,7 @@ class OAuthService {
     final resp = await http.post(
       Uri.parse('https://shikimori.io/oauth/token'),
       headers: {
-        'User-Agent': 'AniSync',
+        'User-Agent': 'MoeSync',
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: {
@@ -403,7 +403,7 @@ class OAuthService {
         Uri.parse('https://shikimori.io/api/users/whoami'),
         headers: {
           'Authorization': 'Bearer $accessToken',
-          'User-Agent': 'AniSync',
+          'User-Agent': 'MoeSync',
         },
       );
       if (userResp.statusCode == 200) {
@@ -457,7 +457,7 @@ class OAuthService {
     final resp = await http.post(
       Uri.parse('https://shikimori.io/oauth/token'),
       headers: {
-        'User-Agent': 'AniSync',
+        'User-Agent': 'MoeSync',
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: {
@@ -768,7 +768,7 @@ class OAuthService {
       Uri.parse('https://mangabaka.org/auth/oauth2/token'),
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'User-Agent': 'AniSync/1.0.0',
+        'User-Agent': 'MoeSync/1.0.0',
       },
       body: {
         'grant_type': 'authorization_code',
@@ -800,7 +800,7 @@ class OAuthService {
         Uri.parse('https://mangabaka.org/auth/oauth2/userinfo'),
         headers: {
           'Authorization': 'Bearer $accessToken',
-          'User-Agent': 'AniSync/1.0.0',
+          'User-Agent': 'MoeSync/1.0.0',
         },
       );
       if (userResp.statusCode == 200) {
@@ -857,7 +857,7 @@ class OAuthService {
       Uri.parse('https://mangabaka.org/auth/oauth2/token'),
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'User-Agent': 'AniSync/1.0.0',
+        'User-Agent': 'MoeSync/1.0.0',
       },
       body: {
         'grant_type': 'refresh_token',
@@ -902,10 +902,10 @@ class OAuthService {
         request.response.write('''
           <!DOCTYPE html>
           <html>
-            <head><meta charset="utf-8"><title>AniSync Authorized</title></head>
+            <head><meta charset="utf-8"><title>MoeSync Authorized</title></head>
             <body style="font-family:system-ui,sans-serif;text-align:center;padding:50px;background:#121212;color:#fff;">
               <h1 style="color:#4caf50;">Authorization Successful!</h1>
-              <p>You can close this window and return to the AniSync application.</p>
+              <p>You can close this window and return to the MoeSync application.</p>
             </body>
           </html>
         ''');

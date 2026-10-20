@@ -546,11 +546,11 @@ abstract class AppLocalizations {
   /// **'Settings & Accounts'**
   String get settingsAccounts;
 
-  /// No description provided for @welcomeToAnisync.
+  /// No description provided for @welcomeToMoeSync.
   ///
   /// In en, this message translates to:
-  /// **'Welcome to AniSync'**
-  String get welcomeToAnisync;
+  /// **'Welcome to MoeSync'**
+  String get welcomeToMoeSync;
 
   /// No description provided for @connectAtLeastOneServiceAccountMyanimelistAnilistKitsuShikimoriOrSimklToDisplayAndSynchronizeYourAnimeMangaLists.
   ///
@@ -1911,11 +1911,11 @@ abstract class AppLocalizations {
   /// **'About'**
   String get about;
 
-  /// No description provided for @aboutAnisync.
+  /// No description provided for @aboutMoeSync.
   ///
   /// In en, this message translates to:
-  /// **'About AniSync'**
-  String get aboutAnisync;
+  /// **'About MoeSync'**
+  String get aboutMoeSync;
 
   /// No description provided for @accounts.
   ///

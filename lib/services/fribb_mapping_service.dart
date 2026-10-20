@@ -66,11 +66,14 @@ class FribbMappingService {
 
   Future<bool> refreshMapping() async {
     try {
-      final resp = await http.get(
-        Uri.parse(
-            'https://raw.githubusercontent.com/Fribb/anime-lists/master/anime-list-full.json'),
-        headers: {'User-Agent': 'AniSync/1.0.0'},
-      ).timeout(const Duration(seconds: 15));
+      final resp = await http
+          .get(
+            Uri.parse(
+              'https://raw.githubusercontent.com/Fribb/anime-lists/master/anime-list-full.json',
+            ),
+            headers: {'User-Agent': 'MoeSync/1.0.0'},
+          )
+          .timeout(const Duration(seconds: 15));
 
       if (resp.statusCode == 200) {
         final list = jsonDecode(resp.body) as List<dynamic>;
@@ -124,7 +127,9 @@ class FribbMappingService {
   }
 
   Future<int> findTargetIdWithFallback(
-      int malId, ServiceType targetService) async {
+    int malId,
+    ServiceType targetService,
+  ) async {
     if (malId <= 0) return 0;
     if (targetService == ServiceType.mal ||
         targetService == ServiceType.shikimori) {

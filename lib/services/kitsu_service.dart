@@ -19,7 +19,7 @@ class KitsuService {
     final headers = <String, String>{
       'Accept': 'application/vnd.api+json',
       'Content-Type': 'application/vnd.api+json',
-      'User-Agent': 'AniSync/1.0.0',
+      'User-Agent': 'MoeSync/1.0.0',
     };
     if (isAuthenticated) {
       headers['Authorization'] = 'Bearer ${credentials.accessToken}';

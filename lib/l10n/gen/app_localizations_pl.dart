@@ -246,7 +246,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get settingsAccounts => 'Ustawienia i konta';
 
   @override
-  String get welcomeToAnisync => 'Witamy w AniSync';
+  String get welcomeToMoeSync => 'Witamy w MoeSync';
 
   @override
   String
@@ -1065,7 +1065,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get about => 'Informacje';
 
   @override
-  String get aboutAnisync => 'Informacje o AniSync';
+  String get aboutMoeSync => 'Informacje o MoeSync';
 
   @override
   String get accounts => 'Konta';

@@ -37,7 +37,7 @@ class AnilistService {
     final headers = <String, String>{
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      'User-Agent': 'AniSync/1.0.0',
+      'User-Agent': 'MoeSync/1.0.0',
     };
     if (isAuthenticated) {
       headers['Authorization'] = 'Bearer ${credentials.accessToken}';

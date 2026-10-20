@@ -28,7 +28,7 @@ class MangaBakaService {
     final headers = <String, String>{
       'Accept': 'application/json',
       'Content-Type': 'application/json',
-      'User-Agent': 'AniSync/1.0.0',
+      'User-Agent': 'MoeSync/1.0.0',
     };
 
     if (token.isNotEmpty) {

@@ -318,7 +318,7 @@ class MediaDetailService {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'User-Agent': 'AniSync/1.0.0',
+        'User-Agent': 'MoeSync/1.0.0',
       },
       body: {'query': query, 'variables': variables},
       timeout: const Duration(seconds: 10),
@@ -599,7 +599,7 @@ class MediaDetailService {
         ? malCreds.clientId!
         : StorageService.defaultMalClientId;
 
-    final officialHeaders = <String, String>{'User-Agent': 'AniSync/1.0.0'};
+    final officialHeaders = <String, String>{'User-Agent': 'MoeSync/1.0.0'};
     if (malCreds.accessToken != null && malCreds.accessToken!.isNotEmpty) {
       officialHeaders['Authorization'] = 'Bearer ${malCreds.accessToken}';
     } else {
@@ -907,7 +907,7 @@ class MediaDetailService {
           url,
           headers: {
             'Accept': 'application/vnd.api+json',
-            'User-Agent': 'AniSync/1.0.0',
+            'User-Agent': 'MoeSync/1.0.0',
           },
         )
         .timeout(const Duration(seconds: 8));
@@ -1029,7 +1029,7 @@ class MediaDetailService {
           'https://shikimori.io/api/$typePath?search=${Uri.encodeComponent(title)}&limit=1',
         );
         final searchResp = await http
-            .get(searchUrl, headers: {'User-Agent': 'AniSync/1.0.0'})
+            .get(searchUrl, headers: {'User-Agent': 'MoeSync/1.0.0'})
             .timeout(const Duration(seconds: 6));
         if (searchResp.statusCode == 200) {
           final list = jsonDecode(searchResp.body) as List<dynamic>;
@@ -1045,7 +1045,7 @@ class MediaDetailService {
     final url = Uri.parse('https://shikimori.io/api/$typePath/$shikimoriId');
 
     final resp = await http
-        .get(url, headers: {'User-Agent': 'AniSync/1.0.0'})
+        .get(url, headers: {'User-Agent': 'MoeSync/1.0.0'})
         .timeout(const Duration(seconds: 8));
 
     if (resp.statusCode != 200) return null;
@@ -1176,7 +1176,7 @@ class MediaDetailService {
                 ));
 
     final headers = <String, String>{
-      'User-Agent': 'AniSync/1.0.0',
+      'User-Agent': 'MoeSync/1.0.0',
       'simkl-api-key': clientId,
     };
     if (simklCreds.accessToken != null && simklCreds.accessToken!.isNotEmpty) {
@@ -1255,7 +1255,7 @@ class MediaDetailService {
               searchUrl,
               headers: {
                 'Accept': 'application/json',
-                'User-Agent': 'AniSync/1.0.0',
+                'User-Agent': 'MoeSync/1.0.0',
               },
             )
             .timeout(const Duration(seconds: 6));
@@ -1289,7 +1289,7 @@ class MediaDetailService {
           url,
           headers: {
             'Accept': 'application/json',
-            'User-Agent': 'AniSync/1.0.0',
+            'User-Agent': 'MoeSync/1.0.0',
           },
         )
         .timeout(const Duration(seconds: 8));
@@ -1303,7 +1303,7 @@ class MediaDetailService {
             v1Url,
             headers: {
               'Accept': 'application/json',
-              'User-Agent': 'AniSync/1.0.0',
+              'User-Agent': 'MoeSync/1.0.0',
             },
           )
           .timeout(const Duration(seconds: 6));
@@ -1454,7 +1454,7 @@ class MediaDetailService {
               headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                'User-Agent': 'AniSync/1.0.0',
+                'User-Agent': 'MoeSync/1.0.0',
               },
               body: jsonEncode({
                 'search': title,
@@ -1478,7 +1478,7 @@ class MediaDetailService {
                   headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'User-Agent': 'AniSync/1.0.0',
+                    'User-Agent': 'MoeSync/1.0.0',
                   },
                   body: jsonEncode({
                     'search': simplified,
@@ -1523,7 +1523,7 @@ class MediaDetailService {
               url,
               headers: {
                 'Accept': 'application/json',
-                'User-Agent': 'AniSync/1.0.0',
+                'User-Agent': 'MoeSync/1.0.0',
               },
             )
             .timeout(const Duration(seconds: 8));
@@ -1836,7 +1836,7 @@ class MediaDetailService {
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'User-Agent': 'AniSync/1.0.0',
+            'User-Agent': 'MoeSync/1.0.0',
           },
           body: {
             'query': query,
@@ -1936,7 +1936,7 @@ class MediaDetailService {
             headers: {
               'Content-Type': 'application/json',
               'Accept': 'application/json',
-              'User-Agent': 'AniSync/1.0.0',
+              'User-Agent': 'MoeSync/1.0.0',
             },
             body: {
               'query': staffQuery,

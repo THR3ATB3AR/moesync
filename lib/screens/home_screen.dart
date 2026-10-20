@@ -164,7 +164,7 @@ class HomeScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      AppLocalizations.of(context).welcomeToAnisync,
+                      AppLocalizations.of(context).welcomeToMoeSync,
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),

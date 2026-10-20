@@ -22,7 +22,7 @@ class ShikimoriService {
 
   Map<String, String> _headers() {
     final headers = <String, String>{
-      'User-Agent': 'anisync-flutter',
+      'User-Agent': 'MoeSync',
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     };
@@ -306,10 +306,7 @@ class ShikimoriService {
     }
   }
 
-  Future<void> removeItem({
-    required int id,
-    required MediaType type,
-  }) async {
+  Future<void> removeItem({required int id, required MediaType type}) async {
     if (!isAuthenticated) throw Exception('Shikimori is not authenticated');
 
     final userId = await fetchUserId();
