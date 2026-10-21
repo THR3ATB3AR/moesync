@@ -1345,6 +1345,62 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noServiceErrors => 'There are no current service errors.';
 
   @override
+  String get releaseNotesAndUpdates => 'Release notes & updates';
+
+  @override
+  String get updateCheckFrequency => 'Check for updates';
+
+  @override
+  String get updateCheckManual => 'Manually';
+
+  @override
+  String get updateCheckDaily => 'Once a day';
+
+  @override
+  String get updateCheckOnAppOpen => 'Every time the app opens';
+
+  @override
+  String get checkForUpdatesNow => 'Check now';
+
+  @override
+  String get latestVersion => 'Latest version';
+
+  @override
+  String get currentVersion => 'Current version';
+
+  @override
+  String get updateAvailable => 'An update is available';
+
+  @override
+  String get appIsUpToDate => 'You\'re up to date';
+
+  @override
+  String get releaseChangelog => 'What\'s changed';
+
+  @override
+  String get releaseDownloads => 'Download';
+
+  @override
+  String get noReleasesAvailable => 'No releases are available yet.';
+
+  @override
+  String releaseLoadFailed(Object error) {
+    return 'Couldn\'t load release notes: $error';
+  }
+
+  @override
+  String get noDownloadForThisDevice =>
+      'No download is available for this device.';
+
+  @override
+  String get preRelease => 'Pre-release';
+
+  @override
+  String publishedOn(Object date) {
+    return 'Published $date';
+  }
+
+  @override
   String get couldNotOpenLink => 'Could not open this link.';
 
   @override

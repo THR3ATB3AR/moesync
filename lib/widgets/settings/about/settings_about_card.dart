@@ -7,7 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:moesync/l10n/gen/app_localizations.dart';
 import 'package:moesync/models/media_item.dart';
 import 'package:moesync/providers/providers.dart';
-import 'package:moesync/widgets/service_errors_dialog.dart';
+import 'package:moesync/screens/settings/release_notes_page.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -43,33 +43,6 @@ class _SettingsAboutCardState extends ConsumerState<SettingsAboutCard> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  void _showErrorLogs() {
-    final errors = ref.read(serviceErrorsProvider);
-    if (errors.isNotEmpty) {
-      ServiceErrorsDialog.show(
-        context,
-        errors: errors,
-        onRetry: () => ref.read(mediaLibraryProvider.notifier).loadItems(),
-      );
-      return;
-    }
-
-    final localizations = AppLocalizations.of(context);
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(localizations.errorLogs),
-        content: Text(localizations.noServiceErrors),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(localizations.cancel),
-          ),
-        ],
-      ),
-    );
   }
 
   String get _platformName {
@@ -215,9 +188,13 @@ class _SettingsAboutCardState extends ConsumerState<SettingsAboutCard> {
             ),
             const SizedBox(height: 10),
             OutlinedButton.icon(
-              onPressed: _showErrorLogs,
-              icon: const Icon(Icons.receipt_long_outlined),
-              label: Text(localizations.errorLogs),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const ReleaseNotesPage(),
+                ),
+              ),
+              icon: const Icon(Icons.new_releases_outlined),
+              label: Text(localizations.releaseNotesAndUpdates),
             ),
           ],
         );

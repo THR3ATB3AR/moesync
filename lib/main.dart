@@ -20,11 +20,52 @@ Future<void> main() async {
   );
 }
 
-class MainApp extends ConsumerWidget {
+class MainApp extends ConsumerStatefulWidget {
   const MainApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MainApp> createState() => _MainAppState();
+}
+
+class _MainAppState extends ConsumerState<MainApp> with WidgetsBindingObserver {
+  bool _isCheckingReleases = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkReleasesAutomatically();
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _checkReleasesAutomatically();
+    }
+  }
+
+  Future<void> _checkReleasesAutomatically() async {
+    if (_isCheckingReleases) return;
+    _isCheckingReleases = true;
+    try {
+      await ref.read(releaseServiceProvider).checkAutomatically();
+    } catch (error) {
+      debugPrint('Automatic release check failed: $error');
+    } finally {
+      _isCheckingReleases = false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final goRouter = ref.watch(routerProvider);
     final themeSettings = ref.watch(themeSettingsProvider);
     final appLocale = ref.watch(languageSettingsProvider).locale;

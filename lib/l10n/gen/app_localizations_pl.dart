@@ -1359,6 +1359,62 @@ class AppLocalizationsPl extends AppLocalizations {
   String get noServiceErrors => 'Brak bieżących błędów usług.';
 
   @override
+  String get releaseNotesAndUpdates => 'Historia wydań i aktualizacje';
+
+  @override
+  String get updateCheckFrequency => 'Sprawdzanie aktualizacji';
+
+  @override
+  String get updateCheckManual => 'Ręcznie';
+
+  @override
+  String get updateCheckDaily => 'Raz dziennie';
+
+  @override
+  String get updateCheckOnAppOpen => 'Przy każdym otwarciu aplikacji';
+
+  @override
+  String get checkForUpdatesNow => 'Sprawdź teraz';
+
+  @override
+  String get latestVersion => 'Najnowsza wersja';
+
+  @override
+  String get currentVersion => 'Obecna wersja';
+
+  @override
+  String get updateAvailable => 'Dostępna jest aktualizacja';
+
+  @override
+  String get appIsUpToDate => 'Aplikacja jest aktualna';
+
+  @override
+  String get releaseChangelog => 'Co się zmieniło';
+
+  @override
+  String get releaseDownloads => 'Pobierz';
+
+  @override
+  String get noReleasesAvailable => 'Nie ma jeszcze dostępnych wydań.';
+
+  @override
+  String releaseLoadFailed(Object error) {
+    return 'Nie udało się wczytać historii wydań: $error';
+  }
+
+  @override
+  String get noDownloadForThisDevice =>
+      'Brak pliku do pobrania dla tego urządzenia.';
+
+  @override
+  String get preRelease => 'Wersja testowa';
+
+  @override
+  String publishedOn(Object date) {
+    return 'Opublikowano $date';
+  }
+
+  @override
   String get couldNotOpenLink => 'Nie można otworzyć tego odnośnika.';
 
   @override

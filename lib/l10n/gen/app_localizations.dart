@@ -2403,6 +2403,108 @@ abstract class AppLocalizations {
   /// **'There are no current service errors.'**
   String get noServiceErrors;
 
+  /// No description provided for @releaseNotesAndUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Release notes & updates'**
+  String get releaseNotesAndUpdates;
+
+  /// No description provided for @updateCheckFrequency.
+  ///
+  /// In en, this message translates to:
+  /// **'Check for updates'**
+  String get updateCheckFrequency;
+
+  /// No description provided for @updateCheckManual.
+  ///
+  /// In en, this message translates to:
+  /// **'Manually'**
+  String get updateCheckManual;
+
+  /// No description provided for @updateCheckDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Once a day'**
+  String get updateCheckDaily;
+
+  /// No description provided for @updateCheckOnAppOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Every time the app opens'**
+  String get updateCheckOnAppOpen;
+
+  /// No description provided for @checkForUpdatesNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Check now'**
+  String get checkForUpdatesNow;
+
+  /// No description provided for @latestVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest version'**
+  String get latestVersion;
+
+  /// No description provided for @currentVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Current version'**
+  String get currentVersion;
+
+  /// No description provided for @updateAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'An update is available'**
+  String get updateAvailable;
+
+  /// No description provided for @appIsUpToDate.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re up to date'**
+  String get appIsUpToDate;
+
+  /// No description provided for @releaseChangelog.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s changed'**
+  String get releaseChangelog;
+
+  /// No description provided for @releaseDownloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get releaseDownloads;
+
+  /// No description provided for @noReleasesAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No releases are available yet.'**
+  String get noReleasesAvailable;
+
+  /// No description provided for @releaseLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load release notes: {error}'**
+  String releaseLoadFailed(Object error);
+
+  /// No description provided for @noDownloadForThisDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'No download is available for this device.'**
+  String get noDownloadForThisDevice;
+
+  /// No description provided for @preRelease.
+  ///
+  /// In en, this message translates to:
+  /// **'Pre-release'**
+  String get preRelease;
+
+  /// No description provided for @publishedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Published {date}'**
+  String publishedOn(Object date);
+
   /// No description provided for @couldNotOpenLink.
   ///
   /// In en, this message translates to:

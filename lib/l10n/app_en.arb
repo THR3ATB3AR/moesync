@@ -483,6 +483,28 @@
   "github": "GitHub",
   "errorLogs": "Error logs",
   "noServiceErrors": "There are no current service errors.",
+  "releaseNotesAndUpdates": "Release notes & updates",
+  "updateCheckFrequency": "Check for updates",
+  "updateCheckManual": "Manually",
+  "updateCheckDaily": "Once a day",
+  "updateCheckOnAppOpen": "Every time the app opens",
+  "checkForUpdatesNow": "Check now",
+  "latestVersion": "Latest version",
+  "currentVersion": "Current version",
+  "updateAvailable": "An update is available",
+  "appIsUpToDate": "You're up to date",
+  "releaseChangelog": "What's changed",
+  "releaseDownloads": "Download",
+  "noReleasesAvailable": "No releases are available yet.",
+  "releaseLoadFailed": "Couldn't load release notes: {error}",
+  "@releaseLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "noDownloadForThisDevice": "No download is available for this device.",
+  "preRelease": "Pre-release",
+  "publishedOn": "Published {date}",
   "couldNotOpenLink": "Could not open this link.",
   "couldNotOpenLinkWithError": "Could not open this link: {error}",
   "versionArchitectureLicenses": "Version, architecture & licenses",

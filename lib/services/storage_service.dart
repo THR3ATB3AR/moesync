@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../models/app_release.dart';
 import '../models/media_item.dart';
 import 'env.dart';
 
@@ -195,6 +196,31 @@ class StorageService {
   static const _mediaViewModeKey = 'media_view_mode';
   static const _appLanguageKey = 'app_language';
   static const _titleLanguageKey = 'title_language';
+  static const _updateCheckFrequencyKey = 'update_check_frequency';
+  static const _lastReleaseCheckKey = 'last_release_check';
+
+  UpdateCheckFrequency getUpdateCheckFrequency() {
+    final value = _prefs.getString(_updateCheckFrequencyKey);
+    return UpdateCheckFrequency.values.firstWhere(
+      (frequency) => frequency.name == value,
+      orElse: () => UpdateCheckFrequency.daily,
+    );
+  }
+
+  Future<void> setUpdateCheckFrequency(UpdateCheckFrequency frequency) async {
+    await _prefs.setString(_updateCheckFrequencyKey, frequency.name);
+  }
+
+  DateTime? getLastReleaseCheck() {
+    final timestamp = _prefs.getInt(_lastReleaseCheckKey);
+    return timestamp == null
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch(timestamp);
+  }
+
+  Future<void> setLastReleaseCheck(DateTime checkedAt) async {
+    await _prefs.setInt(_lastReleaseCheckKey, checkedAt.millisecondsSinceEpoch);
+  }
 
   String? getAppLanguage() {
     final language = _prefs.getString(_appLanguageKey);

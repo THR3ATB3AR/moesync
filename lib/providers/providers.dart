@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../models/app_release.dart';
+import '../services/release_service.dart';
 import '../models/media_item.dart';
 import '../services/anilist_service.dart';
 import '../services/fribb_mapping_service.dart';
@@ -21,6 +23,29 @@ import '../theme.dart';
 final storageServiceProvider = Provider<StorageService>((ref) {
   throw UnimplementedError('Initialize storageServiceProvider in main');
 });
+
+final releaseServiceProvider = Provider<ReleaseService>((ref) {
+  final service = ReleaseService(ref.watch(storageServiceProvider));
+  ref.onDispose(service.dispose);
+  return service;
+});
+
+class UpdateCheckFrequencyNotifier extends Notifier<UpdateCheckFrequency> {
+  @override
+  UpdateCheckFrequency build() {
+    return ref.watch(storageServiceProvider).getUpdateCheckFrequency();
+  }
+
+  Future<void> setFrequency(UpdateCheckFrequency frequency) async {
+    state = frequency;
+    await ref.read(storageServiceProvider).setUpdateCheckFrequency(frequency);
+  }
+}
+
+final updateCheckFrequencyProvider =
+    NotifierProvider<UpdateCheckFrequencyNotifier, UpdateCheckFrequency>(
+      UpdateCheckFrequencyNotifier.new,
+    );
 
 final oauthServiceProvider = Provider<OAuthService>((ref) {
   final storage = ref.watch(storageServiceProvider);
@@ -717,10 +742,7 @@ class MediaLibraryNotifier extends Notifier<MediaLibraryState> {
         .toSet();
     final errors = results
         .where((result) => result.error != null)
-        .map(
-          (result) =>
-              '${result.service.displayName}: ${result.error}',
-        )
+        .map((result) => '${result.service.displayName}: ${result.error}')
         .toList();
     final updatedServices = Map<ServiceType, MediaItem>.from(
       libraryItem.services,
@@ -736,7 +758,9 @@ class MediaLibraryNotifier extends Notifier<MediaLibraryState> {
     state = state.copyWith(unifiedItems: updatedItems);
 
     if (errors.isNotEmpty) {
-      throw Exception('Some services could not remove the item: ${errors.join('; ')}');
+      throw Exception(
+        'Some services could not remove the item: ${errors.join('; ')}',
+      );
     }
   }
 

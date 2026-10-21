@@ -483,6 +483,28 @@
   "github": "GitHub",
   "errorLogs": "Registros de errores",
   "noServiceErrors": "No hay errores de servicio actuales.",
+  "releaseNotesAndUpdates": "Novedades y actualizaciones",
+  "updateCheckFrequency": "Buscar actualizaciones",
+  "updateCheckManual": "Manualmente",
+  "updateCheckDaily": "Una vez al día",
+  "updateCheckOnAppOpen": "Cada vez que se abre la aplicación",
+  "checkForUpdatesNow": "Buscar ahora",
+  "latestVersion": "Última versión",
+  "currentVersion": "Versión actual",
+  "updateAvailable": "Hay una actualización disponible",
+  "appIsUpToDate": "La aplicación está actualizada",
+  "releaseChangelog": "Cambios",
+  "releaseDownloads": "Descargar",
+  "noReleasesAvailable": "Todavía no hay versiones disponibles.",
+  "releaseLoadFailed": "No se pudieron cargar las notas: {error}",
+  "@releaseLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "noDownloadForThisDevice": "No hay una descarga disponible para este dispositivo.",
+  "preRelease": "Versión preliminar",
+  "publishedOn": "Publicado el {date}",
   "couldNotOpenLink": "No se pudo abrir este enlace.",
   "couldNotOpenLinkWithError": "No se pudo abrir este enlace: {error}",
   "versionArchitectureLicenses": "Versión, arquitectura y licencias",
