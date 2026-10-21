@@ -5,9 +5,39 @@ import 'storage_service.dart';
 
 class KitsuService {
   final StorageService _storage;
+  final http.Client? client;
   static const _baseUrl = 'https://kitsu.app/api/edge';
 
-  KitsuService(this._storage);
+  KitsuService(this._storage, {this.client});
+
+  Future<http.Response> _get(Uri url, {Map<String, String>? headers}) {
+    final c = client;
+    return c != null
+        ? c.get(url, headers: headers)
+        : http.get(url, headers: headers);
+  }
+
+  Future<http.Response> _patch(
+    Uri url, {
+    Map<String, String>? headers,
+    Object? body,
+  }) {
+    final c = client;
+    return c != null
+        ? c.patch(url, headers: headers, body: body)
+        : http.patch(url, headers: headers, body: body);
+  }
+
+  Future<http.Response> _post(
+    Uri url, {
+    Map<String, String>? headers,
+    Object? body,
+  }) {
+    final c = client;
+    return c != null
+        ? c.post(url, headers: headers, body: body)
+        : http.post(url, headers: headers, body: body);
+  }
 
   ServiceCredentials get credentials =>
       _storage.getCredentials(ServiceType.kitsu);
@@ -296,7 +326,7 @@ class KitsuService {
       '$_baseUrl/library-entries?filter[userId]=$userId&filter[$idParam]=$mediaIdStr',
     );
 
-    final checkResp = await http.get(checkUrl, headers: _headers());
+    final checkResp = await _get(checkUrl, headers: _headers());
     if (checkResp.statusCode != 200) {
       throw Exception('Failed to check Kitsu library entry');
     }
@@ -317,12 +347,12 @@ class KitsuService {
           'attributes': {
             'status': toKitsuStatus(status),
             'progress': progress,
-            'ratingTwenty': ?kitsuScore,
+            'ratingTwenty': kitsuScore,
           },
         },
       };
 
-      final resp = await http.patch(
+      final resp = await _patch(
         patchUrl,
         headers: _headers(),
         body: jsonEncode(body),
@@ -352,7 +382,7 @@ class KitsuService {
         },
       };
 
-      final resp = await http.post(
+      final resp = await _post(
         postUrl,
         headers: _headers(),
         body: jsonEncode(body),

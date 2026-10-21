@@ -782,6 +782,7 @@ class SyncEngine {
               score: action.newScore,
               progress: action.newProgress,
               oldProgress: action.oldProgress,
+              oldScore: action.oldScore,
             );
           }
           return true;

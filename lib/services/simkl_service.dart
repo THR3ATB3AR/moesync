@@ -385,6 +385,7 @@ class SimklService {
     required int score,
     required int progress,
     int? oldProgress,
+    int? oldScore,
   }) async {
     if (!isAuthenticated) throw Exception('Simkl is not authenticated');
 
@@ -487,19 +488,28 @@ class SimklService {
         action: 'Simkl add-to-list status',
       );
       _checkResponse(addResp, 'Simkl add-to-list status');
+    }
 
-      if (score > 0) {
-        final ratingResp = await _rateLimitedPost(
-          Uri.parse('$_baseUrl/sync/ratings'),
-          body: jsonEncode({
-            'shows': [
-              {...showData, 'rating': score.clamp(1, 10)},
-            ],
-          }),
-          action: 'Simkl set rating',
-        );
-        _checkResponse(ratingResp, 'Simkl set rating');
-      }
+    if (score == 0 && oldScore != null && oldScore > 0) {
+      final ratingResp = await _rateLimitedPost(
+        Uri.parse('$_baseUrl/sync/ratings/remove'),
+        body: jsonEncode({
+          'shows': [showData],
+        }),
+        action: 'Simkl remove rating',
+      );
+      _checkResponse(ratingResp, 'Simkl remove rating');
+    } else if (score > 0 && targetStatus != 'completed' && progress == 0) {
+      final ratingResp = await _rateLimitedPost(
+        Uri.parse('$_baseUrl/sync/ratings'),
+        body: jsonEncode({
+          'shows': [
+            {...showData, 'rating': score.clamp(1, 10)},
+          ],
+        }),
+        action: 'Simkl set rating',
+      );
+      _checkResponse(ratingResp, 'Simkl set rating');
     }
 
     _lastActivitiesAnimeAll = null;
