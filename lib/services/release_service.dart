@@ -19,6 +19,7 @@ class ReleaseService {
   final StorageService _storage;
   final http.Client _client;
   List<AppRelease>? _cachedReleases;
+  DateTime? _lastAutomaticCheck;
 
   List<AppRelease>? get cachedReleases => _cachedReleases;
   AppRelease? get latestRelease {
@@ -71,25 +72,27 @@ class ReleaseService {
     return _cachedReleases!;
   }
 
-  Future<void> checkAutomatically() async {
+  Future<AppRelease?> checkAutomatically() async {
     final frequency = _storage.getUpdateCheckFrequency();
-    if (frequency == UpdateCheckFrequency.manual) return;
+    if (frequency == UpdateCheckFrequency.manual) return null;
 
     final now = DateTime.now();
     final lastCheck = _storage.getLastReleaseCheck();
     if (frequency == UpdateCheckFrequency.daily &&
         lastCheck != null &&
         now.difference(lastCheck) < const Duration(days: 1)) {
-      return;
+      return null;
     }
     if (frequency == UpdateCheckFrequency.onAppOpen &&
-        lastCheck != null &&
-        now.difference(lastCheck) < const Duration(seconds: 30)) {
-      return;
+        _lastAutomaticCheck != null &&
+        now.difference(_lastAutomaticCheck!) < const Duration(seconds: 30)) {
+      return null;
     }
 
     await fetchReleases();
     await _storage.setLastReleaseCheck(now);
+    _lastAutomaticCheck = now;
+    return latestRelease;
   }
 
   Future<List<AppRelease>> checkManually() async {

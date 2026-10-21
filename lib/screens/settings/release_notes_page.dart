@@ -8,6 +8,8 @@ import '../../l10n/gen/app_localizations.dart';
 import '../../models/app_release.dart';
 import '../../providers/providers.dart';
 import '../../services/release_service.dart';
+import '../../widgets/release_markdown.dart';
+import '../../widgets/update_available_dialog.dart';
 
 class ReleaseNotesPage extends ConsumerStatefulWidget {
   const ReleaseNotesPage({super.key});
@@ -34,6 +36,26 @@ class _ReleaseNotesPageState extends ConsumerState<ReleaseNotesPage> {
     setState(() => _isChecking = true);
     try {
       final releases = await ref.read(releaseServiceProvider).checkManually();
+      if (releases.isNotEmpty) {
+        final latestRelease = releases.firstWhere(
+          (release) => !release.isPrerelease,
+          orElse: () => releases.first,
+        );
+        final packageInfo = await _packageInfo;
+        if (!mounted) return;
+        if (ReleaseService.isUpdateAvailable(
+          packageInfo.version,
+          latestRelease,
+        )) {
+          await showDialog<void>(
+            context: context,
+            builder: (context) => UpdateAvailableDialog(
+              release: latestRelease,
+              currentVersion: packageInfo.version,
+            ),
+          );
+        }
+      }
       if (mounted) setState(() => _releases = Future.value(releases));
     } catch (error) {
       if (mounted) {
@@ -316,7 +338,7 @@ class _ReleaseCard extends StatelessWidget {
               ),
             ),
           if (release.body.trim().isNotEmpty)
-            _ReleaseMarkdown(body: release.body),
+            ReleaseMarkdown(body: release.body),
           if (release.body.trim().isEmpty)
             Text(
               localizations.releaseChangelog,
@@ -340,77 +362,5 @@ class _ReleaseCard extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-class _ReleaseMarkdown extends StatelessWidget {
-  const _ReleaseMarkdown({required this.body});
-
-  final String body;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final lines = body.split('\n');
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (final rawLine in lines)
-          if (rawLine.trim().isNotEmpty) _buildLine(rawLine, theme),
-      ],
-    );
-  }
-
-  Widget _buildLine(String rawLine, ThemeData theme) {
-    final line = rawLine.trim();
-    final headingMatch = RegExp(r'^(#{1,3})\s+(.+)$').firstMatch(line);
-    if (headingMatch != null) {
-      final isSection = headingMatch.group(1)!.length == 3;
-      return Padding(
-        padding: EdgeInsets.only(top: isSection ? 12 : 6, bottom: 4),
-        child: Text(
-          _stripMarkdown(headingMatch.group(2)!),
-          style: isSection
-              ? theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.primary,
-                )
-              : theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-        ),
-      );
-    }
-    if (line.startsWith('- ')) {
-      return Padding(
-        padding: const EdgeInsets.only(left: 4, top: 3),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('•  ', style: theme.textTheme.bodyMedium),
-            Expanded(
-              child: Text(
-                _stripMarkdown(line.substring(2)),
-                style: theme.textTheme.bodyMedium,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-    return Padding(
-      padding: const EdgeInsets.only(top: 3),
-      child: Text(_stripMarkdown(line), style: theme.textTheme.bodyMedium),
-    );
-  }
-
-  String _stripMarkdown(String value) {
-    return value
-        .replaceAllMapped(
-          RegExp(r'\[([^\]]+)\]\(https?://[^)]+\)'),
-          (match) => match.group(1)!,
-        )
-        .replaceAll('**', '')
-        .replaceAll('`', '');
   }
 }

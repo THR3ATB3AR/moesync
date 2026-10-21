@@ -1,11 +1,16 @@
+import 'dart:async';
+
 import 'package:moesync/l10n/gen/app_localizations.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'providers/providers.dart';
 import 'router.dart';
 import 'services/env.dart';
+import 'services/release_service.dart';
 import 'services/storage_service.dart';
+import 'widgets/update_available_dialog.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +34,7 @@ class MainApp extends ConsumerStatefulWidget {
 
 class _MainAppState extends ConsumerState<MainApp> with WidgetsBindingObserver {
   bool _isCheckingReleases = false;
+  String? _lastPromptedReleaseTag;
 
   @override
   void initState() {
@@ -56,7 +62,28 @@ class _MainAppState extends ConsumerState<MainApp> with WidgetsBindingObserver {
     if (_isCheckingReleases) return;
     _isCheckingReleases = true;
     try {
-      await ref.read(releaseServiceProvider).checkAutomatically();
+      final release = await ref
+          .read(releaseServiceProvider)
+          .checkAutomatically();
+      if (release == null || release.tagName == _lastPromptedReleaseTag) return;
+
+      final packageInfo = await PackageInfo.fromPlatform();
+      if (!ReleaseService.isUpdateAvailable(packageInfo.version, release)) {
+        return;
+      }
+
+      final dialogContext = rootNavigatorKey.currentContext;
+      if (!mounted || dialogContext == null || !dialogContext.mounted) return;
+      _lastPromptedReleaseTag = release.tagName;
+      unawaited(
+        showDialog<void>(
+          context: dialogContext,
+          builder: (context) => UpdateAvailableDialog(
+            release: release,
+            currentVersion: packageInfo.version,
+          ),
+        ),
+      );
     } catch (error) {
       debugPrint('Automatic release check failed: $error');
     } finally {

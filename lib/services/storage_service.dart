@@ -203,7 +203,7 @@ class StorageService {
     final value = _prefs.getString(_updateCheckFrequencyKey);
     return UpdateCheckFrequency.values.firstWhere(
       (frequency) => frequency.name == value,
-      orElse: () => UpdateCheckFrequency.daily,
+      orElse: () => UpdateCheckFrequency.onAppOpen,
     );
   }
 

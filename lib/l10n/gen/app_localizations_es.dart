@@ -1393,10 +1393,17 @@ class AppLocalizationsEs extends AppLocalizations {
   String get updateAvailable => 'Hay una actualización disponible';
 
   @override
+  String get updateLater => 'Más tarde';
+
+  @override
   String get appIsUpToDate => 'La aplicación está actualizada';
 
   @override
   String get releaseChangelog => 'Cambios';
+
+  @override
+  String get noReleaseChangelog =>
+      'No se proporcionó un registro de cambios para esta versión.';
 
   @override
   String get releaseDownloads => 'Descargar';

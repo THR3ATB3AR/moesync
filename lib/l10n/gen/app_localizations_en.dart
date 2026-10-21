@@ -1372,10 +1372,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get updateAvailable => 'An update is available';
 
   @override
+  String get updateLater => 'Later';
+
+  @override
   String get appIsUpToDate => 'You\'re up to date';
 
   @override
   String get releaseChangelog => 'What\'s changed';
+
+  @override
+  String get noReleaseChangelog =>
+      'No changelog was provided for this release.';
 
   @override
   String get releaseDownloads => 'Download';

@@ -2457,6 +2457,12 @@ abstract class AppLocalizations {
   /// **'An update is available'**
   String get updateAvailable;
 
+  /// No description provided for @updateLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get updateLater;
+
   /// No description provided for @appIsUpToDate.
   ///
   /// In en, this message translates to:
@@ -2468,6 +2474,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'What\'s changed'**
   String get releaseChangelog;
+
+  /// No description provided for @noReleaseChangelog.
+  ///
+  /// In en, this message translates to:
+  /// **'No changelog was provided for this release.'**
+  String get noReleaseChangelog;
 
   /// No description provided for @releaseDownloads.
   ///
