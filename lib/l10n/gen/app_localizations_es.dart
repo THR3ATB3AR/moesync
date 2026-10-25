@@ -737,9 +737,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get retry => 'Reintentar';
 
   @override
-  String get fribbIdMappingDatabase => 'Base de datos de mapeo de ID de Fribb';
-
-  @override
   String watchingProgressTotal(Object progress, Object total) {
     return 'Viendo ($progress/$total)';
   }
@@ -988,21 +985,41 @@ class AppLocalizationsEs extends AppLocalizations {
   String get databaseIdMapping => 'Base de datos y asignación de ID';
 
   @override
-  String get fribbCrossPlatformDatabase =>
-      'Base de datos multiplataforma de Fribb';
+  String get animeApiDatabase => 'Base de datos multiplataforma AnimeApi';
 
   @override
-  String get cacheLoadedAutoRefreshedDaily =>
-      'Caché cargada (se actualiza a diario)';
+  String get animeApiDatabaseNotDownloaded =>
+      'La base de datos local aún no se ha descargado';
 
   @override
-  String countCrossReferencedAnimeTitlesIndexed(Object count) {
-    return '$count títulos de anime relacionados indexados';
+  String animeApiRecordCount(Object count) {
+    return '$count registros de anime disponibles';
   }
 
   @override
-  String get downloadingLatestFribbMapping =>
-      'Descargando la asignación más reciente de Fribb...';
+  String animeApiBuiltAt(Object date) {
+    return 'Base de datos creada: $date';
+  }
+
+  @override
+  String animeApiDownloadedAt(Object date) {
+    return 'Descargada localmente: $date';
+  }
+
+  @override
+  String get animeApiAutoRefreshDaily =>
+      'Se actualiza automáticamente cada día';
+
+  @override
+  String get animeApiSource =>
+      'Fuente: nattadasu/animeApi v3, incluye datos de Fribb y Anime Offline Database';
+
+  @override
+  String get animeApiLicense => 'Licencias de datos: ODbL 1.0 y DbCL 1.0';
+
+  @override
+  String get downloadingAnimeApiDatabase =>
+      'Descargando la base de datos AnimeApi...';
 
   @override
   String get successfullyUpdatedMappingDatabase =>
@@ -1010,7 +1027,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get failedToDownloadMappingUsingLocalCache =>
-      'No se pudo descargar la asignación. Se usará la caché local.';
+      'No se pudo descargar la base; se conserva la copia local existente.';
+
+  @override
+  String get failedToDownloadMappingNoLocalDatabase =>
+      'No se pudo descargar la base y no hay una copia local.';
 
   @override
   String get sourcesDatabase => 'Fuentes y base de datos';

@@ -784,29 +784,6 @@ class SyncAction {
   });
 }
 
-class FribbItem {
-  final int malId;
-  final int anilistId;
-  final int kitsuId;
-  final int simklId;
-
-  const FribbItem({
-    required this.malId,
-    required this.anilistId,
-    required this.kitsuId,
-    required this.simklId,
-  });
-
-  factory FribbItem.fromJson(Map<String, dynamic> json) {
-    return FribbItem(
-      malId: (json['mal_id'] as num?)?.toInt() ?? 0,
-      anilistId: (json['anilist_id'] as num?)?.toInt() ?? 0,
-      kitsuId: (json['kitsu_id'] as num?)?.toInt() ?? 0,
-      simklId: (json['simkl_id'] as num?)?.toInt() ?? 0,
-    );
-  }
-}
-
 class ServiceCredentials {
   final String? accessToken;
   final String? refreshToken;

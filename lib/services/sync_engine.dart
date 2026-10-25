@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../models/media_item.dart';
 import 'anilist_service.dart';
-import 'fribb_mapping_service.dart';
+import 'anime_api_mapping_service.dart';
 import 'kitsu_service.dart';
 import 'mal_service.dart';
 import 'manga_mapping_service.dart';
@@ -19,7 +19,7 @@ class SyncEngine {
   final KitsuService kitsu;
   final ShikimoriService shikimori;
   final SimklService simkl;
-  final FribbMappingService fribb;
+  final AnimeApiMappingService animeApi;
   final MangaBakaService? mangabaka;
   final MangaUpdatesService? mangaupdates;
   final MangaMappingService? mangaMapping;
@@ -30,11 +30,15 @@ class SyncEngine {
     required this.kitsu,
     required this.shikimori,
     required this.simkl,
-    required this.fribb,
+    AnimeApiMappingService? animeApi,
+    AnimeApiMappingService? fribb,
     this.mangabaka,
     this.mangaupdates,
     this.mangaMapping,
-  });
+  }) : animeApi =
+           animeApi ??
+           fribb ??
+           (throw ArgumentError('An AnimeApi mapping service is required.'));
 
   bool isServiceConnected(ServiceType service) {
     switch (service) {
@@ -159,7 +163,7 @@ class SyncEngine {
     Map<ServiceType, String>? errorsOut,
     FutureOr<void> Function(List<UnifiedMediaItem> items)? onItemsLoaded,
   }) async {
-    final mappingFutures = <Future<void>>[fribb.initialize()];
+    final mappingFutures = <Future<void>>[animeApi.initialize()];
     if (mangaMapping != null) {
       mappingFutures.add(mangaMapping!.initialize());
     }
@@ -221,7 +225,7 @@ class SyncEngine {
               ? item.id
               : (item.malId != null && item.malId! > 0)
               ? item.malId!
-              : fribb.findMalId(service, item.id);
+              : animeApi.findMalId(service, item.id);
         }
         final effectiveKey = malId != 0
             ? malId
@@ -230,7 +234,9 @@ class SyncEngine {
         if (!unifiedMap.containsKey(effectiveKey)) {
           unifiedMap[effectiveKey] = UnifiedMediaItem(
             malId: effectiveKey,
-            title: item.title,
+            title: item.title.trim().isNotEmpty
+                ? item.title
+                : animeApi.findTitle(malId) ?? item.title,
             posterImage: item.posterImage,
             mediaType: type,
             services: {},
@@ -360,7 +366,7 @@ class SyncEngine {
     }
 
     if (mediaType == MediaType.anime) {
-      final targetId = fribb.findTargetId(malId, targetService);
+      final targetId = animeApi.findTargetId(malId, targetService);
       if (targetId > 0) return targetId;
 
       if (targetService == ServiceType.simkl) {
@@ -407,7 +413,7 @@ class SyncEngine {
     Map<ServiceType, String>? errorsOut,
   }) async {
     final fetchErrors = <ServiceType, String>{};
-    final mappingFutures = <Future<void>>[fribb.initialize()];
+    final mappingFutures = <Future<void>>[animeApi.initialize()];
     if (mangaMapping != null) {
       mappingFutures.add(mangaMapping!.initialize());
     }
@@ -472,7 +478,7 @@ class SyncEngine {
               ? item.id
               : (item.malId != null && item.malId! > 0)
               ? item.malId!
-              : fribb.findMalId(service, item.id);
+              : animeApi.findMalId(service, item.id);
         }
         if (malId != 0) {
           targetByMalId[service]![malId] = item;
@@ -501,7 +507,7 @@ class SyncEngine {
           ? pItem.malId!
           : (mediaType == MediaType.manga
                 ? (mangaMapping?.findMalId(primaryService, pItem.id) ?? 0)
-                : fribb.findMalId(primaryService, pItem.id));
+                : animeApi.findMalId(primaryService, pItem.id));
 
       for (final targetSvc in availableTargets) {
         MediaItem? existingTarget;
@@ -512,7 +518,7 @@ class SyncEngine {
           if (existingTarget == null) {
             int targetServiceId = mediaType == MediaType.manga
                 ? (mangaMapping?.findTargetId(pMalId, targetSvc) ?? 0)
-                : fribb.findTargetId(pMalId, targetSvc);
+                : animeApi.findTargetId(pMalId, targetSvc);
             if (targetServiceId == 0 &&
                 mediaType == MediaType.manga &&
                 mangaMapping != null) {
@@ -781,14 +787,14 @@ class SyncEngine {
             int simklId = action.targetId;
             int? malId = action.targetMalId;
             if (malId == null || malId == 0) {
-              final mappedMalId = fribb.findMalId(
+              final mappedMalId = animeApi.findMalId(
                 ServiceType.simkl,
                 action.targetId,
               );
               if (mappedMalId != 0) {
                 malId = mappedMalId;
               } else {
-                final mappedSimkl = fribb.findTargetId(
+                final mappedSimkl = animeApi.findTargetId(
                   action.targetId,
                   ServiceType.simkl,
                 );

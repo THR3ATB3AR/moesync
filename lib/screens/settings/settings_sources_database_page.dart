@@ -14,7 +14,7 @@ class SettingsSourcesDatabasePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final fribb = ref.watch(fribbServiceProvider);
+    final animeApi = ref.watch(animeApiMappingServiceProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -58,10 +58,8 @@ class SettingsSourcesDatabasePage extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           SettingsDatabaseCard(
-            context: context,
-            ref: ref,
             theme: theme,
-            fribb: fribb,
+            animeApi: animeApi,
           ),
           const SizedBox(height: 12),
           SettingsMangaDatabaseCard(context: context, ref: ref, theme: theme),

@@ -5,17 +5,17 @@ import 'package:http/http.dart' as http;
 import '../models/media_detail_data.dart';
 import '../models/media_item.dart';
 import 'anilist_rate_limiter.dart';
-import 'fribb_mapping_service.dart';
+import 'anime_api_mapping_service.dart';
 import 'manga_mapping_service.dart';
 import 'mangaupdates_service.dart';
 import 'storage_service.dart';
 
 class MediaDetailService {
   final StorageService _storage;
-  final FribbMappingService _fribb;
+  final AnimeApiMappingService _animeApi;
   final MangaMappingService _mangaMapping;
 
-  MediaDetailService(this._storage, this._fribb, this._mangaMapping);
+  MediaDetailService(this._storage, this._animeApi, this._mangaMapping);
 
   final Map<String, MediaDetailData> _cache = {};
   final Map<int, CharacterDetailData> _characterCache = {};
@@ -32,7 +32,7 @@ class MediaDetailService {
     if (effectiveMalId <= 0) {
       if (item.mediaType == MediaType.anime) {
         for (final entry in item.services.entries) {
-          final found = _fribb.findMalId(entry.key, entry.value.id);
+          final found = _animeApi.findMalId(entry.key, entry.value.id);
           if (found > 0) {
             effectiveMalId = found;
             break;
@@ -587,7 +587,7 @@ class MediaDetailService {
     int resolvedMalId = malId > 0 ? malId : (serviceId ?? 0);
     if (resolvedMalId <= 0) {
       if (mediaType == MediaType.anime) {
-        resolvedMalId = _fribb.findMalId(ServiceType.mal, 0);
+        resolvedMalId = _animeApi.findMalId(ServiceType.mal, 0);
       } else {
         resolvedMalId = _mangaMapping.findMalId(ServiceType.mal, 0);
       }
@@ -887,7 +887,7 @@ class MediaDetailService {
     int resolvedId = serviceId ?? 0;
     if (resolvedId <= 0) {
       if (mediaType == MediaType.anime) {
-        resolvedId = _fribb.findTargetId(malId, ServiceType.kitsu);
+        resolvedId = _animeApi.findTargetId(malId, ServiceType.kitsu);
       } else {
         resolvedId = _mangaMapping.findTargetId(malId, ServiceType.kitsu);
       }
@@ -1160,7 +1160,7 @@ class MediaDetailService {
 
     int resolvedId = simklId ?? 0;
     if (resolvedId <= 0) {
-      resolvedId = _fribb.findTargetId(malId, ServiceType.simkl);
+      resolvedId = _animeApi.findTargetId(malId, ServiceType.simkl);
     }
 
     final url = resolvedId > 0

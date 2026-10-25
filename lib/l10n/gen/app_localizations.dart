@@ -1375,12 +1375,6 @@ abstract class AppLocalizations {
   /// **'Retry'**
   String get retry;
 
-  /// No description provided for @fribbIdMappingDatabase.
-  ///
-  /// In en, this message translates to:
-  /// **'Fribb ID mapping database'**
-  String get fribbIdMappingDatabase;
-
   /// No description provided for @watchingProgressTotal.
   ///
   /// In en, this message translates to:
@@ -1783,29 +1777,59 @@ abstract class AppLocalizations {
   /// **'Database & ID mapping'**
   String get databaseIdMapping;
 
-  /// No description provided for @fribbCrossPlatformDatabase.
+  /// No description provided for @animeApiDatabase.
   ///
   /// In en, this message translates to:
-  /// **'Fribb Cross-Platform Database'**
-  String get fribbCrossPlatformDatabase;
+  /// **'AnimeApi Cross-Platform Database'**
+  String get animeApiDatabase;
 
-  /// No description provided for @cacheLoadedAutoRefreshedDaily.
+  /// No description provided for @animeApiDatabaseNotDownloaded.
   ///
   /// In en, this message translates to:
-  /// **'Cache loaded (auto-refreshed daily)'**
-  String get cacheLoadedAutoRefreshedDaily;
+  /// **'Local database is not downloaded yet'**
+  String get animeApiDatabaseNotDownloaded;
 
-  /// No description provided for @countCrossReferencedAnimeTitlesIndexed.
+  /// No description provided for @animeApiRecordCount.
   ///
   /// In en, this message translates to:
-  /// **'{count} cross-referenced anime titles indexed'**
-  String countCrossReferencedAnimeTitlesIndexed(Object count);
+  /// **'{count} anime records available'**
+  String animeApiRecordCount(Object count);
 
-  /// No description provided for @downloadingLatestFribbMapping.
+  /// No description provided for @animeApiBuiltAt.
   ///
   /// In en, this message translates to:
-  /// **'Downloading latest Fribb mapping...'**
-  String get downloadingLatestFribbMapping;
+  /// **'Source database built: {date}'**
+  String animeApiBuiltAt(Object date);
+
+  /// No description provided for @animeApiDownloadedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloaded locally: {date}'**
+  String animeApiDownloadedAt(Object date);
+
+  /// No description provided for @animeApiAutoRefreshDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically refreshes daily'**
+  String get animeApiAutoRefreshDaily;
+
+  /// No description provided for @animeApiSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Source: nattadasu/animeApi v3, including Fribb and Anime Offline Database'**
+  String get animeApiSource;
+
+  /// No description provided for @animeApiLicense.
+  ///
+  /// In en, this message translates to:
+  /// **'Data licenses: ODbL 1.0 and DbCL 1.0'**
+  String get animeApiLicense;
+
+  /// No description provided for @downloadingAnimeApiDatabase.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading AnimeApi database...'**
+  String get downloadingAnimeApiDatabase;
 
   /// No description provided for @successfullyUpdatedMappingDatabase.
   ///
@@ -1818,6 +1842,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to download mapping. Using local cache.'**
   String get failedToDownloadMappingUsingLocalCache;
+
+  /// No description provided for @failedToDownloadMappingNoLocalDatabase.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to download mapping, and no local database is available.'**
+  String get failedToDownloadMappingNoLocalDatabase;
 
   /// No description provided for @sourcesDatabase.
   ///

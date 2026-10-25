@@ -86,7 +86,7 @@ class SettingsSearchDelegate extends SearchDelegate<void> {
       icon: Icons.cloud_done_rounded,
     ),
     SettingsSearchItem(
-      title: AppLocalizations.of(context).fribbIdMappingDatabase,
+      title: AppLocalizations.of(context).animeApiDatabase,
       subtitle: AppLocalizations.of(context).crossPlatformAnimeAndMangaIdMapping,
       categoryKey: 'database',
       icon: Icons.storage_rounded,

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../models/anime_api_database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/app_release.dart';
 import '../models/media_item.dart';
@@ -7,8 +8,7 @@ import 'env.dart';
 
 class StorageService {
   static const _credentialsKeyPrefix = 'service_credentials_';
-  static const _fribbCacheKey = 'fribb_mapping_cache';
-  static const _fribbCacheTimestampKey = 'fribb_cache_timestamp';
+  static const _animeApiDatabaseMetadataKey = 'animeapi_database_metadata';
   static const _cachedUnifiedAnimeKey = 'cached_unified_anime';
   static const _cachedUnifiedMangaKey = 'cached_unified_manga';
   static const _mangaMappingCacheKey = 'manga_mapping_cache';
@@ -148,16 +148,31 @@ class StorageService {
     }
   }
 
-  Future<void> saveFribbCache(String jsonContent) async {
-    await _prefs.setString(_fribbCacheKey, jsonContent);
-    await _prefs.setInt(
-      _fribbCacheTimestampKey,
-      DateTime.now().millisecondsSinceEpoch,
+  Future<void> saveAnimeApiDatabaseMetadata(
+    AnimeApiDatabaseMetadata metadata,
+  ) async {
+    await _prefs.setString(
+      _animeApiDatabaseMetadataKey,
+      jsonEncode(metadata.toJson()),
     );
   }
 
-  String? getFribbCache() {
-    return _prefs.getString(_fribbCacheKey);
+  AnimeApiDatabaseMetadata? getAnimeApiDatabaseMetadata() {
+    final encoded = _prefs.getString(_animeApiDatabaseMetadataKey);
+    if (encoded == null) return null;
+    try {
+      return AnimeApiDatabaseMetadata.fromJson(
+        jsonDecode(encoded) as Map<String, dynamic>,
+      );
+    } catch (error) {
+      debugPrint('Failed to load AnimeApi database metadata: $error');
+      return null;
+    }
+  }
+
+  Future<void> removeLegacyFribbCache() async {
+    await _prefs.remove('fribb_mapping_cache');
+    await _prefs.remove('fribb_cache_timestamp');
   }
 
   Future<void> saveMangaMappingCache(String jsonContent) async {

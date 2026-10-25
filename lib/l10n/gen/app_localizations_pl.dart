@@ -736,9 +736,6 @@ class AppLocalizationsPl extends AppLocalizations {
   String get retry => 'Ponów';
 
   @override
-  String get fribbIdMappingDatabase => 'Baza mapowania ID Fribb';
-
-  @override
   String watchingProgressTotal(Object progress, Object total) {
     return 'Oglądam ($progress/$total)';
   }
@@ -987,20 +984,40 @@ class AppLocalizationsPl extends AppLocalizations {
   String get databaseIdMapping => 'Baza danych i mapowanie ID';
 
   @override
-  String get fribbCrossPlatformDatabase => 'Wieloplatformowa baza danych Fribb';
+  String get animeApiDatabase => 'Wieloplatformowa baza danych AnimeApi';
 
   @override
-  String get cacheLoadedAutoRefreshedDaily =>
-      'Pamięć podręczna wczytana (odświeżana codziennie)';
+  String get animeApiDatabaseNotDownloaded =>
+      'Lokalna baza nie została jeszcze pobrana';
 
   @override
-  String countCrossReferencedAnimeTitlesIndexed(Object count) {
-    return 'Zindeksowano $count powiązanych tytułów anime';
+  String animeApiRecordCount(Object count) {
+    return 'Dostępne rekordy anime: $count';
   }
 
   @override
-  String get downloadingLatestFribbMapping =>
-      'Pobieranie najnowszego mapowania Fribb...';
+  String animeApiBuiltAt(Object date) {
+    return 'Baza źródłowa zbudowana: $date';
+  }
+
+  @override
+  String animeApiDownloadedAt(Object date) {
+    return 'Pobrano lokalnie: $date';
+  }
+
+  @override
+  String get animeApiAutoRefreshDaily => 'Automatyczne odświeżanie codziennie';
+
+  @override
+  String get animeApiSource =>
+      'Źródło: nattadasu/animeApi v3, w tym mapowania Fribb i Anime Offline Database';
+
+  @override
+  String get animeApiLicense => 'Licencje danych: ODbL 1.0 i DbCL 1.0';
+
+  @override
+  String get downloadingAnimeApiDatabase =>
+      'Pobieranie bazy danych AnimeApi...';
 
   @override
   String get successfullyUpdatedMappingDatabase =>
@@ -1008,7 +1025,11 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get failedToDownloadMappingUsingLocalCache =>
-      'Nie udało się pobrać mapowania. Użyto lokalnej pamięci podręcznej.';
+      'Nie udało się pobrać bazy. Zachowano istniejącą lokalną kopię.';
+
+  @override
+  String get failedToDownloadMappingNoLocalDatabase =>
+      'Nie udało się pobrać bazy i nie ma lokalnej kopii.';
 
   @override
   String get sourcesDatabase => 'Źródła i baza danych';

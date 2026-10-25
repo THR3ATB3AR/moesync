@@ -728,9 +728,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get retry => 'Retry';
 
   @override
-  String get fribbIdMappingDatabase => 'Fribb ID mapping database';
-
-  @override
   String watchingProgressTotal(Object progress, Object total) {
     return 'Watching ($progress/$total)';
   }
@@ -979,20 +976,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String get databaseIdMapping => 'Database & ID mapping';
 
   @override
-  String get fribbCrossPlatformDatabase => 'Fribb Cross-Platform Database';
+  String get animeApiDatabase => 'AnimeApi Cross-Platform Database';
 
   @override
-  String get cacheLoadedAutoRefreshedDaily =>
-      'Cache loaded (auto-refreshed daily)';
+  String get animeApiDatabaseNotDownloaded =>
+      'Local database is not downloaded yet';
 
   @override
-  String countCrossReferencedAnimeTitlesIndexed(Object count) {
-    return '$count cross-referenced anime titles indexed';
+  String animeApiRecordCount(Object count) {
+    return '$count anime records available';
   }
 
   @override
-  String get downloadingLatestFribbMapping =>
-      'Downloading latest Fribb mapping...';
+  String animeApiBuiltAt(Object date) {
+    return 'Source database built: $date';
+  }
+
+  @override
+  String animeApiDownloadedAt(Object date) {
+    return 'Downloaded locally: $date';
+  }
+
+  @override
+  String get animeApiAutoRefreshDaily => 'Automatically refreshes daily';
+
+  @override
+  String get animeApiSource =>
+      'Source: nattadasu/animeApi v3, including Fribb and Anime Offline Database';
+
+  @override
+  String get animeApiLicense => 'Data licenses: ODbL 1.0 and DbCL 1.0';
+
+  @override
+  String get downloadingAnimeApiDatabase => 'Downloading AnimeApi database...';
 
   @override
   String get successfullyUpdatedMappingDatabase =>
@@ -1001,6 +1017,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get failedToDownloadMappingUsingLocalCache =>
       'Failed to download mapping. Using local cache.';
+
+  @override
+  String get failedToDownloadMappingNoLocalDatabase =>
+      'Failed to download mapping, and no local database is available.';
 
   @override
   String get sourcesDatabase => 'Sources & Database';

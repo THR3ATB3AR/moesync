@@ -6,7 +6,7 @@ import '../models/app_release.dart';
 import '../services/release_service.dart';
 import '../models/media_item.dart';
 import '../services/anilist_service.dart';
-import '../services/fribb_mapping_service.dart';
+import '../services/anime_api_mapping_service.dart';
 import '../services/kitsu_service.dart';
 import '../services/mal_service.dart';
 import '../services/manga_mapping_service.dart';
@@ -52,9 +52,11 @@ final oauthServiceProvider = Provider<OAuthService>((ref) {
   return OAuthService(storage);
 });
 
-final fribbServiceProvider = Provider<FribbMappingService>((ref) {
+final animeApiMappingServiceProvider = Provider<AnimeApiMappingService>((ref) {
   final storage = ref.watch(storageServiceProvider);
-  return FribbMappingService(storage);
+  final service = AnimeApiMappingService(storage);
+  ref.onDispose(service.dispose);
+  return service;
 });
 
 final malServiceProvider = Provider<MalService>((ref) {
@@ -108,7 +110,7 @@ final syncEngineProvider = Provider<SyncEngine>((ref) {
     kitsu: ref.watch(kitsuServiceProvider),
     shikimori: ref.watch(shikimoriServiceProvider),
     simkl: ref.watch(simklServiceProvider),
-    fribb: ref.watch(fribbServiceProvider),
+    animeApi: ref.watch(animeApiMappingServiceProvider),
     mangabaka: ref.watch(mangabakaServiceProvider),
     mangaupdates: ref.watch(mangaupdatesServiceProvider),
     mangaMapping: ref.watch(mangaMappingServiceProvider),
@@ -117,9 +119,9 @@ final syncEngineProvider = Provider<SyncEngine>((ref) {
 
 final mediaDetailServiceProvider = Provider<MediaDetailService>((ref) {
   final storage = ref.watch(storageServiceProvider);
-  final fribb = ref.watch(fribbServiceProvider);
+  final animeApi = ref.watch(animeApiMappingServiceProvider);
   final mangaMapping = ref.watch(mangaMappingServiceProvider);
-  return MediaDetailService(storage, fribb, mangaMapping);
+  return MediaDetailService(storage, animeApi, mangaMapping);
 });
 
 class AuthState {
