@@ -133,6 +133,32 @@ class SyncEngine {
     Map<ServiceType, String>? errorsOut,
     FutureOr<void> Function(List<UnifiedMediaItem> items)? onItemsLoaded,
   }) async {
+    final shouldBatchMangaMappings =
+        type == MediaType.manga && mangaMapping != null;
+    if (shouldBatchMangaMappings) {
+      mangaMapping!.beginBatch();
+    }
+
+    try {
+      return await _buildUnifiedList(
+        type,
+        forceRefresh: forceRefresh,
+        errorsOut: errorsOut,
+        onItemsLoaded: onItemsLoaded,
+      );
+    } finally {
+      if (shouldBatchMangaMappings) {
+        await mangaMapping!.endBatch();
+      }
+    }
+  }
+
+  Future<List<UnifiedMediaItem>> _buildUnifiedList(
+    MediaType type, {
+    required bool forceRefresh,
+    Map<ServiceType, String>? errorsOut,
+    FutureOr<void> Function(List<UnifiedMediaItem> items)? onItemsLoaded,
+  }) async {
     final mappingFutures = <Future<void>>[fribb.initialize()];
     if (mangaMapping != null) {
       mappingFutures.add(mangaMapping!.initialize());

@@ -21,6 +21,8 @@ class MangaMappingService {
   final Set<String> _failedLookups = {};
 
   bool _isLoaded = false;
+  int _batchDepth = 0;
+  bool _cacheDirty = false;
   bool get isLoaded => _isLoaded;
   int get mappingsCount => _malToMangabaka.length;
 
@@ -60,31 +62,48 @@ class MangaMappingService {
     _isLoaded = true;
   }
 
-  void _recordInternal({
+  bool _recordInternal({
     int? malId,
     int? mangabakaId,
     int? mangaupdatesId,
     int? anilistId,
     int? kitsuId,
   }) {
+    var changed = false;
     if (malId != null && malId > 0) {
-      if (mangabakaId != null && mangabakaId > 0) {
+      if (mangabakaId != null &&
+          mangabakaId > 0 &&
+          (_malToMangabaka[malId] != mangabakaId ||
+              _mangabakaToMal[mangabakaId] != malId)) {
         _malToMangabaka[malId] = mangabakaId;
         _mangabakaToMal[mangabakaId] = malId;
+        changed = true;
       }
-      if (mangaupdatesId != null && mangaupdatesId > 0) {
+      if (mangaupdatesId != null &&
+          mangaupdatesId > 0 &&
+          (_malToMangaupdates[malId] != mangaupdatesId ||
+              _mangaupdatesToMal[mangaupdatesId] != malId)) {
         _malToMangaupdates[malId] = mangaupdatesId;
         _mangaupdatesToMal[mangaupdatesId] = malId;
+        changed = true;
       }
-      if (anilistId != null && anilistId > 0) {
+      if (anilistId != null &&
+          anilistId > 0 &&
+          (_malToAnilist[malId] != anilistId ||
+              _anilistToMal[anilistId] != malId)) {
         _malToAnilist[malId] = anilistId;
         _anilistToMal[anilistId] = malId;
+        changed = true;
       }
-      if (kitsuId != null && kitsuId > 0) {
+      if (kitsuId != null &&
+          kitsuId > 0 &&
+          (_malToKitsu[malId] != kitsuId || _kitsuToMal[kitsuId] != malId)) {
         _malToKitsu[malId] = kitsuId;
         _kitsuToMal[kitsuId] = malId;
+        changed = true;
       }
     }
+    return changed;
   }
 
   void recordMapping({
@@ -94,14 +113,32 @@ class MangaMappingService {
     int? anilistId,
     int? kitsuId,
   }) {
-    _recordInternal(
+    final changed = _recordInternal(
       malId: malId,
       mangabakaId: mangabakaId,
       mangaupdatesId: mangaupdatesId,
       anilistId: anilistId,
       kitsuId: kitsuId,
     );
-    _persistCache();
+    if (!changed) return;
+    _cacheDirty = true;
+    if (_batchDepth == 0) {
+      _persistCache();
+    }
+  }
+
+  void beginBatch() {
+    _batchDepth++;
+  }
+
+  Future<void> endBatch() async {
+    if (_batchDepth == 0) {
+      throw StateError('No manga mapping batch is active.');
+    }
+    _batchDepth--;
+    if (_batchDepth == 0 && _cacheDirty) {
+      await _persistCache(offloadEncoding: true);
+    }
   }
 
   void recordFromMangaBakaSeries(Map<dynamic, dynamic> series) {
@@ -156,7 +193,7 @@ class MangaMappingService {
     }
   }
 
-  Future<void> _persistCache() async {
+  Future<void> _persistCache({bool offloadEncoding = false}) async {
     try {
       final allMalIds = {
         ..._malToMangabaka.keys,
@@ -178,7 +215,11 @@ class MangaMappingService {
         };
       }).toList();
 
-      await _storage.saveMangaMappingCache(jsonEncode(export));
+      final encoded = offloadEncoding
+          ? await compute(_encodeMappingCache, export)
+          : jsonEncode(export);
+      await _storage.saveMangaMappingCache(encoded);
+      _cacheDirty = false;
     } catch (e) {
       debugPrint('Failed to persist manga mapping cache: $e');
     }
@@ -288,4 +329,8 @@ class MangaMappingService {
 
     return 0;
   }
+}
+
+String _encodeMappingCache(List<Map<String, Object?>> mappings) {
+  return jsonEncode(mappings);
 }
