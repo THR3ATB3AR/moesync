@@ -12,6 +12,7 @@ class MediaHeaderSection extends StatelessWidget {
     required this.liveItem,
     required this.data,
     required this.titleLanguage,
+    required this.onPosterTap,
   });
 
   final BuildContext context;
@@ -19,6 +20,7 @@ class MediaHeaderSection extends StatelessWidget {
   final UnifiedMediaItem liveItem;
   final MediaDetailData data;
   final TitleLanguage titleLanguage;
+  final VoidCallback onPosterTap;
 
   @override
   Widget build(BuildContext context) {
@@ -48,32 +50,35 @@ class MediaHeaderSection extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: SizedBox(
-              width: 125,
-              height: 180,
-              child: posterUrl.isNotEmpty
-                  ? CachedNetworkImage(
-                      imageUrl: posterUrl,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
+          GestureDetector(
+            onTap: posterUrl.isNotEmpty ? onPosterTap : null,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: SizedBox(
+                width: 125,
+                height: 180,
+                child: posterUrl.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: posterUrl,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          color: theme.colorScheme.surfaceContainerHighest,
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          color: theme.colorScheme.surfaceContainerHighest,
+                          child: const Icon(Icons.broken_image, size: 36),
+                        ),
+                      )
+                    : Container(
                         color: theme.colorScheme.surfaceContainerHighest,
+                        child: Icon(
+                          isAnime
+                              ? Icons.movie_filter_rounded
+                              : Icons.menu_book_rounded,
+                          size: 40,
+                        ),
                       ),
-                      errorWidget: (context, url, error) => Container(
-                        color: theme.colorScheme.surfaceContainerHighest,
-                        child: const Icon(Icons.broken_image, size: 36),
-                      ),
-                    )
-                  : Container(
-                      color: theme.colorScheme.surfaceContainerHighest,
-                      child: Icon(
-                        isAnime
-                            ? Icons.movie_filter_rounded
-                            : Icons.menu_book_rounded,
-                        size: 40,
-                      ),
-                    ),
+              ),
             ),
           ),
           const SizedBox(width: 16),

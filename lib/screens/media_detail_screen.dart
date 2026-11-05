@@ -9,6 +9,7 @@ import 'package:moesync/widgets/media/details/media_music_themes_section.dart';
 import 'package:moesync/widgets/media/details/media_rankings_and_distribution_section.dart';
 import 'package:moesync/widgets/media/details/media_relations_and_recommendations_section.dart';
 import 'package:moesync/widgets/media/details/media_stats_section.dart';
+import 'media_image_gallery_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
@@ -242,6 +243,45 @@ class _MediaDetailScreenState extends ConsumerState<MediaDetailScreen> {
       }
     }
     return const [];
+  }
+
+  List<String> _availablePosterImages(UnifiedMediaItem liveItem) {
+    final selectedPoster = _detailData?.posterImage.isNotEmpty == true
+        ? _detailData!.posterImage
+        : liveItem.posterImage;
+    final candidates = <String>[
+      selectedPoster,
+      ..._allServiceData.values.expand(
+        (data) => [
+          data.posterImage,
+          if (data.bannerImage != null) data.bannerImage!,
+        ],
+      ),
+      ...liveItem.services.values.map((item) => item.posterImage),
+    ];
+    final unique = <String>{};
+    for (final image in candidates) {
+      final normalized = image.trim();
+      if (normalized.isNotEmpty) unique.add(normalized);
+    }
+    return unique.toList();
+  }
+
+  void _openPosterGallery(UnifiedMediaItem liveItem) {
+    final images = _availablePosterImages(liveItem);
+    if (images.isEmpty) return;
+    final selectedPoster = _detailData?.posterImage.isNotEmpty == true
+        ? _detailData!.posterImage
+        : liveItem.posterImage;
+    final initialIndex = images.indexOf(selectedPoster);
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => MediaImageGalleryScreen(
+          imageUrls: images,
+          initialIndex: initialIndex < 0 ? 0 : initialIndex,
+        ),
+      ),
+    );
   }
 
   String _getUserStatusLabel(UnifiedMediaItem liveItem) {
@@ -562,6 +602,7 @@ class _MediaDetailScreenState extends ConsumerState<MediaDetailScreen> {
             liveItem: liveItem,
             data: data,
             titleLanguage: ref.watch(languageSettingsProvider).titleLanguage,
+            onPosterTap: () => _openPosterGallery(liveItem),
           ),
 
           const SizedBox(height: 12),
