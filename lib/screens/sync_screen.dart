@@ -19,16 +19,13 @@ class SyncScreen extends ConsumerStatefulWidget {
 
 class _SyncScreenState extends ConsumerState<SyncScreen> {
   final TextEditingController _searchController = TextEditingController();
-  final ScrollController _syncLogScrollController = ScrollController();
   String _searchQuery = '';
   String _actionTypeFilter = 'all';
   ServiceType? _targetServiceFilter;
-  String? _lastSyncLogEntry;
 
   @override
   void dispose() {
     _searchController.dispose();
-    _syncLogScrollController.dispose();
     super.dispose();
   }
 
@@ -43,17 +40,6 @@ class _SyncScreenState extends ConsumerState<SyncScreen> {
     final auth = ref.watch(authProvider);
     final sync = ref.watch(syncProvider);
     final notifier = ref.read(syncProvider.notifier);
-    final latestSyncLogEntry = sync.syncLog.isEmpty ? null : sync.syncLog.last;
-    if (latestSyncLogEntry != null && latestSyncLogEntry != _lastSyncLogEntry) {
-      _lastSyncLogEntry = latestSyncLogEntry;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_syncLogScrollController.hasClients) {
-          _syncLogScrollController.jumpTo(
-            _syncLogScrollController.position.maxScrollExtent,
-          );
-        }
-      });
-    }
 
     final filteredActions = sync.pendingActions.where((a) {
       if (_searchQuery.isNotEmpty &&
@@ -446,12 +432,7 @@ class _SyncScreenState extends ConsumerState<SyncScreen> {
               ),
             ),
 
-          if (sync.syncLog.isNotEmpty)
-            _SyncTextLog(
-              logs: sync.syncLog,
-              controller: _syncLogScrollController,
-              title: AppLocalizations.of(context).syncTextLogs,
-            ),
+          const _SyncTextLog(),
 
           Expanded(
             child: sync.isScanning
@@ -769,19 +750,40 @@ class _SyncScreenState extends ConsumerState<SyncScreen> {
   }
 }
 
-class _SyncTextLog extends StatelessWidget {
-  const _SyncTextLog({
-    required this.logs,
-    required this.controller,
-    required this.title,
-  });
+class _SyncTextLog extends ConsumerStatefulWidget {
+  const _SyncTextLog();
 
-  final List<String> logs;
-  final ScrollController controller;
-  final String title;
+  @override
+  ConsumerState<_SyncTextLog> createState() => _SyncTextLogState();
+}
+
+class _SyncTextLogState extends ConsumerState<_SyncTextLog> {
+  final ScrollController _controller = ScrollController();
+  String? _lastLogEntry;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final logs = ref.watch(syncLogProvider);
+    final latestLogEntry = logs.isEmpty ? null : logs.last;
+    if (latestLogEntry != null && latestLogEntry != _lastLogEntry) {
+      _lastLogEntry = latestLogEntry;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_controller.hasClients) {
+          _controller.jumpTo(_controller.position.maxScrollExtent);
+        }
+      });
+    }
+
+    return _buildLog(context, logs);
+  }
+
+  Widget _buildLog(BuildContext context, List<String> logs) {
     final theme = Theme.of(context);
     return Container(
       height: 190,
@@ -805,7 +807,7 @@ class _SyncTextLog extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  title,
+                  AppLocalizations.of(context).syncTextLogs,
                   style: theme.textTheme.labelLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -816,7 +818,7 @@ class _SyncTextLog extends StatelessWidget {
           Divider(height: 1, color: theme.colorScheme.outlineVariant),
           Expanded(
             child: ListView.builder(
-              controller: controller,
+              controller: _controller,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               itemCount: logs.length,
               itemBuilder: (context, index) => Padding(

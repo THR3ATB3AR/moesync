@@ -24,6 +24,28 @@ final storageServiceProvider = Provider<StorageService>((ref) {
   throw UnimplementedError('Initialize storageServiceProvider in main');
 });
 
+class SyncLogNotifier extends Notifier<List<String>> {
+  @override
+  List<String> build() => const [];
+
+  void clear() => state = const [];
+
+  void append(Iterable<String> messages) {
+    final now = DateTime.now();
+    final timestamp =
+        '${now.hour.toString().padLeft(2, '0')}:'
+        '${now.minute.toString().padLeft(2, '0')}:'
+        '${now.second.toString().padLeft(2, '0')}';
+    final added = messages.map((message) => '[$timestamp] $message');
+    final logs = [...state, ...added];
+    state = logs.length > 1000 ? logs.skip(logs.length - 1000).toList() : logs;
+  }
+}
+
+final syncLogProvider = NotifierProvider<SyncLogNotifier, List<String>>(
+  SyncLogNotifier.new,
+);
+
 final releaseServiceProvider = Provider<ReleaseService>((ref) {
   final service = ReleaseService(ref.watch(storageServiceProvider));
   ref.onDispose(service.dispose);
@@ -796,7 +818,6 @@ class SyncState {
   final int syncedCount;
   final int totalToSync;
   final String? statusMessage;
-  final List<String> syncLog;
   final Map<ServiceType, String> serviceErrors;
 
   const SyncState({
@@ -809,7 +830,6 @@ class SyncState {
     this.syncedCount = 0,
     this.totalToSync = 0,
     this.statusMessage,
-    this.syncLog = const [],
     this.serviceErrors = const {},
   });
 
@@ -823,7 +843,6 @@ class SyncState {
     int? syncedCount,
     int? totalToSync,
     String? statusMessage,
-    List<String>? syncLog,
     Map<ServiceType, String>? serviceErrors,
   }) {
     return SyncState(
@@ -836,7 +855,6 @@ class SyncState {
       syncedCount: syncedCount ?? this.syncedCount,
       totalToSync: totalToSync ?? this.totalToSync,
       statusMessage: statusMessage,
-      syncLog: syncLog ?? this.syncLog,
       serviceErrors: serviceErrors ?? this.serviceErrors,
     );
   }
@@ -895,8 +913,8 @@ class SyncNotifier extends Notifier<SyncState> {
       isScanning: true,
       pendingActions: const [],
       statusMessage: 'Scanning lists from connected services...',
-      syncLog: preserveLog ? state.syncLog : const [],
     );
+    if (!preserveLog) ref.read(syncLogProvider.notifier).clear();
     appendSyncLog(
       'Scanning ${state.mediaType.name} lists; primary service is ${state.primaryService.displayName}.',
     );
@@ -994,18 +1012,7 @@ class SyncNotifier extends Notifier<SyncState> {
   }
 
   void appendSyncLogs(Iterable<String> messages) {
-    final now = DateTime.now();
-    final timestamp =
-        '${now.hour.toString().padLeft(2, '0')}:'
-        '${now.minute.toString().padLeft(2, '0')}:'
-        '${now.second.toString().padLeft(2, '0')}';
-    final added = messages.map((message) => '[$timestamp] $message');
-    final logs = [...state.syncLog, ...added];
-    state = state.copyWith(
-      syncLog: logs.length > 1000
-          ? logs.skip(logs.length - 1000).toList()
-          : logs,
-    );
+    ref.read(syncLogProvider.notifier).append(messages);
   }
 
   void clearServiceError(ServiceType service) {
