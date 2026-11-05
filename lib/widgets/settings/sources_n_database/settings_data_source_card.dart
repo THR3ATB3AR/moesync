@@ -73,9 +73,19 @@ class SettingsDataSourceCard extends StatelessWidget {
                 value: s,
                 child: Row(
                   children: [
-                    ServiceBadge(service: s, size: 18),
+                    ServiceBadge(
+                      service: s,
+                      size: 18,
+                      styleOverride: ServiceDisplayStyle.icon,
+                    ),
                     const SizedBox(width: 8),
-                    Text(s.displayName),
+                    Expanded(
+                      child: Text(
+                        s.displayName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   ],
                 ),
               );
@@ -132,8 +142,12 @@ class SettingsDataSourceCard extends StatelessWidget {
                   children: [
                     Icon(Icons.auto_awesome, size: 18),
                     SizedBox(width: 8),
-                    Text(
-                      AppLocalizations.of(context).automaticSameAsInfoSource,
+                    Expanded(
+                      child: Text(
+                        AppLocalizations.of(context).automaticSameAsInfoSource,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),
@@ -143,9 +157,19 @@ class SettingsDataSourceCard extends StatelessWidget {
                   value: s,
                   child: Row(
                     children: [
-                      ServiceBadge(service: s, size: 18),
+                      ServiceBadge(
+                        service: s,
+                        size: 18,
+                        styleOverride: ServiceDisplayStyle.icon,
+                      ),
                       const SizedBox(width: 8),
-                      Text(s.displayName),
+                      Expanded(
+                        child: Text(
+                          s.displayName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                     ],
                   ),
                 );
@@ -199,9 +223,19 @@ class SettingsDataSourceCard extends StatelessWidget {
                 value: s,
                 child: Row(
                   children: [
-                    ServiceBadge(service: s, size: 18),
+                    ServiceBadge(
+                      service: s,
+                      size: 18,
+                      styleOverride: ServiceDisplayStyle.icon,
+                    ),
                     const SizedBox(width: 8),
-                    Text(s.displayName),
+                    Expanded(
+                      child: Text(
+                        s.displayName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   ],
                 ),
               );
