@@ -82,100 +82,157 @@ class SettingsServiceCard extends StatelessWidget {
       );
     }
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 10),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: borderSide,
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        leading: CircleAvatar(
-          backgroundColor: leadingBg,
-          child: Icon(leadingIcon, color: leadingIconColor),
-        ),
-        title: Text(
-          service.displayName,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: subtitleWidget,
-        onTap: () => showDialog(
-          context: context,
-          builder: (_) => OAuthDialog(service: service),
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (isConnected) ...[
-              IconButton(
-                tooltip: l.logoutFromServiceTooltip(service.displayName),
-                icon: Icon(
-                  Icons.logout_rounded,
-                  color: theme.colorScheme.error,
-                  size: 20,
-                ),
-                onPressed: () async {
-                  final confirm = await showDialog<bool>(
-                    context: context,
-                    builder: (ctx) => AlertDialog(
-                      title: Text(
-                        l.logoutFromServiceQuestion(service.displayName),
-                      ),
-                      content: Text(
-                        l.confirmDisconnectService(service.displayName),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(ctx).pop(false),
-                          child: Text(l.cancel),
-                        ),
-                        FilledButton(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: theme.colorScheme.error,
-                          ),
-                          onPressed: () => Navigator.of(ctx).pop(true),
-                          child: Text(l.logoutService(service.displayName)),
-                        ),
-                      ],
-                    ),
-                  );
-                  if (confirm == true) {
-                    await ref.read(authProvider.notifier).disconnect(service);
-                    ref.read(mediaLibraryProvider.notifier).loadItems();
-                    ref.read(syncProvider.notifier).scanDiffs();
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            l.loggedOutFromService(service.displayName),
-                          ),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    }
-                  }
-                },
+    Future<void> disconnectService() async {
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(l.logoutFromServiceQuestion(service.displayName)),
+          content: Text(l.confirmDisconnectService(service.displayName)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(l.cancel),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: theme.colorScheme.error,
               ),
-              const SizedBox(width: 4),
-            ],
-            OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              onPressed: () => showDialog(
-                context: context,
-                builder: (_) => OAuthDialog(service: service),
-              ),
-              child: Text(
-                isConnected ? l.manage : l.connectService(service.displayName),
-              ),
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(l.logoutService(service.displayName)),
             ),
           ],
         ),
+      );
+      if (confirm == true) {
+        await ref.read(authProvider.notifier).disconnect(service);
+        ref.read(mediaLibraryProvider.notifier).loadItems();
+        ref.read(syncProvider.notifier).scanDiffs();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l.loggedOutFromService(service.displayName)),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    }
+
+    void openConnectionDialog() => showDialog(
+      context: context,
+      builder: (_) => OAuthDialog(service: service),
+    );
+
+    Widget connectButton({bool expanded = false}) {
+      final button = OutlinedButton(
+        style: OutlinedButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+        onPressed: openConnectionDialog,
+        child: Text(
+          isConnected ? l.manage : l.connectService(service.displayName),
+          textAlign: TextAlign.center,
+        ),
+      );
+      return expanded
+          ? SizedBox(width: double.infinity, child: button)
+          : button;
+    }
+
+    Widget logoutButton() => IconButton(
+      tooltip: l.logoutFromServiceTooltip(service.displayName),
+      icon: Icon(
+        Icons.logout_rounded,
+        color: theme.colorScheme.error,
+        size: 20,
       ),
+      onPressed: disconnectService,
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 480;
+        return Card(
+          margin: const EdgeInsets.only(bottom: 10),
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: borderSide,
+          ),
+          child: compact
+              ? Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: openConnectionDialog,
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: leadingBg,
+                              child: Icon(leadingIcon, color: leadingIconColor),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    service.displayName,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  subtitleWidget,
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          if (isConnected) logoutButton(),
+                          Expanded(child: connectButton(expanded: true)),
+                        ],
+                      ),
+                    ],
+                  ),
+                )
+              : ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
+                  leading: CircleAvatar(
+                    backgroundColor: leadingBg,
+                    child: Icon(leadingIcon, color: leadingIconColor),
+                  ),
+                  title: Text(
+                    service.displayName,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: subtitleWidget,
+                  onTap: openConnectionDialog,
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (isConnected) ...[
+                        logoutButton(),
+                        const SizedBox(width: 4),
+                      ],
+                      connectButton(),
+                    ],
+                  ),
+                ),
+        );
+      },
     );
   }
 }
