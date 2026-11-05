@@ -431,9 +431,6 @@ class _SyncScreenState extends ConsumerState<SyncScreen> {
                 ],
               ),
             ),
-
-          const _SyncTextLog(),
-
           Expanded(
             child: sync.isScanning
                 ? SyncScreenSkeleton()
@@ -746,95 +743,6 @@ class _SyncScreenState extends ConsumerState<SyncScreen> {
               ),
             )
           : null,
-    );
-  }
-}
-
-class _SyncTextLog extends ConsumerStatefulWidget {
-  const _SyncTextLog();
-
-  @override
-  ConsumerState<_SyncTextLog> createState() => _SyncTextLogState();
-}
-
-class _SyncTextLogState extends ConsumerState<_SyncTextLog> {
-  final ScrollController _controller = ScrollController();
-  String? _lastLogEntry;
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final logs = ref.watch(syncLogProvider);
-    final latestLogEntry = logs.isEmpty ? null : logs.last;
-    if (latestLogEntry != null && latestLogEntry != _lastLogEntry) {
-      _lastLogEntry = latestLogEntry;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_controller.hasClients) {
-          _controller.jumpTo(_controller.position.maxScrollExtent);
-        }
-      });
-    }
-
-    return _buildLog(context, logs);
-  }
-
-  Widget _buildLog(BuildContext context, List<String> logs) {
-    final theme = Theme.of(context);
-    return Container(
-      height: 190,
-      margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: theme.colorScheme.outlineVariant),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.terminal_rounded,
-                  size: 17,
-                  color: theme.colorScheme.primary,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  AppLocalizations.of(context).syncTextLogs,
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Divider(height: 1, color: theme.colorScheme.outlineVariant),
-          Expanded(
-            child: ListView.builder(
-              controller: _controller,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              itemCount: logs.length,
-              itemBuilder: (context, index) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 1),
-                child: SelectableText(
-                  logs[index],
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontFamily: 'monospace',
-                    fontSize: 11,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

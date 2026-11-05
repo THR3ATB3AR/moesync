@@ -24,28 +24,6 @@ final storageServiceProvider = Provider<StorageService>((ref) {
   throw UnimplementedError('Initialize storageServiceProvider in main');
 });
 
-class SyncLogNotifier extends Notifier<List<String>> {
-  @override
-  List<String> build() => const [];
-
-  void clear() => state = const [];
-
-  void append(Iterable<String> messages) {
-    final now = DateTime.now();
-    final timestamp =
-        '${now.hour.toString().padLeft(2, '0')}:'
-        '${now.minute.toString().padLeft(2, '0')}:'
-        '${now.second.toString().padLeft(2, '0')}';
-    final added = messages.map((message) => '[$timestamp] $message');
-    final logs = [...state, ...added];
-    state = logs.length > 1000 ? logs.skip(logs.length - 1000).toList() : logs;
-  }
-}
-
-final syncLogProvider = NotifierProvider<SyncLogNotifier, List<String>>(
-  SyncLogNotifier.new,
-);
-
 final releaseServiceProvider = Provider<ReleaseService>((ref) {
   final service = ReleaseService(ref.watch(storageServiceProvider));
   ref.onDispose(service.dispose);
@@ -818,6 +796,7 @@ class SyncState {
   final int syncedCount;
   final int totalToSync;
   final String? statusMessage;
+  final List<String> syncLog;
   final Map<ServiceType, String> serviceErrors;
 
   const SyncState({
@@ -830,6 +809,7 @@ class SyncState {
     this.syncedCount = 0,
     this.totalToSync = 0,
     this.statusMessage,
+    this.syncLog = const [],
     this.serviceErrors = const {},
   });
 
@@ -843,6 +823,7 @@ class SyncState {
     int? syncedCount,
     int? totalToSync,
     String? statusMessage,
+    List<String>? syncLog,
     Map<ServiceType, String>? serviceErrors,
   }) {
     return SyncState(
@@ -855,6 +836,7 @@ class SyncState {
       syncedCount: syncedCount ?? this.syncedCount,
       totalToSync: totalToSync ?? this.totalToSync,
       statusMessage: statusMessage,
+      syncLog: syncLog ?? this.syncLog,
       serviceErrors: serviceErrors ?? this.serviceErrors,
     );
   }
@@ -903,20 +885,13 @@ class SyncNotifier extends Notifier<SyncState> {
     state = state.copyWith(pendingActions: updated);
   }
 
-  Future<void> scanDiffs({
-    bool forceRefresh = false,
-    bool preserveLog = false,
-  }) async {
+  Future<void> scanDiffs({bool forceRefresh = false}) async {
     if (!ref.mounted) return;
     final engine = ref.read(syncEngineProvider);
     state = state.copyWith(
       isScanning: true,
       pendingActions: const [],
       statusMessage: 'Scanning lists from connected services...',
-    );
-    if (!preserveLog) ref.read(syncLogProvider.notifier).clear();
-    appendSyncLog(
-      'Scanning ${state.mediaType.name} lists; primary service is ${state.primaryService.displayName}.',
     );
 
     final fetchErrors = <ServiceType, String>{};
@@ -927,28 +902,8 @@ class SyncNotifier extends Notifier<SyncState> {
         onlyExisting: state.onlyExisting,
         forceRefresh: forceRefresh,
         errorsOut: fetchErrors,
-        onServiceLoading: (service) {
-          appendSyncLog(
-            'Loading ${state.mediaType.name} list from ${service.displayName}...',
-          );
-        },
-        onServiceLoaded: (service, items) {
-          appendSyncLogs([
-            'Loaded ${items.length} ${state.mediaType.name} entries from ${service.displayName}.',
-            for (final item in items)
-              '  ${service.displayName}: "${item.title}"',
-          ]);
-        },
-        onServiceFailed: (service, error) {
-          appendSyncLog(
-            'ERROR loading ${state.mediaType.name} from ${service.displayName}: $error',
-          );
-        },
       );
       if (!ref.mounted) return;
-      appendSyncLog(
-        'Scan complete: ${actions.length} pending action(s) found.',
-      );
       state = state.copyWith(
         isScanning: false,
         pendingActions: actions,
@@ -959,7 +914,6 @@ class SyncNotifier extends Notifier<SyncState> {
       );
     } catch (e) {
       if (!ref.mounted) return;
-      appendSyncLog('ERROR scanning lists: $e');
       state = state.copyWith(
         isScanning: false,
         statusMessage: 'Error scanning: $e',
@@ -978,41 +932,31 @@ class SyncNotifier extends Notifier<SyncState> {
       syncedCount: 0,
       totalToSync: selected.length,
       statusMessage: 'Synchronizing ${selected.length} items...',
+      syncLog: [],
     );
 
-    appendSyncLog('Starting sync of ${selected.length} selected action(s).');
+    final logs = <String>[];
     int completed = 0;
 
     for (final action in selected) {
-      final operation = action.isAdd ? 'Adding' : 'Updating';
-      appendSyncLog(
-        '$operation "${action.title}" on ${action.targetService.displayName}...',
-      );
       final success = await engine.executeAction(action);
       completed++;
-      appendSyncLog(
-        '${success ? 'SUCCESS' : 'FAILED'}: $operation "${action.title}" on ${action.targetService.displayName}.',
+      final op = action.isAdd ? 'ADD' : 'UPDATE';
+      final statusText = success ? '✓ OK' : '✗ Failed';
+      logs.add(
+        '[$statusText] $op "${action.title}" on ${action.targetService.displayName}',
       );
 
-      state = state.copyWith(syncedCount: completed);
+      state = state.copyWith(syncedCount: completed, syncLog: List.from(logs));
     }
 
-    appendSyncLog('Sync finished: $completed action(s) processed.');
     state = state.copyWith(
       isSyncing: false,
       statusMessage: 'Completed synchronization of $completed items!',
     );
 
     ref.read(mediaLibraryProvider.notifier).loadItems();
-    await scanDiffs(preserveLog: true);
-  }
-
-  void appendSyncLog(String message) {
-    appendSyncLogs([message]);
-  }
-
-  void appendSyncLogs(Iterable<String> messages) {
-    ref.read(syncLogProvider.notifier).append(messages);
+    await scanDiffs();
   }
 
   void clearServiceError(ServiceType service) {
