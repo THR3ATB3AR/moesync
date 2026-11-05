@@ -167,6 +167,48 @@ abstract class AppLocalizations {
   /// **'Search & Add Anime'**
   String get searchAddAnime;
 
+  /// No description provided for @searchMediaHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search anime or manga...'**
+  String get searchMediaHint;
+
+  /// No description provided for @searchHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent searches'**
+  String get searchHistory;
+
+  /// No description provided for @clearSearchHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clearSearchHistory;
+
+  /// No description provided for @noSearchHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Your recent searches will appear here'**
+  String get noSearchHistory;
+
+  /// No description provided for @searchByTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by title'**
+  String get searchByTitle;
+
+  /// No description provided for @showingCachedResults.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing saved results'**
+  String get showingCachedResults;
+
+  /// No description provided for @noSearchResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No results found'**
+  String get noSearchResults;
+
   /// No description provided for @switchToListView.
   ///
   /// In en, this message translates to:

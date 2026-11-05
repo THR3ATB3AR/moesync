@@ -117,6 +117,31 @@ class HomeScreen extends ConsumerWidget {
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           children: [
+            TextField(
+              readOnly: true,
+              onTap: () => context.push('/search'),
+              decoration: InputDecoration(
+                hintText: AppLocalizations.of(context).searchMediaHint,
+                prefixIcon: const Icon(Icons.search_rounded),
+                suffixIcon: const Icon(Icons.arrow_forward_rounded),
+                filled: true,
+                fillColor: theme.colorScheme.surfaceContainer,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.outlineVariant,
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.outlineVariant,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+            ),
+            const SizedBox(height: 20),
             HomeSyncStatusCard(
               context: context,
               ref: ref,

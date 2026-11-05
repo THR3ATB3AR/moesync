@@ -45,6 +45,27 @@ class AppLocalizationsPl extends AppLocalizations {
   String get searchAddAnime => 'Szukaj i dodaj anime';
 
   @override
+  String get searchMediaHint => 'Szukaj anime lub mangi...';
+
+  @override
+  String get searchHistory => 'Ostatnie wyszukiwania';
+
+  @override
+  String get clearSearchHistory => 'Wyczyść';
+
+  @override
+  String get noSearchHistory => 'Ostatnie wyszukiwania pojawią się tutaj';
+
+  @override
+  String get searchByTitle => 'Szukaj według tytułu';
+
+  @override
+  String get showingCachedResults => 'Wyświetlam zapisane wyniki';
+
+  @override
+  String get noSearchResults => 'Nie znaleziono wyników';
+
+  @override
   String get switchToListView => 'Przełącz na widok listy';
 
   @override

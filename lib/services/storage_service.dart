@@ -11,6 +11,8 @@ class StorageService {
   static const _animeApiDatabaseMetadataKey = 'animeapi_database_metadata';
   static const _cachedUnifiedAnimeKey = 'cached_unified_anime';
   static const _cachedUnifiedMangaKey = 'cached_unified_manga';
+  static const _mediaSearchCacheKey = 'media_search_cache';
+  static const _mediaSearchHistoryKey = 'media_search_history';
   static const _mangaMappingCacheKey = 'manga_mapping_cache';
 
   static String get defaultMalClientId => Env.malClientId;
@@ -206,6 +208,123 @@ class StorageService {
       return null;
     }
   }
+
+  List<MediaItem>? getCachedSearchResults(String query, MediaType type) {
+    final normalizedQuery = _normalizeSearchQuery(query);
+    if (normalizedQuery.isEmpty) return null;
+
+    final encoded = _prefs.getString(_mediaSearchCacheKey);
+    if (encoded == null) return null;
+    try {
+      final entries = jsonDecode(encoded) as List<dynamic>;
+      final entry = entries.cast<Map<String, dynamic>>().firstWhere(
+        (value) => value['queryKey'] == '${type.name}:$normalizedQuery',
+        orElse: () => <String, dynamic>{},
+      );
+      final results = entry['results'];
+      if (results is! List<dynamic>) return null;
+      return results
+          .whereType<Map<String, dynamic>>()
+          .map(MediaItem.fromJson)
+          .toList();
+    } catch (error) {
+      debugPrint('Failed to load cached media search results: $error');
+      return null;
+    }
+  }
+
+  Future<void> saveCachedSearchResults(
+    String query,
+    MediaType type,
+    List<MediaItem> results,
+  ) async {
+    final normalizedQuery = _normalizeSearchQuery(query);
+    if (normalizedQuery.isEmpty) return;
+
+    final entries = _readSearchCacheEntries();
+    final queryKey = '${type.name}:$normalizedQuery';
+    entries.removeWhere((entry) => entry['queryKey'] == queryKey);
+    entries.insert(0, {
+      'queryKey': queryKey,
+      'query': query.trim(),
+      'mediaType': type.name,
+      'updatedAt': DateTime.now().toIso8601String(),
+      'results': results.map((item) => item.toJson()).toList(),
+    });
+    await _prefs.setString(
+      _mediaSearchCacheKey,
+      jsonEncode(entries.take(24).toList()),
+    );
+  }
+
+  List<({String query, MediaType mediaType})> getMediaSearchHistory() {
+    final encoded = _prefs.getString(_mediaSearchHistoryKey);
+    if (encoded == null) return const [];
+    try {
+      final entries = jsonDecode(encoded) as List<dynamic>;
+      return entries
+          .whereType<Map<String, dynamic>>()
+          .map((entry) {
+            final query = entry['query'];
+            final mediaType = MediaType.values.where(
+              (type) => type.name == entry['mediaType'],
+            );
+            if (query is! String || mediaType.isEmpty) return null;
+            return (query: query, mediaType: mediaType.first);
+          })
+          .whereType<({String query, MediaType mediaType})>()
+          .toList();
+    } catch (error) {
+      debugPrint('Failed to load media search history: $error');
+      return const [];
+    }
+  }
+
+  Future<void> saveMediaSearchHistory(String query, MediaType type) async {
+    final normalizedQuery = _normalizeSearchQuery(query);
+    if (normalizedQuery.isEmpty) return;
+    final entries = getMediaSearchHistory()
+        .where(
+          (entry) =>
+              entry.mediaType != type ||
+              _normalizeSearchQuery(entry.query) != normalizedQuery,
+        )
+        .toList();
+    entries.insert(0, (query: query.trim(), mediaType: type));
+    await _prefs.setString(
+      _mediaSearchHistoryKey,
+      jsonEncode(
+        entries
+            .take(12)
+            .map(
+              (entry) => {
+                'query': entry.query,
+                'mediaType': entry.mediaType.name,
+              },
+            )
+            .toList(),
+      ),
+    );
+  }
+
+  Future<void> clearMediaSearchHistory() async {
+    await _prefs.remove(_mediaSearchHistoryKey);
+  }
+
+  List<Map<String, dynamic>> _readSearchCacheEntries() {
+    final encoded = _prefs.getString(_mediaSearchCacheKey);
+    if (encoded == null) return [];
+    try {
+      final entries = jsonDecode(encoded) as List<dynamic>;
+      return entries.whereType<Map<String, dynamic>>().toList();
+    } catch (error) {
+      debugPrint('Failed to decode media search cache: $error');
+      return [];
+    }
+  }
+
+  String _normalizeSearchQuery(String query) =>
+      query.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
 
   static const _serviceDisplayStyleKey = 'service_display_style';
   static const _mediaViewModeKey = 'media_view_mode';

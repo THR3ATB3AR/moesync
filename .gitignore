@@ -53,6 +53,9 @@ app.*.map.json
 /android/upload-keystore.jks
 
 /test/
+!/test/
+/test/*
+!/test/media_search_storage_test.dart
 docs/WYDANIA.md
 docs/RELEASING.md
 run-android.fish

@@ -16,6 +16,7 @@ import 'screens/more_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/sync_screen.dart';
 import 'screens/settings/settings_accounts_page.dart';
+import 'screens/media_search_screen.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -32,6 +33,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
         routes: <GoRoute>[
           GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
+          GoRoute(
+            path: '/search',
+            builder: (context, state) => const MediaSearchScreen(),
+          ),
           GoRoute(
             path: '/anime',
             builder: (context, state) => const AnimeScreen(),

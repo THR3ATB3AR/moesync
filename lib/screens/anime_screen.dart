@@ -7,7 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../models/media_item.dart';
 import '../providers/providers.dart';
-import '../widgets/search_dialog.dart';
 import '../widgets/service_badge.dart';
 import '../widgets/service_errors_dialog.dart';
 import '../widgets/media/media_sort_dialog.dart';
@@ -346,16 +345,6 @@ class _AnimeScreenState extends ConsumerState<AnimeScreen>
                   ),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (_) => const SearchMediaDialog(mediaType: MediaType.anime),
-          );
-        },
-        icon: const Icon(Icons.add_rounded),
-        label: Text(AppLocalizations.of(context).addAnime),
       ),
     );
   }
