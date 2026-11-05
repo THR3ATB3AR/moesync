@@ -9,6 +9,9 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
+  String get syncTextLogs => 'Registro de sincronización';
+
+  @override
   String get noAccountsConnected => 'No hay cuentas conectadas';
 
   @override

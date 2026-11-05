@@ -67,8 +67,10 @@ class SyncEngine {
     MediaType type, {
     Map<ServiceType, String>? errorsOut,
     bool forceRefresh = false,
+    FutureOr<void> Function(ServiceType service)? onServiceLoading,
     FutureOr<void> Function(ServiceType service, List<MediaItem> items)?
     onServiceLoaded,
+    FutureOr<void> Function(ServiceType service, Object error)? onServiceFailed,
   }) async {
     lastFetchErrors.clear();
     final results = <ServiceType, List<MediaItem>>{};
@@ -80,12 +82,14 @@ class SyncEngine {
       Future<List<MediaItem>> Function() fetch,
     ) {
       futures.add(() async {
+        await onServiceLoading?.call(service);
         late final List<MediaItem> items;
         try {
           items = await fetch();
         } catch (e) {
           debugPrint('Failed to fetch ${service.displayName}: $e');
           errors[service] = e.toString().replaceFirst('Exception: ', '');
+          await onServiceFailed?.call(service, e);
           return;
         }
 
@@ -176,8 +180,8 @@ class SyncEngine {
         type,
         errorsOut: errorsOut,
         forceRefresh: forceRefresh,
-        onServiceLoaded: (service, items) {
-          if (onItemsLoaded == null) return Future<void>.value();
+        onServiceLoaded: (service, items) async {
+          if (onItemsLoaded == null) return;
 
           pendingUpdates = pendingUpdates.then((_) async {
             allServiceItems[service] = items;
@@ -186,7 +190,7 @@ class SyncEngine {
               _buildUnifiedListFromServices(type, allServiceItems),
             );
           });
-          return pendingUpdates;
+          await pendingUpdates;
         },
       ),
     ]);
@@ -411,6 +415,10 @@ class SyncEngine {
     bool onlyExisting = false,
     bool forceRefresh = false,
     Map<ServiceType, String>? errorsOut,
+    FutureOr<void> Function(ServiceType service)? onServiceLoading,
+    FutureOr<void> Function(ServiceType service, List<MediaItem> items)?
+    onServiceLoaded,
+    FutureOr<void> Function(ServiceType service, Object error)? onServiceFailed,
   }) async {
     final fetchErrors = <ServiceType, String>{};
     final mappingFutures = <Future<void>>[animeApi.initialize()];
@@ -423,6 +431,9 @@ class SyncEngine {
         mediaType,
         errorsOut: fetchErrors,
         forceRefresh: forceRefresh,
+        onServiceLoading: onServiceLoading,
+        onServiceLoaded: onServiceLoaded,
+        onServiceFailed: onServiceFailed,
       ),
     ]);
     final allServiceItems = futures[1] as Map<ServiceType, List<MediaItem>>;

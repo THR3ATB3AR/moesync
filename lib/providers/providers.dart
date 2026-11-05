@@ -885,13 +885,20 @@ class SyncNotifier extends Notifier<SyncState> {
     state = state.copyWith(pendingActions: updated);
   }
 
-  Future<void> scanDiffs({bool forceRefresh = false}) async {
+  Future<void> scanDiffs({
+    bool forceRefresh = false,
+    bool preserveLog = false,
+  }) async {
     if (!ref.mounted) return;
     final engine = ref.read(syncEngineProvider);
     state = state.copyWith(
       isScanning: true,
       pendingActions: const [],
       statusMessage: 'Scanning lists from connected services...',
+      syncLog: preserveLog ? state.syncLog : const [],
+    );
+    appendSyncLog(
+      'Scanning ${state.mediaType.name} lists; primary service is ${state.primaryService.displayName}.',
     );
 
     final fetchErrors = <ServiceType, String>{};
@@ -902,8 +909,28 @@ class SyncNotifier extends Notifier<SyncState> {
         onlyExisting: state.onlyExisting,
         forceRefresh: forceRefresh,
         errorsOut: fetchErrors,
+        onServiceLoading: (service) {
+          appendSyncLog(
+            'Loading ${state.mediaType.name} list from ${service.displayName}...',
+          );
+        },
+        onServiceLoaded: (service, items) {
+          appendSyncLogs([
+            'Loaded ${items.length} ${state.mediaType.name} entries from ${service.displayName}.',
+            for (final item in items)
+              '  ${service.displayName}: "${item.title}"',
+          ]);
+        },
+        onServiceFailed: (service, error) {
+          appendSyncLog(
+            'ERROR loading ${state.mediaType.name} from ${service.displayName}: $error',
+          );
+        },
       );
       if (!ref.mounted) return;
+      appendSyncLog(
+        'Scan complete: ${actions.length} pending action(s) found.',
+      );
       state = state.copyWith(
         isScanning: false,
         pendingActions: actions,
@@ -914,6 +941,7 @@ class SyncNotifier extends Notifier<SyncState> {
       );
     } catch (e) {
       if (!ref.mounted) return;
+      appendSyncLog('ERROR scanning lists: $e');
       state = state.copyWith(
         isScanning: false,
         statusMessage: 'Error scanning: $e',
@@ -932,31 +960,52 @@ class SyncNotifier extends Notifier<SyncState> {
       syncedCount: 0,
       totalToSync: selected.length,
       statusMessage: 'Synchronizing ${selected.length} items...',
-      syncLog: [],
     );
 
-    final logs = <String>[];
+    appendSyncLog('Starting sync of ${selected.length} selected action(s).');
     int completed = 0;
 
     for (final action in selected) {
+      final operation = action.isAdd ? 'Adding' : 'Updating';
+      appendSyncLog(
+        '$operation "${action.title}" on ${action.targetService.displayName}...',
+      );
       final success = await engine.executeAction(action);
       completed++;
-      final op = action.isAdd ? 'ADD' : 'UPDATE';
-      final statusText = success ? '✓ OK' : '✗ Failed';
-      logs.add(
-        '[$statusText] $op "${action.title}" on ${action.targetService.displayName}',
+      appendSyncLog(
+        '${success ? 'SUCCESS' : 'FAILED'}: $operation "${action.title}" on ${action.targetService.displayName}.',
       );
 
-      state = state.copyWith(syncedCount: completed, syncLog: List.from(logs));
+      state = state.copyWith(syncedCount: completed);
     }
 
+    appendSyncLog('Sync finished: $completed action(s) processed.');
     state = state.copyWith(
       isSyncing: false,
       statusMessage: 'Completed synchronization of $completed items!',
     );
 
     ref.read(mediaLibraryProvider.notifier).loadItems();
-    await scanDiffs();
+    await scanDiffs(preserveLog: true);
+  }
+
+  void appendSyncLog(String message) {
+    appendSyncLogs([message]);
+  }
+
+  void appendSyncLogs(Iterable<String> messages) {
+    final now = DateTime.now();
+    final timestamp =
+        '${now.hour.toString().padLeft(2, '0')}:'
+        '${now.minute.toString().padLeft(2, '0')}:'
+        '${now.second.toString().padLeft(2, '0')}';
+    final added = messages.map((message) => '[$timestamp] $message');
+    final logs = [...state.syncLog, ...added];
+    state = state.copyWith(
+      syncLog: logs.length > 1000
+          ? logs.skip(logs.length - 1000).toList()
+          : logs,
+    );
   }
 
   void clearServiceError(ServiceType service) {

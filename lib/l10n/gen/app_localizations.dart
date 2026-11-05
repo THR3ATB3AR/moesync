@@ -100,6 +100,12 @@ abstract class AppLocalizations {
     Locale('pl'),
   ];
 
+  /// No description provided for @syncTextLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync log'**
+  String get syncTextLogs;
+
   /// No description provided for @noAccountsConnected.
   ///
   /// In en, this message translates to:

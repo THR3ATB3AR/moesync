@@ -1,5 +1,6 @@
 {
   "@@locale": "es",
+  "syncTextLogs": "Registro de sincronización",
   "noAccountsConnected": "No hay cuentas conectadas",
   "noAnimeFound": "No se encontró anime",
   "connectYourMyanimelistAnilistKitsuShikimoriOrSimklAccountInSettingsToViewYourAnime": "Conecta tu cuenta de MyAnimeList, AniList, Kitsu, Shikimori o Simkl en Ajustes para ver tu anime.",

@@ -19,13 +19,16 @@ class SyncScreen extends ConsumerStatefulWidget {
 
 class _SyncScreenState extends ConsumerState<SyncScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _syncLogScrollController = ScrollController();
   String _searchQuery = '';
   String _actionTypeFilter = 'all';
   ServiceType? _targetServiceFilter;
+  String? _lastSyncLogEntry;
 
   @override
   void dispose() {
     _searchController.dispose();
+    _syncLogScrollController.dispose();
     super.dispose();
   }
 
@@ -40,6 +43,17 @@ class _SyncScreenState extends ConsumerState<SyncScreen> {
     final auth = ref.watch(authProvider);
     final sync = ref.watch(syncProvider);
     final notifier = ref.read(syncProvider.notifier);
+    final latestSyncLogEntry = sync.syncLog.isEmpty ? null : sync.syncLog.last;
+    if (latestSyncLogEntry != null && latestSyncLogEntry != _lastSyncLogEntry) {
+      _lastSyncLogEntry = latestSyncLogEntry;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_syncLogScrollController.hasClients) {
+          _syncLogScrollController.jumpTo(
+            _syncLogScrollController.position.maxScrollExtent,
+          );
+        }
+      });
+    }
 
     final filteredActions = sync.pendingActions.where((a) {
       if (_searchQuery.isNotEmpty &&
@@ -431,6 +445,14 @@ class _SyncScreenState extends ConsumerState<SyncScreen> {
                 ],
               ),
             ),
+
+          if (sync.syncLog.isNotEmpty)
+            _SyncTextLog(
+              logs: sync.syncLog,
+              controller: _syncLogScrollController,
+              title: AppLocalizations.of(context).syncTextLogs,
+            ),
+
           Expanded(
             child: sync.isScanning
                 ? SyncScreenSkeleton()
@@ -743,6 +765,74 @@ class _SyncScreenState extends ConsumerState<SyncScreen> {
               ),
             )
           : null,
+    );
+  }
+}
+
+class _SyncTextLog extends StatelessWidget {
+  const _SyncTextLog({
+    required this.logs,
+    required this.controller,
+    required this.title,
+  });
+
+  final List<String> logs;
+  final ScrollController controller;
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      height: 190,
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.colorScheme.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.terminal_rounded,
+                  size: 17,
+                  color: theme.colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  title,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Divider(height: 1, color: theme.colorScheme.outlineVariant),
+          Expanded(
+            child: ListView.builder(
+              controller: controller,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              itemCount: logs.length,
+              itemBuilder: (context, index) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 1),
+                child: SelectableText(
+                  logs[index],
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontFamily: 'monospace',
+                    fontSize: 11,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
