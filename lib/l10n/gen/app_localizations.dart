@@ -643,11 +643,11 @@ abstract class AppLocalizations {
   /// **'Continue Reading'**
   String get continueReading;
 
-  /// No description provided for @pendingcountPendingUpdates.
+  /// No description provided for @pendingUpdatesCount.
   ///
   /// In en, this message translates to:
-  /// **'\$pendingCount Pending Updates'**
-  String get pendingcountPendingUpdates;
+  /// **'{count} Pending Updates'**
+  String pendingUpdatesCount(Object count);
 
   /// No description provided for @listsFullySynchronized.
   ///

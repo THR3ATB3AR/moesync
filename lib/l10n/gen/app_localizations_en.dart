@@ -296,7 +296,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get continueReading => 'Continue Reading';
 
   @override
-  String get pendingcountPendingUpdates => '\$pendingCount Pending Updates';
+  String pendingUpdatesCount(Object count) {
+    return '$count Pending Updates';
+  }
 
   @override
   String get listsFullySynchronized => 'Lists Fully Synchronized';

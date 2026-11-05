@@ -66,7 +66,7 @@ class HomeSyncStatusCard extends StatelessWidget {
                             : (pendingCount > 0
                                   ? AppLocalizations.of(
                                       context,
-                                    ).pendingcountPendingUpdates
+                                    ).pendingUpdatesCount(pendingCount)
                                   : AppLocalizations.of(
                                       context,
                                     ).listsFullySynchronized),

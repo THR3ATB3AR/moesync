@@ -90,7 +90,7 @@
   "configureAccounts": "Configurar cuentas",
   "continueWatching": "Seguir viendo",
   "continueReading": "Seguir leyendo",
-  "pendingcountPendingUpdates": "$pendingCount actualizaciones pendientes",
+  "pendingUpdatesCount": "{count} actualizaciones pendientes",
   "listsFullySynchronized": "Las listas están totalmente sincronizadas",
   "connectYourListServicesInSettingsToStartSynchronizing": "Conecta tus servicios de listas en Ajustes para empezar a sincronizar",
   "differencesDetectedAgainstPrimaryservice": "Diferencias detectadas respecto a {primaryService}",
