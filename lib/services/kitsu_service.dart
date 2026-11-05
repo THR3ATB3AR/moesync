@@ -437,6 +437,7 @@ class KitsuService {
     return list.map((item) {
       final attrs = (item['attributes'] as Map<String, dynamic>?) ?? {};
       final posterMap = (attrs['posterImage'] as Map<String, dynamic>?) ?? {};
+      final startDate = DateTime.tryParse(attrs['startDate'] as String? ?? '');
       final poster =
           (posterMap['large'] as String?) ??
           (posterMap['medium'] as String?) ??
@@ -451,6 +452,16 @@ class KitsuService {
         totalProgress: type == MediaType.anime
             ? (attrs['episodeCount'] as num?)?.toInt()
             : (attrs['chapterCount'] as num?)?.toInt(),
+        mediaFormat: (attrs['subtype'] as String?)?.toUpperCase(),
+        releaseSeason: startDate == null
+            ? null
+            : switch (startDate.month) {
+                >= 1 && <= 3 => 'WINTER',
+                >= 4 && <= 6 => 'SPRING',
+                >= 7 && <= 9 => 'SUMMER',
+                _ => 'FALL',
+              },
+        releaseYear: startDate?.year,
         posterImage: poster,
         service: ServiceType.kitsu,
         mediaType: type,

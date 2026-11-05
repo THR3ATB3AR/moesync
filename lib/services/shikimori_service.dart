@@ -356,6 +356,7 @@ class ShikimoriService {
     return list.map((item) {
       final m = item as Map<String, dynamic>;
       final img = (m['image'] as Map<String, dynamic>?) ?? {};
+      final airedOn = DateTime.tryParse(m['aired_on'] as String? ?? '');
       var poster = (img['original'] as String?) ?? '';
       if (poster.isNotEmpty && !poster.startsWith('http')) {
         poster = 'https://shikimori.io$poster';
@@ -370,6 +371,8 @@ class ShikimoriService {
         totalProgress: type == MediaType.anime
             ? (m['episodes'] as num?)?.toInt()
             : (m['chapters'] as num?)?.toInt(),
+        mediaFormat: (m['kind'] as String?)?.toUpperCase(),
+        releaseYear: airedOn?.year,
         posterImage: poster,
         service: ServiceType.shikimori,
         mediaType: type,

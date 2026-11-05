@@ -315,17 +315,16 @@ class MalService {
     }
   }
 
-  Future<void> removeItem({
-    required int id,
-    required MediaType type,
-  }) async {
+  Future<void> removeItem({required int id, required MediaType type}) async {
     if (!isAuthenticated) throw Exception('MAL is not authenticated');
 
     final endpoint = type == MediaType.anime ? 'anime' : 'manga';
     final url = Uri.parse(
       'https://api.myanimelist.net/v2/$endpoint/$id/my_list_status',
     );
-    final resp = await _sendRequest((headers) => http.delete(url, headers: headers));
+    final resp = await _sendRequest(
+      (headers) => http.delete(url, headers: headers),
+    );
     if (resp.statusCode != 200 && resp.statusCode != 204) {
       throw Exception('Failed to remove MAL entry: ${resp.body}');
     }
@@ -334,8 +333,11 @@ class MalService {
   Future<List<MediaItem>> search(String query, MediaType type) async {
     final clientId = credentials.clientId ?? StorageService.defaultMalClientId;
     final endpoint = type == MediaType.anime ? 'anime' : 'manga';
+    final fields = type == MediaType.anime
+        ? 'main_picture,alternative_titles,num_episodes,media_type,start_season'
+        : 'main_picture,alternative_titles,num_chapters,media_type';
     final url = Uri.parse(
-      'https://api.myanimelist.net/v2/$endpoint?q=${Uri.encodeComponent(query)}&limit=20&fields=main_picture,alternative_titles,num_episodes,num_chapters',
+      'https://api.myanimelist.net/v2/$endpoint?q=${Uri.encodeComponent(query)}&limit=20&fields=$fields',
     );
 
     final resp = await http.get(url, headers: {'X-MAL-CLIENT-ID': clientId});
@@ -360,6 +362,14 @@ class MalService {
         totalProgress: type == MediaType.anime
             ? (node['num_episodes'] as num?)?.toInt()
             : (node['num_chapters'] as num?)?.toInt(),
+        mediaFormat: (node['media_type'] as String?)?.toUpperCase(),
+        releaseSeason:
+            ((node['start_season'] as Map<String, dynamic>?)?['season']
+                    as String?)
+                ?.toUpperCase(),
+        releaseYear:
+            ((node['start_season'] as Map<String, dynamic>?)?['year'] as num?)
+                ?.toInt(),
         posterImage:
             (mainPic['large'] as String?) ??
             (mainPic['medium'] as String?) ??

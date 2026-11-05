@@ -209,24 +209,47 @@ class StorageService {
     }
   }
 
-  List<MediaItem>? getCachedSearchResults(String query, MediaType type) {
+  List<UnifiedMediaItem>? getCachedSearchResults(String query, MediaType type) {
     final normalizedQuery = _normalizeSearchQuery(query);
     if (normalizedQuery.isEmpty) return null;
 
-    final encoded = _prefs.getString(_mediaSearchCacheKey);
-    if (encoded == null) return null;
     try {
-      final entries = jsonDecode(encoded) as List<dynamic>;
-      final entry = entries.cast<Map<String, dynamic>>().firstWhere(
-        (value) => value['queryKey'] == '${type.name}:$normalizedQuery',
-        orElse: () => <String, dynamic>{},
-      );
-      final results = entry['results'];
-      if (results is! List<dynamic>) return null;
-      return results
-          .whereType<Map<String, dynamic>>()
-          .map(MediaItem.fromJson)
-          .toList();
+      final matches = <String, UnifiedMediaItem>{};
+      for (final entry in _readSearchCacheEntries()) {
+        if (entry['mediaType'] != type.name) continue;
+        final exactQuery = entry['queryKey'] == '${type.name}:$normalizedQuery';
+        final results = entry['results'];
+        if (results is! List<dynamic>) continue;
+        for (final result in results.whereType<Map<String, dynamic>>()) {
+          final item = result.containsKey('services')
+              ? UnifiedMediaItem.fromJson(result)
+              : (() {
+                  final mediaItem = MediaItem.fromJson(result);
+                  return UnifiedMediaItem(
+                    malId:
+                        mediaItem.malId ??
+                        (mediaItem.service == ServiceType.mal
+                            ? mediaItem.id
+                            : 0),
+                    title: mediaItem.title,
+                    posterImage: mediaItem.posterImage,
+                    mediaType: mediaItem.mediaType,
+                    services: {mediaItem.service: mediaItem},
+                  );
+                })();
+          if (!exactQuery && !item.matchesTitleQuery(normalizedQuery)) {
+            continue;
+          }
+          final key = item.malId > 0
+              ? 'mal:${item.malId}'
+              : item.services.entries
+                    .map((service) => '${service.key.name}:${service.value.id}')
+                    .join(',');
+          matches.putIfAbsent(key, () => item);
+        }
+      }
+      if (matches.isEmpty) return null;
+      return matches.values.take(60).toList();
     } catch (error) {
       debugPrint('Failed to load cached media search results: $error');
       return null;
@@ -236,7 +259,7 @@ class StorageService {
   Future<void> saveCachedSearchResults(
     String query,
     MediaType type,
-    List<MediaItem> results,
+    List<UnifiedMediaItem> results,
   ) async {
     final normalizedQuery = _normalizeSearchQuery(query);
     if (normalizedQuery.isEmpty) return;
@@ -249,11 +272,11 @@ class StorageService {
       'query': query.trim(),
       'mediaType': type.name,
       'updatedAt': DateTime.now().toIso8601String(),
-      'results': results.map((item) => item.toJson()).toList(),
+      'results': results.take(60).map((item) => item.toJson()).toList(),
     });
     await _prefs.setString(
       _mediaSearchCacheKey,
-      jsonEncode(entries.take(24).toList()),
+      jsonEncode(entries.take(12).toList()),
     );
   }
 

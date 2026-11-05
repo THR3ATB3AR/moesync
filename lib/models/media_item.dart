@@ -179,6 +179,9 @@ class MediaItem {
   final int score;
   final int progress;
   final int? totalProgress;
+  final String? mediaFormat;
+  final String? releaseSeason;
+  final int? releaseYear;
   final String posterImage;
   final ServiceType service;
   final MediaType mediaType;
@@ -203,6 +206,9 @@ class MediaItem {
     required this.score,
     required this.progress,
     this.totalProgress,
+    this.mediaFormat,
+    this.releaseSeason,
+    this.releaseYear,
     required this.posterImage,
     required this.service,
     this.mediaType = MediaType.anime,
@@ -228,6 +234,9 @@ class MediaItem {
     int? score,
     int? progress,
     int? totalProgress,
+    String? mediaFormat,
+    String? releaseSeason,
+    int? releaseYear,
     String? posterImage,
     ServiceType? service,
     MediaType? mediaType,
@@ -252,6 +261,9 @@ class MediaItem {
       score: score ?? this.score,
       progress: progress ?? this.progress,
       totalProgress: totalProgress ?? this.totalProgress,
+      mediaFormat: mediaFormat ?? this.mediaFormat,
+      releaseSeason: releaseSeason ?? this.releaseSeason,
+      releaseYear: releaseYear ?? this.releaseYear,
       posterImage: posterImage ?? this.posterImage,
       service: service ?? this.service,
       mediaType: mediaType ?? this.mediaType,
@@ -278,6 +290,9 @@ class MediaItem {
     'score': score,
     'progress': progress,
     'totalProgress': totalProgress,
+    'mediaFormat': mediaFormat,
+    'releaseSeason': releaseSeason,
+    'releaseYear': releaseYear,
     'posterImage': posterImage,
     'service': service.name,
     'mediaType': mediaType.name,
@@ -307,6 +322,9 @@ class MediaItem {
     score: (json['score'] as num?)?.toInt() ?? 0,
     progress: (json['progress'] as num?)?.toInt() ?? 0,
     totalProgress: (json['totalProgress'] as num?)?.toInt(),
+    mediaFormat: json['mediaFormat'] as String?,
+    releaseSeason: json['releaseSeason'] as String?,
+    releaseYear: (json['releaseYear'] as num?)?.toInt(),
     posterImage: json['posterImage'] as String? ?? '',
     service: ServiceType.values.firstWhere(
       (s) => s.name == json['service'],
@@ -362,6 +380,42 @@ class UnifiedMediaItem {
     required this.mediaType,
     required this.services,
   });
+
+  Map<String, dynamic> toJson() => {
+    'malId': malId,
+    'title': title,
+    'posterImage': _posterImage,
+    'mediaType': mediaType.name,
+    'services': {
+      for (final entry in services.entries)
+        entry.key.name: entry.value.toJson(),
+    },
+  };
+
+  factory UnifiedMediaItem.fromJson(Map<String, dynamic> json) {
+    final serviceJson = json['services'];
+    if (serviceJson is! Map<String, dynamic>) {
+      throw const FormatException('Missing services in unified media item.');
+    }
+    return UnifiedMediaItem(
+      malId: (json['malId'] as num?)?.toInt() ?? 0,
+      title: json['title'] as String? ?? 'Unknown',
+      posterImage: json['posterImage'] as String? ?? '',
+      mediaType: MediaType.values.firstWhere(
+        (type) => type.name == json['mediaType'],
+        orElse: () => MediaType.anime,
+      ),
+      services: {
+        for (final entry in serviceJson.entries)
+          ServiceType.values.firstWhere(
+            (service) => service.name == entry.key,
+            orElse: () => ServiceType.mal,
+          ): MediaItem.fromJson(
+            entry.value as Map<String, dynamic>,
+          ),
+      },
+    );
+  }
 
   UnifiedMediaItem copyWith({
     int? malId,

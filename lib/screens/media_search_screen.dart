@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,8 +19,9 @@ class MediaSearchScreen extends ConsumerStatefulWidget {
 class _MediaSearchScreenState extends ConsumerState<MediaSearchScreen> {
   final _controller = TextEditingController();
   MediaType _mediaType = MediaType.anime;
-  List<MediaItem> _results = const [];
+  List<UnifiedMediaItem> _results = const [];
   List<({String query, MediaType mediaType})> _history = const [];
+  Timer? _searchDebounce;
   bool _isSearching = false;
   bool _hasSearched = false;
   bool _hasCachedResults = false;
@@ -33,47 +36,128 @@ class _MediaSearchScreenState extends ConsumerState<MediaSearchScreen> {
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _controller.dispose();
     super.dispose();
   }
 
-  Future<void> _search([String? value]) async {
-    final query = (value ?? _controller.text).trim();
-    if (query.isEmpty) return;
-
+  void _scheduleSearch(String value, {bool immediate = false}) {
+    _searchDebounce?.cancel();
+    final query = value.trim();
     final generation = ++_searchGeneration;
+    if (query.isEmpty) {
+      setState(() {
+        _results = const [];
+        _hasSearched = false;
+        _isSearching = false;
+        _hasCachedResults = false;
+        _error = null;
+      });
+      return;
+    }
+
     final storage = ref.read(storageServiceProvider);
-    final cached = storage.getCachedSearchResults(query, _mediaType);
+    final mediaType = _mediaType;
+    final cachedResults =
+        storage.getCachedSearchResults(query, mediaType) ?? [];
+    final libraryResults = ref
+        .read(mediaLibraryProvider)
+        .unifiedItems
+        .where(
+          (item) =>
+              item.mediaType == mediaType && item.matchesTitleQuery(query),
+        );
+    final localResults = _mergeSearchResults([
+      ...cachedResults.expand((item) => item.services.values),
+      ...libraryResults.expand((item) => item.services.values),
+    ]);
+    final cached = localResults.isEmpty ? null : localResults;
     setState(() {
       _hasSearched = true;
-      _results = cached ?? const [];
+      _results = localResults;
       _hasCachedResults = cached != null;
       _isSearching = true;
       _error = null;
     });
 
-    await storage.saveMediaSearchHistory(query, _mediaType);
+    if (immediate) {
+      unawaited(_performSearch(query, mediaType, generation, cached));
+    } else {
+      _searchDebounce = Timer(
+        const Duration(milliseconds: 350),
+        () => unawaited(_performSearch(query, mediaType, generation, cached)),
+      );
+    }
+  }
+
+  Future<void> _performSearch(
+    String query,
+    MediaType mediaType,
+    int generation,
+    List<UnifiedMediaItem>? cached,
+  ) async {
+    final storage = ref.read(storageServiceProvider);
+    await storage.saveMediaSearchHistory(query, mediaType);
     if (!mounted || generation != _searchGeneration) return;
     setState(() {
       _history = storage.getMediaSearchHistory();
     });
 
     try {
-      final anilist = ref.read(anilistServiceProvider);
-      final mal = ref.read(malServiceProvider);
-      var freshResults = await anilist.search(query, _mediaType);
-      if (freshResults.isEmpty) {
-        freshResults = await mal.search(query, _mediaType);
-      }
+      final searches = <(ServiceType, Future<List<MediaItem>>)>[
+        (
+          ServiceType.anilist,
+          ref.read(anilistServiceProvider).search(query, mediaType),
+        ),
+        (
+          ServiceType.mal,
+          ref.read(malServiceProvider).search(query, mediaType),
+        ),
+        (
+          ServiceType.kitsu,
+          ref.read(kitsuServiceProvider).search(query, mediaType),
+        ),
+        (
+          ServiceType.shikimori,
+          ref.read(shikimoriServiceProvider).search(query, mediaType),
+        ),
+        if (mediaType == MediaType.anime)
+          (
+            ServiceType.simkl,
+            ref.read(simklServiceProvider).search(query, mediaType),
+          ),
+      ];
+      final failures = <String>[];
+      final serviceResults = await Future.wait(
+        searches.map((search) async {
+          try {
+            return await search.$2;
+          } catch (error) {
+            failures.add('${search.$1.displayName}: $error');
+            debugPrint('Media search failed for ${search.$1.name}: $error');
+            return <MediaItem>[];
+          }
+        }),
+      );
+      final freshResults = _mergeSearchResults([
+        ...?cached?.expand((item) => item.services.values),
+        ...serviceResults.expand((items) => items),
+      ]);
 
+      if (!mounted || generation != _searchGeneration) return;
       if (freshResults.isNotEmpty) {
-        await storage.saveCachedSearchResults(query, _mediaType, freshResults);
+        await storage.saveCachedSearchResults(query, mediaType, freshResults);
       }
       if (!mounted || generation != _searchGeneration) return;
       setState(() {
         if (freshResults.isNotEmpty || cached == null) {
           _results = freshResults;
           _hasCachedResults = false;
+        }
+        if (freshResults.isEmpty && failures.isNotEmpty) {
+          _error = AppLocalizations.of(
+            context,
+          ).failedToSearch(failures.join('\n'));
         }
         _isSearching = false;
       });
@@ -86,12 +170,59 @@ class _MediaSearchScreenState extends ConsumerState<MediaSearchScreen> {
     }
   }
 
+  List<UnifiedMediaItem> _mergeSearchResults(Iterable<MediaItem> items) {
+    final merged = <String, UnifiedMediaItem>{};
+    for (final item in items) {
+      final malId =
+          item.malId ?? (item.service == ServiceType.mal ? item.id : null);
+      final mappedMalId = malId != null && malId > 0
+          ? malId
+          : _mappedMalId(item);
+      final key = mappedMalId > 0
+          ? 'mal:$mappedMalId'
+          : '${item.service.name}:${item.id}';
+      final existing = merged[key];
+      if (existing == null) {
+        merged[key] = UnifiedMediaItem(
+          malId: mappedMalId,
+          title: item.title,
+          posterImage: item.posterImage,
+          mediaType: item.mediaType,
+          services: {item.service: item},
+        );
+        continue;
+      }
+
+      final services = Map<ServiceType, MediaItem>.from(existing.services)
+        ..[item.service] = item;
+      merged[key] = existing.copyWith(
+        title: existing.title.isNotEmpty ? existing.title : item.title,
+        posterImage: existing.posterImage.isNotEmpty
+            ? existing.posterImage
+            : item.posterImage,
+        services: services,
+      );
+    }
+    return merged.values.toList();
+  }
+
+  int _mappedMalId(MediaItem item) {
+    if (_mediaType == MediaType.anime) {
+      return ref
+          .read(animeApiMappingServiceProvider)
+          .findMalId(item.service, item.id);
+    }
+    return ref
+        .read(mangaMappingServiceProvider)
+        .findMalId(item.service, item.id);
+  }
+
   void _selectHistoryEntry(({String query, MediaType mediaType}) entry) {
     setState(() {
       _mediaType = entry.mediaType;
       _controller.text = entry.query;
     });
-    _search(entry.query);
+    _scheduleSearch(entry.query, immediate: true);
   }
 
   Future<void> _clearHistory() async {
@@ -102,20 +233,16 @@ class _MediaSearchScreenState extends ConsumerState<MediaSearchScreen> {
   }
 
   UnifiedMediaItem? _findLibraryItem(
-    MediaItem result,
+    UnifiedMediaItem result,
     List<UnifiedMediaItem> library,
   ) {
     for (final item in library) {
       if (item.mediaType != _mediaType) continue;
-      if (result.malId != null &&
-          result.malId! > 0 &&
-          item.malId == result.malId) {
+      if (result.malId > 0 && item.malId == result.malId) {
         return item;
       }
-      if (item.services.values.any(
-        (serviceItem) =>
-            serviceItem.service == result.service &&
-            serviceItem.id == result.id,
+      if (result.services.entries.any(
+        (entry) => item.services[entry.key]?.id == entry.value.id,
       )) {
         return item;
       }
@@ -123,20 +250,9 @@ class _MediaSearchScreenState extends ConsumerState<MediaSearchScreen> {
     return null;
   }
 
-  void _openDetails(MediaItem result, List<UnifiedMediaItem> library) {
+  void _openDetails(UnifiedMediaItem result, List<UnifiedMediaItem> library) {
     final existing = _findLibraryItem(result, library);
-    final unified =
-        existing ??
-        UnifiedMediaItem(
-          malId:
-              result.malId ??
-              (result.service == ServiceType.mal ? result.id : 0),
-          title: result.title,
-          posterImage: result.posterImage,
-          mediaType: _mediaType,
-          services: {result.service: result},
-        );
-    context.push('/mediaDetails', extra: unified);
+    context.push('/mediaDetails', extra: existing ?? result);
   }
 
   @override
@@ -154,17 +270,8 @@ class _MediaSearchScreenState extends ConsumerState<MediaSearchScreen> {
           controller: _controller,
           autofocus: true,
           textInputAction: TextInputAction.search,
-          onChanged: (_) {
-            _searchGeneration++;
-            setState(() {
-              _results = const [];
-              _hasSearched = false;
-              _isSearching = false;
-              _hasCachedResults = false;
-              _error = null;
-            });
-          },
-          onSubmitted: _search,
+          onChanged: _scheduleSearch,
+          onSubmitted: (value) => _scheduleSearch(value, immediate: true),
           decoration: InputDecoration(
             hintText: searchHint,
             border: InputBorder.none,
@@ -173,33 +280,13 @@ class _MediaSearchScreenState extends ConsumerState<MediaSearchScreen> {
                 : IconButton(
                     tooltip: l.searchMediaHint,
                     onPressed: () {
-                      _searchGeneration++;
                       _controller.clear();
-                      setState(() {
-                        _results = const [];
-                        _hasSearched = false;
-                        _isSearching = false;
-                        _hasCachedResults = false;
-                        _error = null;
-                      });
+                      _scheduleSearch('');
                     },
                     icon: const Icon(Icons.close_rounded),
                   ),
           ),
         ),
-        actions: [
-          IconButton(
-            tooltip: l.searchByTitle,
-            onPressed: _isSearching ? null : () => _search(),
-            icon: _isSearching
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.search_rounded),
-          ),
-        ],
       ),
       body: Column(
         children: [
@@ -223,7 +310,7 @@ class _MediaSearchScreenState extends ConsumerState<MediaSearchScreen> {
                 final selected = selection.first;
                 setState(() => _mediaType = selected);
                 if (_controller.text.trim().isNotEmpty) {
-                  _search();
+                  _scheduleSearch(_controller.text);
                 } else {
                   setState(() {
                     _results = const [];
@@ -373,7 +460,7 @@ class _MediaSearchResultCard extends StatelessWidget {
     required this.onTap,
   });
 
-  final MediaItem item;
+  final UnifiedMediaItem item;
   final UnifiedMediaItem? ownedItem;
   final TitleLanguage titleLanguage;
   final VoidCallback onTap;
@@ -383,6 +470,13 @@ class _MediaSearchResultCard extends StatelessWidget {
     final theme = Theme.of(context);
     final l = AppLocalizations.of(context);
     final type = item.mediaType;
+    final metadataItem = item.services.values.firstWhere(
+      (serviceItem) =>
+          serviceItem.mediaFormat != null ||
+          serviceItem.releaseSeason != null ||
+          serviceItem.releaseYear != null,
+      orElse: () => item.services.values.first,
+    );
     final ownedService = ownedItem?.services.values.firstOrNull;
     final status = ownedService?.status;
     final statusColor = status == null
@@ -396,6 +490,22 @@ class _MediaSearchResultCard extends StatelessWidget {
       'plan_to_watch' || 'plan_to_read' => Icons.bookmark_border_rounded,
       _ => Icons.add_circle_outline_rounded,
     };
+    final season = switch (metadataItem.releaseSeason?.toUpperCase()) {
+      'WINTER' => l.seasonWinter,
+      'SPRING' => l.seasonSpring,
+      'SUMMER' => l.seasonSummer,
+      'FALL' || 'AUTUMN' => l.seasonFall,
+      final value => value,
+    };
+    final release = [
+      ?season,
+      if (metadataItem.releaseYear != null) metadataItem.releaseYear.toString(),
+    ].join(' ');
+    final metadata = [
+      if (metadataItem.mediaFormat?.isNotEmpty == true)
+        metadataItem.mediaFormat!.replaceAll('_', ' '),
+      if (release.isNotEmpty) release,
+    ];
 
     return Card(
       elevation: 0,
@@ -419,7 +529,7 @@ class _MediaSearchResultCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 child: SizedBox(
                   width: 82,
-                  height: 114,
+                  height: 132,
                   child: item.posterImage.isEmpty
                       ? Container(
                           color: theme.colorScheme.surfaceContainerHighest,
@@ -446,7 +556,7 @@ class _MediaSearchResultCard extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: SizedBox(
-                  height: 114,
+                  height: 132,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -478,19 +588,41 @@ class _MediaSearchResultCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                          ServiceBadgeChip(
-                            service: item.service,
-                            size: 14,
-                            compact: true,
+                          Wrap(
+                            spacing: 3,
+                            children: item.services.keys
+                                .map(
+                                  (service) => ServiceBadgeChip(
+                                    service: service,
+                                    size: 14,
+                                    compact: true,
+                                  ),
+                                )
+                                .toList(),
                           ),
                         ],
                       ),
+                      if (metadata.isNotEmpty) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          metadata.join(' · '),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                       const Spacer(),
                       Text(
-                        item.totalProgress != null
+                        item.resolvedTotalProgress != null
                             ? type == MediaType.anime
-                                  ? l.dataEpisodesEpisodes(item.totalProgress!)
-                                  : l.dataChaptersChapters(item.totalProgress!)
+                                  ? l.dataEpisodesEpisodes(
+                                      item.resolvedTotalProgress!,
+                                    )
+                                  : l.dataChaptersChapters(
+                                      item.resolvedTotalProgress!,
+                                    )
                             : l.ongoing,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

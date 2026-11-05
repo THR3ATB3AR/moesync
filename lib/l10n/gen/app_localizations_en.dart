@@ -66,6 +66,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noSearchResults => 'No results found';
 
   @override
+  String get seasonWinter => 'Winter';
+
+  @override
+  String get seasonSpring => 'Spring';
+
+  @override
+  String get seasonSummer => 'Summer';
+
+  @override
+  String get seasonFall => 'Fall';
+
+  @override
   String get switchToListView => 'Switch to List View';
 
   @override

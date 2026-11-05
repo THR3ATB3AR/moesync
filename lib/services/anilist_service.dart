@@ -180,6 +180,12 @@ class AnilistService {
                 synonyms
                 episodes
                 chapters
+                format
+                season
+                seasonYear
+                startDate {
+                  year
+                }
                 coverImage {
                   extraLarge
                   large
@@ -460,6 +466,12 @@ class AnilistService {
             }
             episodes
             chapters
+            format
+            season
+            seasonYear
+            startDate {
+              year
+            }
             coverImage {
               large
             }
@@ -505,6 +517,12 @@ class AnilistService {
         totalProgress: type == MediaType.anime
             ? (m['episodes'] as num?)?.toInt()
             : (m['chapters'] as num?)?.toInt(),
+        mediaFormat: m['format'] as String?,
+        releaseSeason: m['season'] as String?,
+        releaseYear:
+            (m['seasonYear'] as num?)?.toInt() ??
+            ((m['startDate'] as Map<String, dynamic>?)?['year'] as num?)
+                ?.toInt(),
         posterImage: (coverMap['large'] as String?) ?? '',
         service: ServiceType.anilist,
         mediaType: type,

@@ -603,10 +603,15 @@ class SimklService {
 
       return MediaItem(
         id: (ids['simkl'] as num?)?.toInt() ?? 0,
+        malId:
+            (ids['mal'] as num?)?.toInt() ??
+            int.tryParse(ids['mal']?.toString() ?? ''),
         title: (item['title'] as String?) ?? 'Unknown',
         status: 'plan_to_watch',
         score: 0,
         progress: 0,
+        mediaFormat: (item['anime_type'] as String?)?.toUpperCase(),
+        releaseYear: int.tryParse(item['year']?.toString() ?? ''),
         posterImage: poster,
         service: ServiceType.simkl,
         mediaType: type,

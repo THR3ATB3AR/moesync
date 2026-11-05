@@ -66,6 +66,18 @@ class AppLocalizationsEs extends AppLocalizations {
   String get noSearchResults => 'No se encontraron resultados';
 
   @override
+  String get seasonWinter => 'Invierno';
+
+  @override
+  String get seasonSpring => 'Primavera';
+
+  @override
+  String get seasonSummer => 'Verano';
+
+  @override
+  String get seasonFall => 'Otoño';
+
+  @override
   String get switchToListView => 'Cambiar a vista de lista';
 
   @override

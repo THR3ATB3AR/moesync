@@ -39,11 +39,34 @@ void main() {
         mediaType: MediaType.manga,
       );
 
+      final malAnime = MediaItem(
+        id: 10,
+        title: 'Cached Anime',
+        status: 'plan_to_watch',
+        score: 0,
+        progress: 0,
+        mediaFormat: 'TV',
+        releaseSeason: 'SUMMER',
+        releaseYear: 2008,
+        posterImage: 'https://example.com/anime.jpg',
+        service: ServiceType.mal,
+        mediaType: MediaType.anime,
+      );
       await storage.saveCachedSearchResults('  My   Query ', MediaType.anime, [
-        anime,
+        UnifiedMediaItem(
+          malId: 10,
+          title: anime.title,
+          mediaType: MediaType.anime,
+          services: {ServiceType.anilist: anime, ServiceType.mal: malAnime},
+        ),
       ]);
       await storage.saveCachedSearchResults('my query', MediaType.manga, [
-        manga,
+        UnifiedMediaItem(
+          malId: 20,
+          title: manga.title,
+          mediaType: MediaType.manga,
+          services: {ServiceType.anilist: manga},
+        ),
       ]);
 
       expect(
@@ -53,16 +76,21 @@ void main() {
             .title,
         'Cached Anime',
       );
+      final substringMatch = storage
+          .getCachedSearchResults('cached', MediaType.anime)
+          ?.single;
+      expect(substringMatch?.malId, 10);
+      expect(substringMatch?.services.keys, contains(ServiceType.mal));
+      expect(
+        substringMatch?.services[ServiceType.mal]?.releaseSeason,
+        'SUMMER',
+      );
       expect(
         storage
             .getCachedSearchResults('my query', MediaType.manga)
             ?.single
             .title,
         'Cached Manga',
-      );
-      expect(
-        storage.getCachedSearchResults('my query', MediaType.anime)?.single.id,
-        anime.id,
       );
     },
   );

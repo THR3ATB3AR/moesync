@@ -209,6 +209,30 @@ abstract class AppLocalizations {
   /// **'No results found'**
   String get noSearchResults;
 
+  /// No description provided for @seasonWinter.
+  ///
+  /// In en, this message translates to:
+  /// **'Winter'**
+  String get seasonWinter;
+
+  /// No description provided for @seasonSpring.
+  ///
+  /// In en, this message translates to:
+  /// **'Spring'**
+  String get seasonSpring;
+
+  /// No description provided for @seasonSummer.
+  ///
+  /// In en, this message translates to:
+  /// **'Summer'**
+  String get seasonSummer;
+
+  /// No description provided for @seasonFall.
+  ///
+  /// In en, this message translates to:
+  /// **'Fall'**
+  String get seasonFall;
+
   /// No description provided for @switchToListView.
   ///
   /// In en, this message translates to:
