@@ -39,6 +39,12 @@ class SettingsHomeScreenPage extends ConsumerWidget {
               ),
             ),
           ),
+          SwitchListTile(
+            title: Text(localizations.showDisabledWidgetsMessage),
+            subtitle: Text(localizations.showDisabledWidgetsMessageHint),
+            value: settings.showEmptyWidgetsMessage,
+            onChanged: notifier.setShowEmptyWidgetsMessage,
+          ),
           Expanded(
             child: ReorderableListView.builder(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),

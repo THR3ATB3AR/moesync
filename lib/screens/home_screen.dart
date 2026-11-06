@@ -151,6 +151,47 @@ class HomeScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 20),
+            if (widgetSettings.enabledIds.isEmpty &&
+                widgetSettings.showEmptyWidgetsMessage) ...[
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.widgets_outlined,
+                        size: 40,
+                        color: theme.colorScheme.primary,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        AppLocalizations.of(context)
+                            .allHomeScreenWidgetsDisabled,
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        AppLocalizations.of(context)
+                            .enableHomeWidgetsInSettings,
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      TextButton.icon(
+                        onPressed: () => context.push('/more/settings/home'),
+                        icon: const Icon(Icons.tune_rounded),
+                        label: Text(
+                          AppLocalizations.of(context).configureHomeWidgets,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
             for (final id in widgetSettings.order)
               if (widgetSettings.isEnabled(id) && widgetsById.containsKey(id))
                 if (widgetsById[id]!.isVisible?.call(widgetData) ?? true)

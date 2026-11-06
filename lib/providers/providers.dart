@@ -29,11 +29,13 @@ class HomeScreenWidgetSettings {
   HomeScreenWidgetSettings({
     required List<String> order,
     required Set<String> enabledIds,
+    required this.showEmptyWidgetsMessage,
   }) : order = List.unmodifiable(order),
        enabledIds = Set.unmodifiable(enabledIds);
 
   final List<String> order;
   final Set<String> enabledIds;
+  final bool showEmptyWidgetsMessage;
 
   bool isEnabled(String id) => enabledIds.contains(id);
 }
@@ -49,6 +51,7 @@ class HomeScreenWidgetSettingsNotifier
         availableIds: homeWidgetIds,
         defaultEnabledIds: defaultEnabledHomeWidgetIds,
       ),
+      showEmptyWidgetsMessage: storage.getShowEmptyHomeWidgetsMessage(),
     );
   }
 
@@ -65,6 +68,16 @@ class HomeScreenWidgetSettingsNotifier
     state = HomeScreenWidgetSettings(
       order: state.order,
       enabledIds: enabledIds,
+      showEmptyWidgetsMessage: state.showEmptyWidgetsMessage,
+    );
+    await _save();
+  }
+
+  Future<void> setShowEmptyWidgetsMessage(bool show) async {
+    state = HomeScreenWidgetSettings(
+      order: state.order,
+      enabledIds: state.enabledIds,
+      showEmptyWidgetsMessage: show,
     );
     await _save();
   }
@@ -82,6 +95,7 @@ class HomeScreenWidgetSettingsNotifier
     state = HomeScreenWidgetSettings(
       order: order,
       enabledIds: state.enabledIds,
+      showEmptyWidgetsMessage: state.showEmptyWidgetsMessage,
     );
     await _save();
   }
@@ -90,6 +104,7 @@ class HomeScreenWidgetSettingsNotifier
     state = HomeScreenWidgetSettings(
       order: homeWidgetIds,
       enabledIds: defaultEnabledHomeWidgetIds.toSet(),
+      showEmptyWidgetsMessage: true,
     );
     await _save();
   }
@@ -100,6 +115,7 @@ class HomeScreenWidgetSettingsNotifier
         .setHomeWidgetSettings(
           order: state.order,
           enabledIds: state.enabledIds,
+          showEmptyWidgetsMessage: state.showEmptyWidgetsMessage,
         );
   }
 }

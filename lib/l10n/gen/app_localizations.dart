@@ -112,6 +112,36 @@ abstract class AppLocalizations {
   /// **'Choose which widgets appear and drag them to change their order.'**
   String get homeScreenCustomizationHint;
 
+  /// No description provided for @showDisabledWidgetsMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Show disabled widgets message'**
+  String get showDisabledWidgetsMessage;
+
+  /// No description provided for @showDisabledWidgetsMessageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Display a notice on the home screen when all widgets are turned off.'**
+  String get showDisabledWidgetsMessageHint;
+
+  /// No description provided for @allHomeScreenWidgetsDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'All home screen widgets are turned off'**
+  String get allHomeScreenWidgetsDisabled;
+
+  /// No description provided for @enableHomeWidgetsInSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on widgets in home screen settings to see them here.'**
+  String get enableHomeWidgetsInSettings;
+
+  /// No description provided for @configureHomeWidgets.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure widgets'**
+  String get configureHomeWidgets;
+
   /// No description provided for @resetHomeScreen.
   ///
   /// In en, this message translates to:

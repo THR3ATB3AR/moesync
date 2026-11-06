@@ -358,6 +358,8 @@ class StorageService {
   static const _homeWidgetOrderKey = 'home_widget_order';
   static const _homeWidgetEnabledKey = 'home_widget_enabled';
   static const _homeWidgetKnownIdsKey = 'home_widget_known_ids';
+  static const _showEmptyHomeWidgetsMessageKey =
+      'show_empty_home_widgets_message';
 
   List<String> getHomeWidgetOrder(List<String> availableIds) {
     final savedOrder = _prefs.getStringList(_homeWidgetOrderKey);
@@ -384,13 +386,21 @@ class StorageService {
     };
   }
 
+  bool getShowEmptyHomeWidgetsMessage() =>
+      _prefs.getBool(_showEmptyHomeWidgetsMessageKey) ?? true;
+
   Future<void> setHomeWidgetSettings({
     required List<String> order,
     required Set<String> enabledIds,
+    required bool showEmptyWidgetsMessage,
   }) async {
     await _prefs.setStringList(_homeWidgetOrderKey, order);
     await _prefs.setStringList(_homeWidgetEnabledKey, enabledIds.toList());
     await _prefs.setStringList(_homeWidgetKnownIdsKey, order);
+    await _prefs.setBool(
+      _showEmptyHomeWidgetsMessageKey,
+      showEmptyWidgetsMessage,
+    );
   }
 
   UpdateCheckFrequency getUpdateCheckFrequency() {

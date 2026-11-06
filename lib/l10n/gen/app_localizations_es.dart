@@ -16,6 +16,25 @@ class AppLocalizationsEs extends AppLocalizations {
       'Elige los widgets y arrástralos para cambiar su orden.';
 
   @override
+  String get showDisabledWidgetsMessage =>
+      'Mostrar aviso de widgets desactivados';
+
+  @override
+  String get showDisabledWidgetsMessageHint =>
+      'Mostrar un aviso en la pantalla de inicio cuando todos los widgets estén desactivados.';
+
+  @override
+  String get allHomeScreenWidgetsDisabled =>
+      'Todos los widgets de la pantalla de inicio están desactivados';
+
+  @override
+  String get enableHomeWidgetsInSettings =>
+      'Activa los widgets en los ajustes de la pantalla de inicio para verlos aquí.';
+
+  @override
+  String get configureHomeWidgets => 'Configurar widgets';
+
+  @override
   String get resetHomeScreen => 'Restablecer pantalla de inicio';
 
   @override

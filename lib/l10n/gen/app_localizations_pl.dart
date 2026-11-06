@@ -16,6 +16,25 @@ class AppLocalizationsPl extends AppLocalizations {
       'Wybierz widżety i przeciągnij je, aby zmienić ich kolejność.';
 
   @override
+  String get showDisabledWidgetsMessage =>
+      'Pokazuj komunikat o wyłączonych widżetach';
+
+  @override
+  String get showDisabledWidgetsMessageHint =>
+      'Wyświetlaj komunikat na ekranie głównym, gdy wszystkie widżety są wyłączone.';
+
+  @override
+  String get allHomeScreenWidgetsDisabled =>
+      'Wszystkie widżety ekranu głównego są wyłączone';
+
+  @override
+  String get enableHomeWidgetsInSettings =>
+      'Włącz widżety w ustawieniach ekranu głównego, aby je tutaj zobaczyć.';
+
+  @override
+  String get configureHomeWidgets => 'Skonfiguruj widżety';
+
+  @override
   String get resetHomeScreen => 'Przywróć domyślny ekran główny';
 
   @override
