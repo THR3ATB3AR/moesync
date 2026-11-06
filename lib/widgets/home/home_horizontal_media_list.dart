@@ -25,7 +25,7 @@ class HomeHorizontalMediaList extends StatelessWidget {
   Widget build(BuildContext context) {
     final titleLanguage = ref.watch(languageSettingsProvider).titleLanguage;
     return SizedBox(
-      height: 245,
+      height: 226,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: items.length,
