@@ -100,6 +100,48 @@ abstract class AppLocalizations {
     Locale('pl'),
   ];
 
+  /// No description provided for @homeScreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Home screen'**
+  String get homeScreen;
+
+  /// No description provided for @homeScreenCustomizationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose which widgets appear and drag them to change their order.'**
+  String get homeScreenCustomizationHint;
+
+  /// No description provided for @resetHomeScreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore default home screen'**
+  String get resetHomeScreen;
+
+  /// No description provided for @homeWidgetSyncStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync status'**
+  String get homeWidgetSyncStatus;
+
+  /// No description provided for @homeWidgetServiceStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Service status'**
+  String get homeWidgetServiceStatus;
+
+  /// No description provided for @homeWidgetStats.
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics'**
+  String get homeWidgetStats;
+
+  /// No description provided for @homeWidgetWelcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome and account setup'**
+  String get homeWidgetWelcome;
+
   /// No description provided for @noAccountsConnected.
   ///
   /// In en, this message translates to:

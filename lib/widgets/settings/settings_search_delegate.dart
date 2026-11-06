@@ -8,6 +8,12 @@ class SettingsSearchDelegate extends SearchDelegate<void> {
 
   List<SettingsSearchItem> searchableItems(BuildContext context) => [
     SettingsSearchItem(
+      title: AppLocalizations.of(context).homeScreen,
+      subtitle: AppLocalizations.of(context).homeScreenCustomizationHint,
+      categoryKey: 'home',
+      icon: Icons.dashboard_customize_rounded,
+    ),
+    SettingsSearchItem(
       title: AppLocalizations.of(context).languageSettings,
       subtitle: AppLocalizations.of(context).languageSettingsDescription,
       categoryKey: 'language',
@@ -15,7 +21,9 @@ class SettingsSearchDelegate extends SearchDelegate<void> {
     ),
     SettingsSearchItem(
       title: AppLocalizations.of(context).appearance,
-      subtitle: AppLocalizations.of(context).themeDisplayModeBadgeStyleLivePreview,
+      subtitle: AppLocalizations.of(
+        context,
+      ).themeDisplayModeBadgeStyleLivePreview,
       categoryKey: 'appearance',
       icon: Icons.palette_outlined,
     ),
@@ -27,25 +35,33 @@ class SettingsSearchDelegate extends SearchDelegate<void> {
     ),
     SettingsSearchItem(
       title: AppLocalizations.of(context).displayStyleBadges,
-      subtitle: AppLocalizations.of(context).pillTextOrIconBadgesWithLivePreview,
+      subtitle: AppLocalizations.of(
+        context,
+      ).pillTextOrIconBadgesWithLivePreview,
       categoryKey: 'appearance',
       icon: Icons.style_rounded,
     ),
     SettingsSearchItem(
       title: AppLocalizations.of(context).dataSourcesSync,
-      subtitle: AppLocalizations.of(context).defaultInformationDescriptionAndSyncServices,
+      subtitle: AppLocalizations.of(
+        context,
+      ).defaultInformationDescriptionAndSyncServices,
       categoryKey: 'sources',
       icon: Icons.hub_outlined,
     ),
     SettingsSearchItem(
       title: AppLocalizations.of(context).animeDataSourceDescription,
-      subtitle: AppLocalizations.of(context).chooseDefaultInfoSynopsisAndSyncSourceForAnime,
+      subtitle: AppLocalizations.of(
+        context,
+      ).chooseDefaultInfoSynopsisAndSyncSourceForAnime,
       categoryKey: 'sources',
       icon: Icons.tv_rounded,
     ),
     SettingsSearchItem(
       title: AppLocalizations.of(context).mangaDataSourceDescription,
-      subtitle: AppLocalizations.of(context).chooseDefaultInfoSynopsisAndSyncSourceForManga,
+      subtitle: AppLocalizations.of(
+        context,
+      ).chooseDefaultInfoSynopsisAndSyncSourceForManga,
       categoryKey: 'sources',
       icon: Icons.auto_stories_rounded,
     ),
@@ -87,7 +103,9 @@ class SettingsSearchDelegate extends SearchDelegate<void> {
     ),
     SettingsSearchItem(
       title: AppLocalizations.of(context).animeApiDatabase,
-      subtitle: AppLocalizations.of(context).crossPlatformAnimeAndMangaIdMapping,
+      subtitle: AppLocalizations.of(
+        context,
+      ).crossPlatformAnimeAndMangaIdMapping,
       categoryKey: 'database',
       icon: Icons.storage_rounded,
     ),
@@ -134,7 +152,9 @@ class SettingsSearchDelegate extends SearchDelegate<void> {
     }).toList();
 
     if (filtered.isEmpty) {
-      return Center(child: Text(AppLocalizations.of(context).noMatchingSettingsFound));
+      return Center(
+        child: Text(AppLocalizations.of(context).noMatchingSettingsFound),
+      );
     }
 
     return ListView.builder(

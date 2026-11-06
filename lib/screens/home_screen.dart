@@ -1,10 +1,5 @@
 import 'package:moesync/l10n/gen/app_localizations.dart';
-import 'package:moesync/widgets/home/home_horizontal_media_list.dart';
-import 'package:moesync/widgets/home/home_section_header.dart';
-import 'package:moesync/widgets/home/home_services_overview.dart';
-import 'package:moesync/widgets/home/home_stats_row.dart';
-import 'package:moesync/widgets/home/home_sync_status_card.dart';
-import 'package:moesync/widgets/skeleton_loader.dart';
+import 'package:moesync/widgets/home/home_widget_registry.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -20,6 +15,7 @@ class HomeScreen extends ConsumerWidget {
     final auth = ref.watch(authProvider);
     final library = ref.watch(mediaLibraryProvider);
     final sync = ref.watch(syncProvider);
+    final widgetSettings = ref.watch(homeScreenWidgetSettingsProvider);
 
     final watchingAnime = library.unifiedItems
         .where(
@@ -40,6 +36,19 @@ class HomeScreen extends ConsumerWidget {
     final completedCount = library.unifiedItems
         .where((u) => u.services.values.any((s) => s.status == 'completed'))
         .length;
+    final widgetData = HomeWidgetData(
+      context: context,
+      ref: ref,
+      theme: theme,
+      auth: auth,
+      sync: sync,
+      watchingAnime: watchingAnime,
+      readingManga: readingManga,
+      completedCount: completedCount,
+    );
+    final widgetsById = {
+      for (final definition in homeWidgetRegistry) definition.id: definition,
+    };
 
     return Scaffold(
       appBar: AppBar(
@@ -142,139 +151,13 @@ class HomeScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 20),
-            HomeSyncStatusCard(
-              context: context,
-              ref: ref,
-              sync: sync,
-              auth: auth,
-              theme: theme,
-            ),
-            const SizedBox(height: 20),
-
-            HomeServicesOverview(
-              context: context,
-              ref: ref,
-              auth: auth,
-              theme: theme,
-            ),
-            const SizedBox(height: 20),
-
-            HomeStatsRow(
-              context: context,
-              theme: theme,
-              animeCount: watchingAnime.length,
-              mangaCount: readingManga.length,
-              completed: completedCount,
-            ),
-            const SizedBox(height: 24),
-
-            if (auth.connectedCount == 0) ...[
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainer,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: theme.colorScheme.outlineVariant.withValues(
-                      alpha: 0.5,
-                    ),
+            for (final id in widgetSettings.order)
+              if (widgetSettings.isEnabled(id) && widgetsById.containsKey(id))
+                if (widgetsById[id]!.isVisible?.call(widgetData) ?? true)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    child: widgetsById[id]!.builder(widgetData),
                   ),
-                ),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.cloud_sync_outlined,
-                      size: 48,
-                      color: theme.colorScheme.primary,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      AppLocalizations.of(context).welcomeToMoeSync,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      AppLocalizations.of(
-                        context,
-                      ).connectAtLeastOneServiceAccountMyanimelistAnilistKitsuShikimoriOrSimklToDisplayAndSynchronizeYourAnimeMangaLists,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    FilledButton.icon(
-                      onPressed: () => context.push('/more/settings/accounts'),
-                      icon: const Icon(Icons.settings_outlined, size: 18),
-                      label: Text(
-                        AppLocalizations.of(context).configureAccounts,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-            ],
-
-            if (auth.connectedCount > 0) ...[
-              HomeSectionHeader(
-                context: context,
-                title: AppLocalizations.of(context).continueWatching,
-                icon: Icons.play_circle_outline_rounded,
-                onViewAll: () {
-                  ref
-                      .read(mediaLibraryProvider.notifier)
-                      .setType(MediaType.anime);
-                  ref
-                      .read(mediaLibraryProvider.notifier)
-                      .setStatusFilter('watching');
-                  context.go('/anime');
-                },
-              ),
-              const SizedBox(height: 12),
-              if (watchingAnime.isNotEmpty) ...[
-                HomeHorizontalMediaList(
-                  context: context,
-                  ref: ref,
-                  items: watchingAnime,
-                  theme: theme,
-                ),
-                const SizedBox(height: 24),
-              ] else ...[
-                HomeHorizontalMediaListSkeleton(),
-                const SizedBox(height: 24),
-              ],
-
-              HomeSectionHeader(
-                context: context,
-                title: AppLocalizations.of(context).continueReading,
-                icon: Icons.menu_book_rounded,
-                onViewAll: () {
-                  ref
-                      .read(mediaLibraryProvider.notifier)
-                      .setType(MediaType.manga);
-                  ref
-                      .read(mediaLibraryProvider.notifier)
-                      .setStatusFilter('watching');
-                  context.go('/manga');
-                },
-              ),
-              const SizedBox(height: 12),
-              if (readingManga.isNotEmpty) ...[
-                HomeHorizontalMediaList(
-                  context: context,
-                  ref: ref,
-                  items: readingManga,
-                  theme: theme,
-                ),
-                const SizedBox(height: 24),
-              ] else ...[
-                HomeHorizontalMediaListSkeleton(),
-                const SizedBox(height: 24),
-              ],
-            ],
           ],
         ),
       ),

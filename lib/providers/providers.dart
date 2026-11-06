@@ -19,10 +19,96 @@ import '../services/simkl_service.dart';
 import '../services/storage_service.dart';
 import '../services/sync_engine.dart';
 import '../theme.dart';
+import '../widgets/home/home_widget_ids.dart';
 
 final storageServiceProvider = Provider<StorageService>((ref) {
   throw UnimplementedError('Initialize storageServiceProvider in main');
 });
+
+class HomeScreenWidgetSettings {
+  HomeScreenWidgetSettings({
+    required List<String> order,
+    required Set<String> enabledIds,
+  }) : order = List.unmodifiable(order),
+       enabledIds = Set.unmodifiable(enabledIds);
+
+  final List<String> order;
+  final Set<String> enabledIds;
+
+  bool isEnabled(String id) => enabledIds.contains(id);
+}
+
+class HomeScreenWidgetSettingsNotifier
+    extends Notifier<HomeScreenWidgetSettings> {
+  @override
+  HomeScreenWidgetSettings build() {
+    final storage = ref.watch(storageServiceProvider);
+    return HomeScreenWidgetSettings(
+      order: storage.getHomeWidgetOrder(homeWidgetIds),
+      enabledIds: storage.getEnabledHomeWidgets(
+        availableIds: homeWidgetIds,
+        defaultEnabledIds: defaultEnabledHomeWidgetIds,
+      ),
+    );
+  }
+
+  Future<void> setEnabled(String id, bool enabled) async {
+    if (!homeWidgetIds.contains(id)) {
+      throw ArgumentError.value(id, 'id', 'Unknown home screen widget');
+    }
+    final enabledIds = Set<String>.from(state.enabledIds);
+    if (enabled) {
+      enabledIds.add(id);
+    } else {
+      enabledIds.remove(id);
+    }
+    state = HomeScreenWidgetSettings(
+      order: state.order,
+      enabledIds: enabledIds,
+    );
+    await _save();
+  }
+
+  Future<void> reorder(int oldIndex, int newIndex) async {
+    final order = List<String>.from(state.order);
+    if (oldIndex < 0 ||
+        oldIndex >= order.length ||
+        newIndex < 0 ||
+        newIndex >= order.length) {
+      throw RangeError('Invalid home screen widget position.');
+    }
+    final id = order.removeAt(oldIndex);
+    order.insert(newIndex, id);
+    state = HomeScreenWidgetSettings(
+      order: order,
+      enabledIds: state.enabledIds,
+    );
+    await _save();
+  }
+
+  Future<void> reset() async {
+    state = HomeScreenWidgetSettings(
+      order: homeWidgetIds,
+      enabledIds: defaultEnabledHomeWidgetIds.toSet(),
+    );
+    await _save();
+  }
+
+  Future<void> _save() {
+    return ref
+        .read(storageServiceProvider)
+        .setHomeWidgetSettings(
+          order: state.order,
+          enabledIds: state.enabledIds,
+        );
+  }
+}
+
+final homeScreenWidgetSettingsProvider =
+    NotifierProvider<
+      HomeScreenWidgetSettingsNotifier,
+      HomeScreenWidgetSettings
+    >(HomeScreenWidgetSettingsNotifier.new);
 
 final releaseServiceProvider = Provider<ReleaseService>((ref) {
   final service = ReleaseService(ref.watch(storageServiceProvider));

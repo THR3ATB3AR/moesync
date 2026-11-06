@@ -9,6 +9,28 @@ class AppLocalizationsPl extends AppLocalizations {
   AppLocalizationsPl([String locale = 'pl']) : super(locale);
 
   @override
+  String get homeScreen => 'Ekran główny';
+
+  @override
+  String get homeScreenCustomizationHint =>
+      'Wybierz widżety i przeciągnij je, aby zmienić ich kolejność.';
+
+  @override
+  String get resetHomeScreen => 'Przywróć domyślny ekran główny';
+
+  @override
+  String get homeWidgetSyncStatus => 'Status synchronizacji';
+
+  @override
+  String get homeWidgetServiceStatus => 'Status serwisów';
+
+  @override
+  String get homeWidgetStats => 'Statystyki';
+
+  @override
+  String get homeWidgetWelcome => 'Powitanie i konfiguracja kont';
+
+  @override
   String get noAccountsConnected => 'Nie połączono żadnych kont';
 
   @override

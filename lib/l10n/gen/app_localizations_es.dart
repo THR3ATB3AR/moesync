@@ -9,6 +9,28 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
+  String get homeScreen => 'Pantalla de inicio';
+
+  @override
+  String get homeScreenCustomizationHint =>
+      'Elige los widgets y arrástralos para cambiar su orden.';
+
+  @override
+  String get resetHomeScreen => 'Restablecer pantalla de inicio';
+
+  @override
+  String get homeWidgetSyncStatus => 'Estado de sincronización';
+
+  @override
+  String get homeWidgetServiceStatus => 'Estado de servicios';
+
+  @override
+  String get homeWidgetStats => 'Estadísticas';
+
+  @override
+  String get homeWidgetWelcome => 'Bienvenida y configuración de cuentas';
+
+  @override
   String get noAccountsConnected => 'No hay cuentas conectadas';
 
   @override

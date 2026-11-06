@@ -21,6 +21,12 @@ class SettingsCategoryItem {
 List<SettingsCategoryItem> settingsCategories(BuildContext context) {
   return [
     SettingsCategoryItem(
+      key: 'home',
+      title: AppLocalizations.of(context).homeScreen,
+      subtitle: AppLocalizations.of(context).homeScreenCustomizationHint,
+      icon: Icons.dashboard_customize_rounded,
+    ),
+    SettingsCategoryItem(
       key: 'language',
       title: AppLocalizations.of(context).languageSettings,
       subtitle: AppLocalizations.of(context).languageSettingsDescription,

@@ -1,5 +1,12 @@
 {
   "@@locale": "pl",
+  "homeScreen": "Ekran główny",
+  "homeScreenCustomizationHint": "Wybierz widżety i przeciągnij je, aby zmienić ich kolejność.",
+  "resetHomeScreen": "Przywróć domyślny ekran główny",
+  "homeWidgetSyncStatus": "Status synchronizacji",
+  "homeWidgetServiceStatus": "Status serwisów",
+  "homeWidgetStats": "Statystyki",
+  "homeWidgetWelcome": "Powitanie i konfiguracja kont",
   "noAccountsConnected": "Nie połączono żadnych kont",
   "noAnimeFound": "Nie znaleziono anime",
   "connectYourMyanimelistAnilistKitsuShikimoriOrSimklAccountInSettingsToViewYourAnime": "Połącz konto MyAnimeList, AniList, Kitsu, Shikimori lub Simkl w Ustawieniach, aby wyświetlić swoje anime.",

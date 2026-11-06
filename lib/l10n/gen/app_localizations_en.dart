@@ -9,6 +9,28 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get homeScreen => 'Home screen';
+
+  @override
+  String get homeScreenCustomizationHint =>
+      'Choose which widgets appear and drag them to change their order.';
+
+  @override
+  String get resetHomeScreen => 'Restore default home screen';
+
+  @override
+  String get homeWidgetSyncStatus => 'Sync status';
+
+  @override
+  String get homeWidgetServiceStatus => 'Service status';
+
+  @override
+  String get homeWidgetStats => 'Statistics';
+
+  @override
+  String get homeWidgetWelcome => 'Welcome and account setup';
+
+  @override
   String get noAccountsConnected => 'No Accounts Connected';
 
   @override

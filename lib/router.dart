@@ -4,6 +4,7 @@ import 'package:moesync/screens/media_detail_screen.dart';
 import 'package:moesync/screens/settings/settings_about_page.dart';
 import 'package:moesync/screens/settings/settings_appearance_page.dart';
 import 'package:moesync/screens/settings/settings_language_page.dart';
+import 'package:moesync/screens/settings/settings_home_screen_page.dart';
 import 'package:moesync/screens/settings/settings_sources_database_page.dart';
 import 'package:moesync/screens/staff_cast_details_screen.dart';
 import 'package:flutter/material.dart';
@@ -125,6 +126,31 @@ final routerProvider = Provider<GoRouter>((ref) {
               return CustomTransitionPage(
                 key: state.pageKey,
                 child: SettingsScreen(initialCategory: category),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                      return SlideTransition(
+                        position:
+                            Tween<Offset>(
+                              begin: const Offset(1, 0),
+                              end: Offset.zero,
+                            ).animate(
+                              CurvedAnimation(
+                                parent: animation,
+                                curve: Curves.easeInOut,
+                              ),
+                            ),
+                        child: child,
+                      );
+                    },
+              );
+            },
+          ),
+          GoRoute(
+            path: '/more/settings/home',
+            pageBuilder: (context, state) {
+              return CustomTransitionPage(
+                key: state.pageKey,
+                child: const SettingsHomeScreenPage(),
                 transitionsBuilder:
                     (context, animation, secondaryAnimation, child) {
                       return SlideTransition(

@@ -355,6 +355,43 @@ class StorageService {
   static const _titleLanguageKey = 'title_language';
   static const _updateCheckFrequencyKey = 'update_check_frequency';
   static const _lastReleaseCheckKey = 'last_release_check';
+  static const _homeWidgetOrderKey = 'home_widget_order';
+  static const _homeWidgetEnabledKey = 'home_widget_enabled';
+  static const _homeWidgetKnownIdsKey = 'home_widget_known_ids';
+
+  List<String> getHomeWidgetOrder(List<String> availableIds) {
+    final savedOrder = _prefs.getStringList(_homeWidgetOrderKey);
+    if (savedOrder == null) return List.of(availableIds);
+    return [
+      ...savedOrder.where(availableIds.contains),
+      ...availableIds.where((id) => !savedOrder.contains(id)),
+    ];
+  }
+
+  Set<String> getEnabledHomeWidgets({
+    required List<String> availableIds,
+    required List<String> defaultEnabledIds,
+  }) {
+    final savedEnabled = _prefs.getStringList(_homeWidgetEnabledKey);
+    if (savedEnabled == null) return defaultEnabledIds.toSet();
+    final previouslyKnownIds =
+        _prefs.getStringList(_homeWidgetKnownIdsKey) ??
+        _prefs.getStringList(_homeWidgetOrderKey) ??
+        const <String>[];
+    return {
+      ...savedEnabled.where(availableIds.contains),
+      ...defaultEnabledIds.where((id) => !previouslyKnownIds.contains(id)),
+    };
+  }
+
+  Future<void> setHomeWidgetSettings({
+    required List<String> order,
+    required Set<String> enabledIds,
+  }) async {
+    await _prefs.setStringList(_homeWidgetOrderKey, order);
+    await _prefs.setStringList(_homeWidgetEnabledKey, enabledIds.toList());
+    await _prefs.setStringList(_homeWidgetKnownIdsKey, order);
+  }
 
   UpdateCheckFrequency getUpdateCheckFrequency() {
     final value = _prefs.getString(_updateCheckFrequencyKey);
