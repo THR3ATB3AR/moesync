@@ -529,6 +529,8 @@
   "updateCheckManual": "Ręcznie",
   "updateCheckDaily": "Raz dziennie",
   "updateCheckOnAppOpen": "Przy każdym otwarciu aplikacji",
+  "checkNightlyUpdates": "Sprawdzaj też nightly",
+  "checkNightlyUpdatesDescription": "Uwzględniaj eksperymentalne kompilacje nightly podczas sprawdzania aktualizacji",
   "checkForUpdatesNow": "Sprawdź teraz",
   "latestVersion": "Najnowsza wersja",
   "currentVersion": "Obecna wersja",

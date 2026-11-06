@@ -1488,6 +1488,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get updateCheckOnAppOpen => 'Every time the app opens';
 
   @override
+  String get checkNightlyUpdates => 'Also check for nightly builds';
+
+  @override
+  String get checkNightlyUpdatesDescription =>
+      'Include experimental nightly releases when checking for updates';
+
+  @override
   String get checkForUpdatesNow => 'Check now';
 
   @override

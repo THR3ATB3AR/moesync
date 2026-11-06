@@ -354,6 +354,7 @@ class StorageService {
   static const _appLanguageKey = 'app_language';
   static const _titleLanguageKey = 'title_language';
   static const _updateCheckFrequencyKey = 'update_check_frequency';
+  static const _checkNightlyUpdatesKey = 'check_nightly_updates';
   static const _lastReleaseCheckKey = 'last_release_check';
   static const _homeWidgetOrderKey = 'home_widget_order';
   static const _homeWidgetEnabledKey = 'home_widget_enabled';
@@ -413,6 +414,13 @@ class StorageService {
 
   Future<void> setUpdateCheckFrequency(UpdateCheckFrequency frequency) async {
     await _prefs.setString(_updateCheckFrequencyKey, frequency.name);
+  }
+
+  bool getCheckNightlyUpdates() =>
+      _prefs.getBool(_checkNightlyUpdatesKey) ?? false;
+
+  Future<void> setCheckNightlyUpdates(bool enabled) async {
+    await _prefs.setBool(_checkNightlyUpdatesKey, enabled);
   }
 
   DateTime? getLastReleaseCheck() {

@@ -2667,6 +2667,18 @@ abstract class AppLocalizations {
   /// **'Every time the app opens'**
   String get updateCheckOnAppOpen;
 
+  /// No description provided for @checkNightlyUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Also check for nightly builds'**
+  String get checkNightlyUpdates;
+
+  /// No description provided for @checkNightlyUpdatesDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Include experimental nightly releases when checking for updates'**
+  String get checkNightlyUpdatesDescription;
+
   /// No description provided for @checkForUpdatesNow.
   ///
   /// In en, this message translates to:

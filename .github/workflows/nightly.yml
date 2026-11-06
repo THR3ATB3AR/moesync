@@ -1,0 +1,287 @@
+name: Nightly
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nightly-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  version:
+    name: Prepare nightly version
+    runs-on: ubuntu-22.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      build_number: ${{ steps.version.outputs.build_number }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Find latest stable release
+        id: latest_release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="$(gh release list --exclude-drafts --exclude-pre-releases --limit 1 --json tagName --jq '.[0].tagName // empty')"
+          if [ -z "$TAG" ]; then
+            echo "::error::Could not find a published stable GitHub release."
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+      - name: Calculate version
+        id: version
+        env:
+          RELEASE_TAG: ${{ steps.latest_release.outputs.tag }}
+        run: |
+          BASE_VERSION="${RELEASE_TAG#v}"
+          if ! [[ "$BASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Latest stable release tag '$RELEASE_TAG' is not a stable semantic version."
+            exit 1
+          fi
+          IFS=. read -r MAJOR MINOR PATCH <<< "$BASE_VERSION"
+          VERSION="$MAJOR.$MINOR.$PATCH-nightly.$(date -u +%Y%m%d).$GITHUB_RUN_NUMBER"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "build_number=$GITHUB_RUN_NUMBER" >> "$GITHUB_OUTPUT"
+
+  linux:
+    name: Build Linux and AppImage
+    runs-on: ubuntu-22.04
+    needs: version
+    environment: MOESYNC_ENV
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      BUILD_NUMBER: ${{ needs.version.outputs.build_number }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev libsecret-1-dev libstdc++-12-dev
+      - name: Prepare version and environment
+        env:
+          MOESYNC_ENV: ${{ secrets.MOESYNC_ENV }}
+        run: |
+          if [ -n "${MOESYNC_ENV:-}" ]; then
+            printf '%s' "$MOESYNC_ENV" > .env
+          else
+            cp .env.example .env
+          fi
+          python3 scripts/prepare_dart_defines.py
+      - run: flutter pub get
+      - name: Build Linux release bundle
+        run: |
+          flutter build linux --release \
+            --build-name "$VERSION" \
+            --build-number "$BUILD_NUMBER" \
+            --dart-define-from-file=.dart-defines.json
+      - name: Package Linux bundle
+        run: |
+          mkdir -p dist
+          tar -C build/linux/x64/release -czf "dist/moesync-linux-x64-${VERSION}+${BUILD_NUMBER}.tar.gz" bundle
+      - name: Package AppImage
+        run: |
+          APPDIR="$RUNNER_TEMP/MoeSync.AppDir"
+          mkdir -p \
+            "$APPDIR/usr/bin" \
+            "$APPDIR/usr/share/applications" \
+            "$APPDIR/usr/share/icons/hicolor/512x512/apps"
+          cp -a build/linux/x64/release/bundle/. "$APPDIR/usr/bin/"
+          install -m 644 assets/icon/png/moesync-icon.png \
+            "$APPDIR/usr/share/icons/hicolor/512x512/apps/moesync.png"
+          cat > "$APPDIR/usr/share/applications/moesync.desktop" <<'EOF'
+          [Desktop Entry]
+          Name=MoeSync Nightly
+          Exec=moesync
+          Icon=moesync
+          Type=Application
+          Categories=Utility;
+          Terminal=false
+          EOF
+          curl -fsSL \
+            https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage \
+            -o "$RUNNER_TEMP/linuxdeploy"
+          chmod +x "$RUNNER_TEMP/linuxdeploy"
+          "$RUNNER_TEMP/linuxdeploy" \
+            --appdir "$APPDIR" \
+            --executable "$APPDIR/usr/bin/moesync" \
+            --desktop-file "$APPDIR/usr/share/applications/moesync.desktop" \
+            --icon-file "$APPDIR/usr/share/icons/hicolor/512x512/apps/moesync.png" \
+            --output appimage
+          APPIMAGE="$(find . -maxdepth 2 -type f -name '*.AppImage' ! -path "$RUNNER_TEMP/*" -print -quit)"
+          test -n "$APPIMAGE"
+          mv "$APPIMAGE" "dist/moesync-${VERSION}+${BUILD_NUMBER}-linux-x86_64.AppImage"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: linux-nightly
+          path: dist/*
+          if-no-files-found: error
+
+  android:
+    name: Build Android APKs
+    runs-on: ubuntu-22.04
+    needs: version
+    environment: MOESYNC_ENV
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      BUILD_NUMBER: ${{ needs.version.outputs.build_number }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Prepare version, environment, and signing
+        env:
+          MOESYNC_ENV: ${{ secrets.MOESYNC_ENV }}
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+        run: |
+          if [ -n "${MOESYNC_ENV:-}" ]; then
+            printf '%s' "$MOESYNC_ENV" > .env
+          else
+            cp .env.example .env
+          fi
+          python3 scripts/prepare_dart_defines.py
+          if [ -z "$ANDROID_KEYSTORE_BASE64" ] || [ -z "$ANDROID_KEY_ALIAS" ] || \
+             [ -z "$ANDROID_KEY_PASSWORD" ] || [ -z "$ANDROID_STORE_PASSWORD" ]; then
+            echo "::error::Android signing secrets are required. See docs/WYDANIA.md."
+            exit 1
+          fi
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/upload-keystore.jks
+          cat > android/key.properties <<EOF
+          storePassword=$ANDROID_STORE_PASSWORD
+          keyPassword=$ANDROID_KEY_PASSWORD
+          keyAlias=$ANDROID_KEY_ALIAS
+          storeFile=upload-keystore.jks
+          EOF
+      - run: flutter pub get
+      - name: Build Android APKs
+        run: |
+          mkdir -p dist
+          flutter build apk --release \
+            --build-name "$VERSION" \
+            --build-number "$BUILD_NUMBER" \
+            --dart-define-from-file=.dart-defines.json
+          cp build/app/outputs/flutter-apk/app-release.apk \
+            "dist/moesync-${VERSION}+${BUILD_NUMBER}-android-universal.apk"
+          flutter build apk --release --split-per-abi \
+            --build-name "$VERSION" \
+            --build-number "$BUILD_NUMBER" \
+            --dart-define-from-file=.dart-defines.json
+          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk \
+            "dist/moesync-${VERSION}+${BUILD_NUMBER}-android-armeabi-v7a.apk"
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk \
+            "dist/moesync-${VERSION}+${BUILD_NUMBER}-android-arm64-v8a.apk"
+          cp build/app/outputs/flutter-apk/app-x86_64-release.apk \
+            "dist/moesync-${VERSION}+${BUILD_NUMBER}-android-x86_64.apk"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: android-nightly
+          path: dist/*
+          if-no-files-found: error
+
+  windows:
+    name: Build Windows
+    runs-on: windows-2022
+    needs: version
+    environment: MOESYNC_ENV
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      BUILD_NUMBER: ${{ needs.version.outputs.build_number }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.x"
+      - name: Prepare version and environment
+        env:
+          MOESYNC_ENV: ${{ secrets.MOESYNC_ENV }}
+        shell: pwsh
+        run: |
+          if ($env:MOESYNC_ENV) {
+            [System.IO.File]::WriteAllText(".env", $env:MOESYNC_ENV)
+          } else {
+            Copy-Item .env.example .env
+          }
+          python scripts/prepare_dart_defines.py
+      - run: flutter pub get
+      - name: Build Windows release
+        run: |
+          flutter build windows --release `
+            --build-name "$env:VERSION" `
+            --build-number "$env:BUILD_NUMBER" `
+            --dart-define-from-file=.dart-defines.json
+      - name: Package Windows release
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Compress-Archive -Path build/windows/x64/runner/Release/* `
+            -DestinationPath "dist/moesync-$env:VERSION+$env:BUILD_NUMBER-windows-x64.zip"
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress --yes
+      - name: Build Windows installer
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            throw "Inno Setup compiler was not found at $iscc"
+          }
+          & $iscc "/DAppVersion=$env:VERSION" "/DBuildNumber=$env:BUILD_NUMBER" windows\installer.iss
+          if ($LASTEXITCODE -ne 0) {
+            throw "Inno Setup failed with exit code $LASTEXITCODE"
+          }
+      - uses: actions/upload-artifact@v7
+        with:
+          name: windows-nightly
+          path: dist/*
+          if-no-files-found: error
+
+  publish:
+    name: Publish Nightly Release
+    needs: [version, linux, android, windows]
+    runs-on: ubuntu-22.04
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      BUILD_NUMBER: ${{ needs.version.outputs.build_number }}
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Create checksums
+        run: |
+          cd dist
+          sha256sum * > SHA256SUMS
+      - name: Publish prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v$VERSION"
+          NOTES="Automated nightly build from commit $GITHUB_SHA. This is a prerelease and may be unstable."
+          gh release create "$TAG" dist/* \
+            --title "MoeSync Nightly $VERSION" \
+            --notes "$NOTES" \
+            --prerelease \
+            --target "$GITHUB_SHA"

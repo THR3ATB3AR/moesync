@@ -1504,6 +1504,13 @@ class AppLocalizationsPl extends AppLocalizations {
   String get updateCheckOnAppOpen => 'Przy każdym otwarciu aplikacji';
 
   @override
+  String get checkNightlyUpdates => 'Sprawdzaj też nightly';
+
+  @override
+  String get checkNightlyUpdatesDescription =>
+      'Uwzględniaj eksperymentalne kompilacje nightly podczas sprawdzania aktualizacji';
+
+  @override
   String get checkForUpdatesNow => 'Sprawdź teraz';
 
   @override

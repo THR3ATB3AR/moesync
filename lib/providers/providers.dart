@@ -150,6 +150,23 @@ final updateCheckFrequencyProvider =
       UpdateCheckFrequencyNotifier.new,
     );
 
+class CheckNightlyUpdatesNotifier extends Notifier<bool> {
+  @override
+  bool build() {
+    return ref.watch(storageServiceProvider).getCheckNightlyUpdates();
+  }
+
+  Future<void> setEnabled(bool enabled) async {
+    state = enabled;
+    await ref.read(storageServiceProvider).setCheckNightlyUpdates(enabled);
+  }
+}
+
+final checkNightlyUpdatesProvider =
+    NotifierProvider<CheckNightlyUpdatesNotifier, bool>(
+      CheckNightlyUpdatesNotifier.new,
+    );
+
 final oauthServiceProvider = Provider<OAuthService>((ref) {
   final storage = ref.watch(storageServiceProvider);
   return OAuthService(storage);

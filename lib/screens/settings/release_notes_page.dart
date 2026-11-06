@@ -36,25 +36,23 @@ class _ReleaseNotesPageState extends ConsumerState<ReleaseNotesPage> {
     setState(() => _isChecking = true);
     try {
       final releases = await ref.read(releaseServiceProvider).checkManually();
-      if (releases.isNotEmpty) {
-        final latestRelease = releases.firstWhere(
-          (release) => !release.isPrerelease,
-          orElse: () => releases.first,
+      final latestRelease = ReleaseService.latestReleaseFor(
+        releases,
+        includeNightly: ref.read(checkNightlyUpdatesProvider),
+      );
+      final packageInfo = await _packageInfo;
+      if (!mounted) return;
+      if (ReleaseService.isUpdateAvailable(
+        packageInfo.version,
+        latestRelease,
+      )) {
+        await showDialog<void>(
+          context: context,
+          builder: (context) => UpdateAvailableDialog(
+            release: latestRelease!,
+            currentVersion: packageInfo.version,
+          ),
         );
-        final packageInfo = await _packageInfo;
-        if (!mounted) return;
-        if (ReleaseService.isUpdateAvailable(
-          packageInfo.version,
-          latestRelease,
-        )) {
-          await showDialog<void>(
-            context: context,
-            builder: (context) => UpdateAvailableDialog(
-              release: latestRelease,
-              currentVersion: packageInfo.version,
-            ),
-          );
-        }
       }
       if (mounted) setState(() => _releases = Future.value(releases));
     } catch (error) {
@@ -92,6 +90,7 @@ class _ReleaseNotesPageState extends ConsumerState<ReleaseNotesPage> {
     final localizations = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final frequency = ref.watch(updateCheckFrequencyProvider);
+    final checkNightlyUpdates = ref.watch(checkNightlyUpdatesProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -153,9 +152,9 @@ class _ReleaseNotesPageState extends ConsumerState<ReleaseNotesPage> {
             future: _packageInfo,
             builder: (context, packageSnapshot) {
               final currentVersion = packageSnapshot.data?.version;
-              final latestRelease = releases.firstWhere(
-                (release) => !release.isPrerelease,
-                orElse: () => releases.first,
+              final latestRelease = ReleaseService.latestReleaseFor(
+                releases,
+                includeNightly: checkNightlyUpdates,
               );
               final updateAvailable =
                   currentVersion != null &&
@@ -196,7 +195,19 @@ class _ReleaseNotesPageState extends ConsumerState<ReleaseNotesPage> {
                     },
                   ),
                   const SizedBox(height: 12),
-                  if (currentVersion != null)
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(localizations.checkNightlyUpdates),
+                    subtitle: Text(
+                      localizations.checkNightlyUpdatesDescription,
+                    ),
+                    value: checkNightlyUpdates,
+                    onChanged: (enabled) => ref
+                        .read(checkNightlyUpdatesProvider.notifier)
+                        .setEnabled(enabled),
+                  ),
+                  const SizedBox(height: 12),
+                  if (currentVersion != null && latestRelease != null)
                     _VersionSummaryCard(
                       currentVersion: currentVersion,
                       latestVersion: latestRelease.tagName,
@@ -207,6 +218,7 @@ class _ReleaseNotesPageState extends ConsumerState<ReleaseNotesPage> {
                     _ReleaseCard(
                       release: releases[index],
                       isLatest:
+                          latestRelease != null &&
                           releases[index].tagName == latestRelease.tagName,
                       onDownload: _openDownload,
                     ),

@@ -24,12 +24,47 @@ class ReleaseService {
   List<AppRelease>? get cachedReleases => _cachedReleases;
   AppRelease? get latestRelease {
     final releases = _cachedReleases;
-    if (releases == null) return null;
-    for (final release in releases) {
-      if (!release.isPrerelease) return release;
-    }
-    return releases.isEmpty ? null : releases.first;
+    return releases == null
+        ? null
+        : latestReleaseFor(releases, includeNightly: false);
   }
+
+  AppRelease? get latestUpdateCandidate {
+    final releases = _cachedReleases;
+    return releases == null
+        ? null
+        : latestReleaseFor(
+            releases,
+            includeNightly: _storage.getCheckNightlyUpdates(),
+          );
+  }
+
+  static AppRelease? latestReleaseFor(
+    List<AppRelease> releases, {
+    required bool includeNightly,
+  }) {
+    final candidates = releases.where(
+      (release) =>
+          !release.isPrerelease || (includeNightly && _isNightly(release)),
+    );
+    AppRelease? latest;
+    for (final release in candidates) {
+      if (latest == null ||
+          compareVersions(release.tagName, latest.tagName) > 0 ||
+          (compareVersions(release.tagName, latest.tagName) == 0 &&
+              (release.publishedAt ?? DateTime(0)).isAfter(
+                latest.publishedAt ?? DateTime(0),
+              ))) {
+        latest = release;
+      }
+    }
+    return latest;
+  }
+
+  static bool _isNightly(AppRelease release) => RegExp(
+    r'(^|[-._])nightly([-.]|$)',
+    caseSensitive: false,
+  ).hasMatch('${release.tagName} ${release.name}');
 
   Future<List<AppRelease>> fetchReleases() async {
     final releases = <AppRelease>[];
@@ -92,7 +127,7 @@ class ReleaseService {
     await fetchReleases();
     await _storage.setLastReleaseCheck(now);
     _lastAutomaticCheck = now;
-    return latestRelease;
+    return latestUpdateCandidate;
   }
 
   Future<List<AppRelease>> checkManually() async {
@@ -103,25 +138,61 @@ class ReleaseService {
 
   static bool isUpdateAvailable(String currentVersion, AppRelease? release) {
     if (release == null) return false;
-    final current = _parseVersion(currentVersion);
-    final latest = _parseVersion(release.tagName);
-    if (current == null || latest == null) return false;
-    for (var index = 0; index < current.length; index++) {
-      if (latest[index] != current[index]) {
-        return latest[index] > current[index];
-      }
-    }
-    return false;
+    return compareVersions(release.tagName, currentVersion) > 0;
   }
 
-  static List<int>? _parseVersion(String version) {
-    final match = RegExp(r'^v?(\d+)\.(\d+)\.(\d+)').firstMatch(version);
+  static int compareVersions(String first, String second) {
+    final firstVersion = _parseVersion(first);
+    final secondVersion = _parseVersion(second);
+    if (firstVersion == null || secondVersion == null) return 0;
+
+    for (var index = 0; index < 3; index++) {
+      final comparison = firstVersion.core[index].compareTo(
+        secondVersion.core[index],
+      );
+      if (comparison != 0) return comparison;
+    }
+
+    final firstPreRelease = firstVersion.preRelease;
+    final secondPreRelease = secondVersion.preRelease;
+    if (firstPreRelease.isEmpty || secondPreRelease.isEmpty) {
+      if (firstPreRelease.isEmpty == secondPreRelease.isEmpty) return 0;
+      return firstPreRelease.isEmpty ? 1 : -1;
+    }
+    for (
+      var index = 0;
+      index < firstPreRelease.length && index < secondPreRelease.length;
+      index++
+    ) {
+      final firstPart = firstPreRelease[index];
+      final secondPart = secondPreRelease[index];
+      final firstNumber = int.tryParse(firstPart);
+      final secondNumber = int.tryParse(secondPart);
+      final comparison = firstNumber != null && secondNumber != null
+          ? firstNumber.compareTo(secondNumber)
+          : firstNumber != null
+          ? -1
+          : secondNumber != null
+          ? 1
+          : firstPart.compareTo(secondPart);
+      if (comparison != 0) return comparison;
+    }
+    return firstPreRelease.length.compareTo(secondPreRelease.length);
+  }
+
+  static _ParsedVersion? _parseVersion(String version) {
+    final match = RegExp(
+      r'^v?(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$',
+    ).firstMatch(version.trim());
     if (match == null) return null;
-    return [
-      int.parse(match.group(1)!),
-      int.parse(match.group(2)!),
-      int.parse(match.group(3)!),
-    ];
+    return _ParsedVersion(
+      core: [
+        int.parse(match.group(1)!),
+        int.parse(match.group(2)!),
+        int.parse(match.group(3)!),
+      ],
+      preRelease: match.group(4)?.split('.') ?? const [],
+    );
   }
 
   void dispose() {
@@ -131,4 +202,11 @@ class ReleaseService {
   @visibleForTesting
   static const githubReleasesEndpoint =
       'https://api.github.com/repos/THR3ATB3AR/moesync/releases';
+}
+
+class _ParsedVersion {
+  const _ParsedVersion({required this.core, required this.preRelease});
+
+  final List<int> core;
+  final List<String> preRelease;
 }
