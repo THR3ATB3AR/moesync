@@ -786,15 +786,19 @@ class SyncGroupHeader extends StatelessWidget {
   }
 }
 
-String _localizedSyncStatus(String status, AppLocalizations l) {
+String _localizedSyncStatus(
+  String status,
+  AppLocalizations l,
+  MediaType mediaType,
+) {
   return switch (status.toLowerCase().replaceAll(' ', '_')) {
-    'watching' => l.watching,
-    'reading' => l.reading,
+    'watching' ||
+    'reading' => mediaType == MediaType.anime ? l.watching : l.reading,
     'completed' => l.completed,
     'on_hold' => l.onHold,
     'dropped' => l.dropped,
-    'plan_to_watch' => l.planToWatch,
-    'plan_to_read' => l.planToRead,
+    'plan_to_watch' || 'plan_to_read' =>
+      mediaType == MediaType.anime ? l.planToWatch : l.planToRead,
     _ => status,
   };
 }
@@ -818,6 +822,9 @@ class SyncActionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
+    final progressUnitLabel = action.mediaType == MediaType.anime
+        ? l.episodesShort
+        : l.chaptersShort;
     final notifier = ref.read(syncProvider.notifier);
 
     return InkWell(
@@ -932,14 +939,14 @@ class SyncActionTitle extends StatelessWidget {
               const SizedBox(height: 4),
               if (action.isAdd)
                 Text(
-                  '${l.status}: ${_localizedSyncStatus(action.newStatus, l)} • ${l.score}: ${action.newScore} • ${l.episodesShort}: ${action.newProgress}',
+                  '${l.status}: ${_localizedSyncStatus(action.newStatus, l, action.mediaType)} • ${l.score}: ${action.newScore} • $progressUnitLabel: ${action.newProgress}',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
                 )
               else
                 Text(
-                  '${l.differenceShort}: ${_localizedSyncStatus(action.oldStatus ?? '', l)} ➔ ${_localizedSyncStatus(action.newStatus, l)} | ${l.score}: ${action.oldScore} ➔ ${action.newScore} | ${l.episodesShort}: ${action.oldProgress} ➔ ${action.newProgress}',
+                  '${l.differenceShort}: ${_localizedSyncStatus(action.oldStatus ?? '', l, action.mediaType)} ➔ ${_localizedSyncStatus(action.newStatus, l, action.mediaType)} | ${l.score}: ${action.oldScore} ➔ ${action.newScore} | $progressUnitLabel: ${action.oldProgress} ➔ ${action.newProgress}',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                     fontSize: 11,

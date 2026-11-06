@@ -1326,6 +1326,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get episodesShort => 'Ep';
 
   @override
+  String get chaptersShort => 'Ch.';
+
+  @override
   String get status => 'Status';
 
   @override

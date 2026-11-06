@@ -481,6 +481,7 @@
   "applyChangesToTargetServices": "Apply Changes to Target Services ({selectedCount})",
   "update": "Update",
   "episodesShort": "Ep",
+  "chaptersShort": "Ch.",
   "status": "Status",
   "differenceShort": "Diff",
   "noMusicServicesFound": "No music services found",

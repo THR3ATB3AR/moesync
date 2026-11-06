@@ -323,7 +323,7 @@ class _MediaDetailScreenState extends ConsumerState<MediaDetailScreen> {
         return AppLocalizations.of(context).dropped;
       case 'plan_to_watch':
       case 'plan_to_read':
-        return AppLocalizations.of(context).planToWatch;
+        return getStatusLabel(firstItem.status, liveItem.mediaType, context);
       default:
         return AppLocalizations.of(context).edit;
     }

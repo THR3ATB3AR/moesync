@@ -1339,6 +1339,9 @@ class AppLocalizationsPl extends AppLocalizations {
   String get episodesShort => 'Odc.';
 
   @override
+  String get chaptersShort => 'Rozdz.';
+
+  @override
   String get status => 'Status';
 
   @override

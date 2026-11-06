@@ -481,6 +481,7 @@
   "applyChangesToTargetServices": "Zastosuj zmiany w usługach docelowych ({selectedCount})",
   "update": "Aktualizuj",
   "episodesShort": "Odc.",
+  "chaptersShort": "Rozdz.",
   "status": "Status",
   "differenceShort": "Różn.",
   "noMusicServicesFound": "Nie znaleziono usług muzycznych",

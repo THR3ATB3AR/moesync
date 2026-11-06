@@ -1,4 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:moesync/l10n/gen/app_localizations.dart';
 import 'package:moesync/models/media_item.dart';
 import 'package:moesync/services/storage_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,6 +13,33 @@ void main() {
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
     storage = StorageService(await SharedPreferences.getInstance());
+  });
+
+  testWidgets('manga progress and statuses use reading terminology', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('pl'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Builder(
+          builder: (context) => Column(
+            children: [
+              Text(getProgressUnitLabel(MediaType.anime, context)),
+              Text(getProgressUnitLabel(MediaType.manga, context)),
+              Text(getStatusLabel('plan_to_read', MediaType.manga, context)),
+              Text(getStatusLabel('reading', MediaType.manga, context)),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Odc.'), findsOneWidget);
+    expect(find.text('Rozdz.'), findsOneWidget);
+    expect(find.text('Do przeczytania'), findsOneWidget);
+    expect(find.text('Czytam'), findsOneWidget);
   });
 
   test(

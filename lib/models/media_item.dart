@@ -775,7 +775,7 @@ String getStatusLabel(String status, MediaType type, BuildContext context) {
   switch (type) {
     case MediaType.anime:
       switch (status.toLowerCase()) {
-        case 'watching':
+        case 'watching' || 'reading':
           return AppLocalizations.of(context).watching;
         case 'completed':
           return AppLocalizations.of(context).done;
@@ -789,7 +789,7 @@ String getStatusLabel(String status, MediaType type, BuildContext context) {
       }
     case MediaType.manga:
       switch (status.toLowerCase()) {
-        case 'watching':
+        case 'watching' || 'reading':
           return AppLocalizations.of(context).reading;
         case 'completed':
           return AppLocalizations.of(context).done;
@@ -802,6 +802,13 @@ String getStatusLabel(String status, MediaType type, BuildContext context) {
           return AppLocalizations.of(context).planToRead;
       }
   }
+}
+
+String getProgressUnitLabel(MediaType type, BuildContext context) {
+  final localizations = AppLocalizations.of(context);
+  return type == MediaType.anime
+      ? localizations.episodesShort
+      : localizations.chaptersShort;
 }
 
 class SyncAction {

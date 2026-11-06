@@ -2379,6 +2379,12 @@ abstract class AppLocalizations {
   /// **'Ep'**
   String get episodesShort;
 
+  /// No description provided for @chaptersShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Ch.'**
+  String get chaptersShort;
+
   /// No description provided for @status.
   ///
   /// In en, this message translates to:
