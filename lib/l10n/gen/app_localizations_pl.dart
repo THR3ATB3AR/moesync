@@ -50,6 +50,43 @@ class AppLocalizationsPl extends AppLocalizations {
   String get homeWidgetWelcome => 'Powitanie i konfiguracja kont';
 
   @override
+  String get currentSeason => 'Aktualny sezon';
+
+  @override
+  String get nextSeason => 'Następny sezon';
+
+  @override
+  String get mostPopular => 'Najpopularniejsze';
+
+  @override
+  String get newlyAdded => 'Ostatnio dodane';
+
+  @override
+  String get seasonAndYear => 'Sezon i rok';
+
+  @override
+  String get previous => 'Poprzedni';
+
+  @override
+  String get current => 'Bieżące';
+
+  @override
+  String get next => 'Następny';
+
+  @override
+  String get year => 'Rok';
+
+  @override
+  String get apply => 'Zastosuj';
+
+  @override
+  String get retry => 'Ponów';
+
+  @override
+  String get failedToLoadMedia =>
+      'Nie udało się wczytać mediów. Spróbuj ponownie.';
+
+  @override
   String get noAccountsConnected => 'Nie połączono żadnych kont';
 
   @override
@@ -808,9 +845,6 @@ class AppLocalizationsPl extends AppLocalizations {
   String get user => 'Użytkownik';
 
   @override
-  String get retry => 'Ponów';
-
-  @override
   String watchingProgressTotal(Object progress, Object total) {
     return 'Oglądam ($progress/$total)';
   }
@@ -998,9 +1032,6 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get scoreDistribution => 'Rozkład ocen';
-
-  @override
-  String get current => 'Bieżące';
 
   @override
   String get planning => 'Planowane';

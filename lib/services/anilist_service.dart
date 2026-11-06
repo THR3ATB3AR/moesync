@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import '../models/media_item.dart';
+import '../models/media_discovery.dart';
 import 'anilist_rate_limiter.dart';
 import 'storage_service.dart';
 
@@ -526,6 +527,128 @@ class AnilistService {
         posterImage: (coverMap['large'] as String?) ?? '',
         service: ServiceType.anilist,
         mediaType: type,
+      );
+    }).toList();
+  }
+
+  Future<List<MediaItem>> discover(
+    MediaDiscoveryQuery discoveryQuery, {
+    int? seedMediaId,
+    int limit = 30,
+  }) async {
+    if (discoveryQuery.category == MediaDiscoveryCategory.recommended &&
+        seedMediaId == null) {
+      return [];
+    }
+    final isSeasonal =
+        discoveryQuery.category == MediaDiscoveryCategory.currentSeason ||
+        discoveryQuery.category == MediaDiscoveryCategory.nextSeason;
+    final isRecommended =
+        discoveryQuery.category == MediaDiscoveryCategory.recommended &&
+        seedMediaId != null;
+    final query = isRecommended
+        ? r'''
+          query ($seedId: Int, $page: Int, $perPage: Int) {
+            Page(page: $page, perPage: $perPage) {
+              recommendations(mediaId: $seedId, sort: RATING_DESC) {
+                mediaRecommendation {
+                  id idMal title { romaji english native userPreferred }
+                  episodes chapters format season seasonYear
+                  coverImage { large }
+                }
+              }
+            }
+          }
+        '''
+        : r'''
+          query ($type: MediaType, $page: Int, $perPage: Int,
+                 $season: MediaSeason, $seasonYear: Int) {
+            Page(page: $page, perPage: $perPage) {
+              media(type: $type, sort: SORT_VALUE,
+                    season: $season, seasonYear: $seasonYear) {
+                id idMal title { romaji english native userPreferred }
+                episodes chapters format season seasonYear
+                coverImage { large }
+              }
+            }
+          }
+        '''.replaceFirst('SORT_VALUE', switch (discoveryQuery.category) {
+            MediaDiscoveryCategory.currentSeason ||
+            MediaDiscoveryCategory.nextSeason => 'POPULARITY_DESC',
+            MediaDiscoveryCategory.recommended ||
+            MediaDiscoveryCategory.trending => 'TRENDING_DESC',
+            MediaDiscoveryCategory.mostPopular => 'POPULARITY_DESC',
+            MediaDiscoveryCategory.newlyAdded => 'ID_DESC',
+          });
+    final variables = <String, dynamic>{
+      'page': 1,
+      'perPage': limit.clamp(1, 50),
+    };
+    if (isRecommended) {
+      variables['seedId'] = seedMediaId;
+    } else {
+      variables['type'] = discoveryQuery.mediaType == MediaType.anime
+          ? 'ANIME'
+          : 'MANGA';
+      if (isSeasonal) {
+        variables['season'] = (discoveryQuery.season ?? AnimeSeason.forDate(
+          DateTime.now(),
+        )).apiValue;
+        variables['seasonYear'] = discoveryQuery.year ?? DateTime.now().year;
+      }
+    }
+
+    final response = await AnilistRateLimiter.post(
+      url: Uri.parse(_graphqlUrl),
+      headers: _headers(),
+      body: {'query': query, 'variables': variables},
+    );
+    if (response.statusCode != 200) {
+      throw Exception('AniList discovery failed: ${response.body}');
+    }
+
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    final page = decoded['data']?['Page'] as Map<String, dynamic>?;
+    final rawMedia = isRecommended
+        ? ((page?['recommendations'] as List<dynamic>?) ?? [])
+              .map(
+                (recommendation) =>
+                    (recommendation as Map<String, dynamic>?)?[
+                      'mediaRecommendation'
+                    ],
+              )
+              .whereType<Map<String, dynamic>>()
+              .toList()
+        : (page?['media'] as List<dynamic>?) ?? [];
+
+    return rawMedia.map((raw) {
+      final media = raw as Map<String, dynamic>;
+      final title = (media['title'] as Map<String, dynamic>?) ?? {};
+      final cover = (media['coverImage'] as Map<String, dynamic>?) ?? {};
+      final malId = (media['idMal'] as num?)?.toInt();
+      return MediaItem(
+        id: (media['id'] as num).toInt(),
+        malId: malId != null && malId > 0 ? malId : null,
+        title:
+            (title['userPreferred'] as String?) ??
+            (title['romaji'] as String?) ??
+            (title['english'] as String?) ??
+            'Unknown',
+        englishTitle: title['english'] as String?,
+        japaneseTitle: title['native'] as String?,
+        romajiTitle: title['romaji'] as String?,
+        status: 'plan_to_watch',
+        score: 0,
+        progress: 0,
+        totalProgress: discoveryQuery.mediaType == MediaType.anime
+            ? (media['episodes'] as num?)?.toInt()
+            : (media['chapters'] as num?)?.toInt(),
+        mediaFormat: media['format'] as String?,
+        releaseSeason: media['season'] as String?,
+        releaseYear: (media['seasonYear'] as num?)?.toInt(),
+        posterImage: (cover['large'] as String?) ?? '',
+        service: ServiceType.anilist,
+        mediaType: discoveryQuery.mediaType,
       );
     }).toList();
   }

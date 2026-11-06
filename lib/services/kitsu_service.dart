@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/media_item.dart';
+import '../models/media_discovery.dart';
 import 'storage_service.dart';
 
 class KitsuService {
@@ -463,6 +464,71 @@ class KitsuService {
               },
         releaseYear: startDate?.year,
         posterImage: poster,
+        service: ServiceType.kitsu,
+        mediaType: type,
+      );
+    }).toList();
+  }
+
+  Future<List<MediaItem>> discover(
+    MediaDiscoveryQuery query, {
+    int limit = 30,
+  }) async {
+    if (query.category == MediaDiscoveryCategory.recommended) return [];
+
+    final type = query.mediaType;
+    final kind = type == MediaType.anime ? 'anime' : 'manga';
+    final isSeasonal =
+        query.category == MediaDiscoveryCategory.currentSeason ||
+        query.category == MediaDiscoveryCategory.nextSeason;
+    final season = query.season ?? AnimeSeason.forDate(DateTime.now());
+    final year = query.year ?? DateTime.now().year;
+    final sort = switch (query.category) {
+      MediaDiscoveryCategory.mostPopular => '-userCount',
+      MediaDiscoveryCategory.newlyAdded => '-createdAt',
+      _ => '-userCount',
+    };
+    final parameters = <String, String>{
+      'page[limit]': '$limit',
+      'sort': sort,
+    };
+    if (isSeasonal) {
+      parameters['filter[season]'] = season.name;
+      parameters['filter[seasonYear]'] = '$year';
+    }
+    final response = await _get(
+      Uri.https('kitsu.app', '/api/edge/$kind', parameters),
+      headers: _headers(),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Kitsu discovery failed (${response.statusCode}).');
+    }
+
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    final data = (decoded['data'] as List<dynamic>?) ?? [];
+    return data.map((entry) {
+      final item = entry as Map<String, dynamic>;
+      final attrs = (item['attributes'] as Map<String, dynamic>?) ?? {};
+      final poster = (attrs['posterImage'] as Map<String, dynamic>?) ?? {};
+      final startDate = DateTime.tryParse(attrs['startDate'] as String? ?? '');
+      return MediaItem(
+        id: int.tryParse(item['id'] as String? ?? '') ?? 0,
+        title: attrs['canonicalTitle'] as String? ?? 'Unknown',
+        status: 'plan_to_watch',
+        score: 0,
+        progress: 0,
+        totalProgress: type == MediaType.anime
+            ? (attrs['episodeCount'] as num?)?.toInt()
+            : (attrs['chapterCount'] as num?)?.toInt(),
+        mediaFormat: (attrs['subtype'] as String?)?.toUpperCase(),
+        releaseSeason: startDate == null
+            ? null
+            : AnimeSeason.forDate(startDate).apiValue,
+        releaseYear: startDate?.year,
+        posterImage:
+            (poster['large'] as String?) ??
+            (poster['medium'] as String?) ??
+            '',
         service: ServiceType.kitsu,
         mediaType: type,
       );

@@ -1,5 +1,6 @@
 import 'package:moesync/l10n/gen/app_localizations.dart';
 import 'package:moesync/models/media_item.dart';
+import 'package:moesync/models/media_discovery.dart';
 import 'package:moesync/screens/media_detail_screen.dart';
 import 'package:moesync/screens/settings/settings_about_page.dart';
 import 'package:moesync/screens/settings/settings_appearance_page.dart';
@@ -18,6 +19,7 @@ import 'screens/settings_screen.dart';
 import 'screens/sync_screen.dart';
 import 'screens/settings/settings_accounts_page.dart';
 import 'screens/media_search_screen.dart';
+import 'screens/media_discovery_screen.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -37,6 +39,26 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/search',
             builder: (context, state) => const MediaSearchScreen(),
+          ),
+          GoRoute(
+            path: '/discover/:category',
+            builder: (context, state) {
+              final query = state.extra as MediaDiscoveryQuery?;
+              final category = MediaDiscoveryCategory.values.firstWhere(
+                (value) => value.name == state.pathParameters['category'],
+                orElse: () => MediaDiscoveryCategory.trending,
+              );
+              return MediaDiscoveryScreen(
+                initialQuery:
+                    query ??
+                    MediaDiscoveryQuery(
+                      category: category,
+                      mediaType: state.uri.queryParameters['type'] == 'manga'
+                          ? MediaType.manga
+                          : MediaType.anime,
+                    ),
+              );
+            },
           ),
           GoRoute(
             path: '/anime',

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../l10n/gen/app_localizations.dart';
 import '../../models/media_item.dart';
+import '../../models/media_discovery.dart';
 import '../../providers/providers.dart';
 import 'home_horizontal_media_list.dart';
 import 'home_section_header.dart';
@@ -161,7 +162,166 @@ final homeWidgetRegistry = List<HomeWidgetDefinition>.unmodifiable([
       items: data.readingManga,
     ),
   ),
+  HomeWidgetDefinition(
+    id: homeWidgetCurrentSeasonId,
+    icon: Icons.calendar_month_rounded,
+    title: (l) => l.currentSeason,
+    builder: (data) => _DiscoveryWidget(
+      data: data,
+      query: _seasonQuery(MediaDiscoveryCategory.currentSeason, DateTime.now()),
+    ),
+  ),
+  HomeWidgetDefinition(
+    id: homeWidgetRecommendedId,
+    icon: Icons.auto_awesome_rounded,
+    title: (l) => l.recommended,
+    builder: (data) => _DiscoveryWidget(
+      data: data,
+      query: const MediaDiscoveryQuery(
+        category: MediaDiscoveryCategory.recommended,
+      ),
+    ),
+  ),
+  HomeWidgetDefinition(
+    id: homeWidgetTrendingId,
+    icon: Icons.trending_up_rounded,
+    title: (l) => l.trending,
+    builder: (data) => _DiscoveryWidget(
+      data: data,
+      query: const MediaDiscoveryQuery(
+        category: MediaDiscoveryCategory.trending,
+      ),
+    ),
+  ),
+  HomeWidgetDefinition(
+    id: homeWidgetNextSeasonId,
+    icon: Icons.upcoming_rounded,
+    title: (l) => l.nextSeason,
+    builder: (data) => _DiscoveryWidget(
+      data: data,
+      query: _seasonQuery(MediaDiscoveryCategory.nextSeason, DateTime.now()),
+    ),
+  ),
+  HomeWidgetDefinition(
+    id: homeWidgetMostPopularId,
+    icon: Icons.star_rounded,
+    title: (l) => l.mostPopular,
+    builder: (data) => _DiscoveryWidget(
+      data: data,
+      query: const MediaDiscoveryQuery(
+        category: MediaDiscoveryCategory.mostPopular,
+      ),
+    ),
+  ),
+  HomeWidgetDefinition(
+    id: homeWidgetNewlyAddedId,
+    icon: Icons.new_releases_outlined,
+    title: (l) => l.newlyAdded,
+    builder: (data) => _DiscoveryWidget(
+      data: data,
+      query: const MediaDiscoveryQuery(
+        category: MediaDiscoveryCategory.newlyAdded,
+      ),
+    ),
+  ),
 ]);
+
+MediaDiscoveryQuery _seasonQuery(
+  MediaDiscoveryCategory category,
+  DateTime now,
+) {
+  final season = category == MediaDiscoveryCategory.nextSeason
+      ? AnimeSeason.forDate(now).next
+      : AnimeSeason.forDate(now);
+  final crossesYear =
+      category == MediaDiscoveryCategory.nextSeason &&
+      AnimeSeason.forDate(now) == AnimeSeason.fall;
+  return MediaDiscoveryQuery(
+    category: category,
+    season: season,
+    year: now.year + (crossesYear ? 1 : 0),
+  );
+}
+
+class _DiscoveryWidget extends ConsumerWidget {
+  const _DiscoveryWidget({required this.data, required this.query});
+
+  final HomeWidgetData data;
+  final MediaDiscoveryQuery query;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final localizations = AppLocalizations.of(context);
+    final result = ref.watch(mediaDiscoveryProvider(query));
+    final title = switch (query.category) {
+      MediaDiscoveryCategory.currentSeason ||
+      MediaDiscoveryCategory.nextSeason =>
+        '${_seasonLabel(localizations, query.season!)} ${query.year}',
+      MediaDiscoveryCategory.recommended => localizations.recommended,
+      MediaDiscoveryCategory.trending => localizations.trending,
+      MediaDiscoveryCategory.mostPopular => localizations.mostPopular,
+      MediaDiscoveryCategory.newlyAdded => localizations.newlyAdded,
+    };
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        HomeSectionHeader(
+          context: data.context,
+          title: title,
+          icon: switch (query.category) {
+            MediaDiscoveryCategory.currentSeason ||
+            MediaDiscoveryCategory.nextSeason => Icons.calendar_month_rounded,
+            MediaDiscoveryCategory.recommended => Icons.auto_awesome_rounded,
+            MediaDiscoveryCategory.trending => Icons.trending_up_rounded,
+            MediaDiscoveryCategory.mostPopular =>
+              Icons.local_fire_department_rounded,
+            MediaDiscoveryCategory.newlyAdded => Icons.new_releases_outlined,
+          },
+          onViewAll: () => GoRouter.of(data.context).push(
+            '/discover/${query.category.name}',
+            extra: query.copyWith(includeOtherServices: true),
+          ),
+        ),
+        const SizedBox(height: 12),
+        result.when(
+          data: (items) {
+            final unifiedItems = unifyDiscoveryItems(items);
+            if (unifiedItems.isEmpty) {
+              return Text(
+                localizations.noSearchResults,
+                style: data.theme.textTheme.bodyMedium?.copyWith(
+                  color: data.theme.colorScheme.onSurfaceVariant,
+                ),
+              );
+            }
+            return HomeHorizontalMediaList(
+              context: context,
+              ref: ref,
+              items: unifiedItems.take(10).toList(),
+              theme: data.theme,
+            );
+          },
+          error: (error, stackTrace) => Text(
+            localizations.failedToLoadMedia,
+            style: data.theme.textTheme.bodyMedium?.copyWith(
+              color: data.theme.colorScheme.error,
+            ),
+          ),
+          loading: () => const HomeHorizontalMediaListSkeleton(),
+        ),
+      ],
+    );
+  }
+}
+
+String _seasonLabel(AppLocalizations localizations, AnimeSeason season) =>
+    switch (season) {
+      AnimeSeason.winter => localizations.seasonWinter,
+      AnimeSeason.spring => localizations.seasonSpring,
+      AnimeSeason.summer => localizations.seasonSummer,
+      AnimeSeason.fall => localizations.seasonFall,
+    };
 
 class _ContinueMediaWidget extends StatelessWidget {
   const _ContinueMediaWidget({

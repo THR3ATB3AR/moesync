@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/media_item.dart';
+import '../models/media_discovery.dart';
 import 'oauth_service.dart';
 import 'storage_service.dart';
 
@@ -372,6 +373,66 @@ class ShikimoriService {
             ? (m['episodes'] as num?)?.toInt()
             : (m['chapters'] as num?)?.toInt(),
         mediaFormat: (m['kind'] as String?)?.toUpperCase(),
+        releaseYear: airedOn?.year,
+        posterImage: poster,
+        service: ServiceType.shikimori,
+        mediaType: type,
+      );
+    }).toList();
+  }
+
+  Future<List<MediaItem>> discover(
+    MediaDiscoveryQuery query, {
+    int limit = 30,
+  }) async {
+    if (query.category == MediaDiscoveryCategory.recommended) return [];
+
+    final type = query.mediaType;
+    final endpoint = type == MediaType.anime ? 'animes' : 'mangas';
+    final isSeasonal =
+        query.category == MediaDiscoveryCategory.currentSeason ||
+        query.category == MediaDiscoveryCategory.nextSeason;
+    final season = query.season ?? AnimeSeason.forDate(DateTime.now());
+    final year = query.year ?? DateTime.now().year;
+    final parameters = <String, String>{
+      'limit': '$limit',
+      'order': switch (query.category) {
+        MediaDiscoveryCategory.mostPopular => 'popularity',
+        MediaDiscoveryCategory.newlyAdded => 'created_at',
+        _ => 'popularity',
+      },
+    };
+    if (isSeasonal && type == MediaType.anime) {
+      parameters['season'] = '${season.name}_$year';
+    }
+    final url = Uri.https('shikimori.io', '/api/$endpoint', parameters);
+    final response = await _sendRequest(
+      (headers) => http.get(url, headers: headers),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Shikimori discovery failed (${response.statusCode}).');
+    }
+
+    final results = jsonDecode(response.body) as List<dynamic>;
+    return results.map((entry) {
+      final item = entry as Map<String, dynamic>;
+      final image = (item['image'] as Map<String, dynamic>?) ?? {};
+      final airedOn = DateTime.tryParse(item['aired_on'] as String? ?? '');
+      var poster = image['original'] as String? ?? '';
+      if (poster.isNotEmpty && !poster.startsWith('http')) {
+        poster = 'https://shikimori.io$poster';
+      }
+      return MediaItem(
+        id: (item['id'] as num).toInt(),
+        title: item['name'] as String? ?? item['russian'] as String? ?? 'Unknown',
+        status: 'plan_to_watch',
+        score: 0,
+        progress: 0,
+        totalProgress: type == MediaType.anime
+            ? (item['episodes'] as num?)?.toInt()
+            : (item['chapters'] as num?)?.toInt(),
+        mediaFormat: (item['kind'] as String?)?.toUpperCase(),
+        releaseSeason: airedOn == null ? null : AnimeSeason.forDate(airedOn).apiValue,
         releaseYear: airedOn?.year,
         posterImage: poster,
         service: ServiceType.shikimori,

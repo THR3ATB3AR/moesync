@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/app_release.dart';
 import '../services/release_service.dart';
 import '../models/media_item.dart';
+import '../models/media_discovery.dart';
 import '../services/anilist_service.dart';
 import '../services/anime_api_mapping_service.dart';
 import '../services/kitsu_service.dart';
@@ -171,6 +172,71 @@ final anilistServiceProvider = Provider<AnilistService>((ref) {
   final storage = ref.watch(storageServiceProvider);
   return AnilistService(storage);
 });
+
+final mediaDiscoveryProvider =
+    FutureProvider.family<List<MediaItem>, MediaDiscoveryQuery>((
+      ref,
+      query,
+    ) async {
+      final library = query.category == MediaDiscoveryCategory.recommended
+          ? ref.watch(mediaLibraryProvider).unifiedItems
+          : const <UnifiedMediaItem>[];
+      final seedItem = library
+          .where((item) => item.mediaType == query.mediaType)
+          .firstOrNull;
+      final anilist = ref.watch(anilistServiceProvider);
+      var seedMediaId = seedItem?.services[ServiceType.anilist]?.id;
+      if (query.category == MediaDiscoveryCategory.recommended &&
+          seedMediaId == null &&
+          seedItem != null &&
+          seedItem.malId > 0) {
+        seedMediaId = await anilist.findMediaIdByMalId(
+          seedItem.malId,
+          query.mediaType,
+        );
+      }
+
+      final sources = <(ServiceType, Future<List<MediaItem>>)>[
+        (
+          ServiceType.anilist,
+          anilist.discover(query, seedMediaId: seedMediaId),
+        ),
+        if (query.includeOtherServices) ...[
+          (ServiceType.mal, ref.watch(malServiceProvider).discover(query)),
+          (ServiceType.kitsu, ref.watch(kitsuServiceProvider).discover(query)),
+          (
+            ServiceType.shikimori,
+            ref.watch(shikimoriServiceProvider).discover(query),
+          ),
+        ],
+      ];
+      final failures = <String>[];
+      final results = await Future.wait(
+        sources.map((source) async {
+          try {
+            return await source.$2;
+          } catch (error) {
+            failures.add('${source.$1.displayName}: $error');
+            debugPrint('Media discovery failed for ${source.$1.name}: $error');
+            return <MediaItem>[];
+          }
+        }),
+      );
+      final items = results.expand((result) => result).toList();
+      if (items.isEmpty && failures.isNotEmpty) {
+        throw Exception(failures.join('\n'));
+      }
+
+      final animeMapping = ref.read(animeApiMappingServiceProvider);
+      final mangaMapping = ref.read(mangaMappingServiceProvider);
+      return items.map((item) {
+        if (item.malId != null && item.malId! > 0) return item;
+        final malId = query.mediaType == MediaType.anime
+            ? animeMapping.findMalId(item.service, item.id)
+            : mangaMapping.findMalId(item.service, item.id);
+        return malId > 0 ? item.copyWith(malId: malId) : item;
+      }).toList();
+    });
 
 final kitsuServiceProvider = Provider<KitsuService>((ref) {
   final storage = ref.watch(storageServiceProvider);

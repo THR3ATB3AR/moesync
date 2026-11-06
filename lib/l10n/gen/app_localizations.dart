@@ -172,6 +172,78 @@ abstract class AppLocalizations {
   /// **'Welcome and account setup'**
   String get homeWidgetWelcome;
 
+  /// No description provided for @currentSeason.
+  ///
+  /// In en, this message translates to:
+  /// **'This season'**
+  String get currentSeason;
+
+  /// No description provided for @nextSeason.
+  ///
+  /// In en, this message translates to:
+  /// **'Next season'**
+  String get nextSeason;
+
+  /// No description provided for @mostPopular.
+  ///
+  /// In en, this message translates to:
+  /// **'Most popular'**
+  String get mostPopular;
+
+  /// No description provided for @newlyAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Newly added'**
+  String get newlyAdded;
+
+  /// No description provided for @seasonAndYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Season and year'**
+  String get seasonAndYear;
+
+  /// No description provided for @previous.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous'**
+  String get previous;
+
+  /// No description provided for @current.
+  ///
+  /// In en, this message translates to:
+  /// **'Current'**
+  String get current;
+
+  /// No description provided for @next.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get next;
+
+  /// No description provided for @year.
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get year;
+
+  /// No description provided for @apply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get apply;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// No description provided for @failedToLoadMedia.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load media. Please try again.'**
+  String get failedToLoadMedia;
+
   /// No description provided for @noAccountsConnected.
   ///
   /// In en, this message translates to:
@@ -1507,12 +1579,6 @@ abstract class AppLocalizations {
   /// **'User'**
   String get user;
 
-  /// No description provided for @retry.
-  ///
-  /// In en, this message translates to:
-  /// **'Retry'**
-  String get retry;
-
   /// No description provided for @watchingProgressTotal.
   ///
   /// In en, this message translates to:
@@ -1812,12 +1878,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Score distribution'**
   String get scoreDistribution;
-
-  /// No description provided for @current.
-  ///
-  /// In en, this message translates to:
-  /// **'Current'**
-  String get current;
 
   /// No description provided for @planning.
   ///

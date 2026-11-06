@@ -57,6 +57,7 @@ app.*.map.json
 /test/*
 !/test/media_search_storage_test.dart
 !/test/home_widget_settings_test.dart
+!/test/media_discovery_test.dart
 docs/WYDANIA.md
 docs/RELEASING.md
 run-android.fish

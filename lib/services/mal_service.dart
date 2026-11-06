@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/media_item.dart';
+import '../models/media_discovery.dart';
 import 'oauth_service.dart';
 import 'storage_service.dart';
 
@@ -373,6 +374,93 @@ class MalService {
         posterImage:
             (mainPic['large'] as String?) ??
             (mainPic['medium'] as String?) ??
+            '',
+        service: ServiceType.mal,
+        mediaType: type,
+      );
+    }).toList();
+  }
+
+  Future<List<MediaItem>> discover(
+    MediaDiscoveryQuery query, {
+    int limit = 30,
+  }) async {
+    if (query.category == MediaDiscoveryCategory.recommended ||
+        query.category == MediaDiscoveryCategory.newlyAdded) {
+      return [];
+    }
+
+    final type = query.mediaType;
+    final isSeasonal =
+        query.category == MediaDiscoveryCategory.currentSeason ||
+        query.category == MediaDiscoveryCategory.nextSeason;
+    final season = query.season ?? AnimeSeason.forDate(DateTime.now());
+    final year = query.year ?? DateTime.now().year;
+    final endpoint = type == MediaType.anime ? 'anime' : 'manga';
+    final url = isSeasonal && type == MediaType.anime
+        ? Uri.https(
+            'api.myanimelist.net',
+            '/v2/anime/season/$year/${season.name}',
+            {
+              'limit': '$limit',
+              'sort': 'anime_num_list_users',
+              'fields':
+                  'main_picture,alternative_titles,num_episodes,media_type,start_season',
+            },
+          )
+        : Uri.https(
+            'api.myanimelist.net',
+            '/v2/$endpoint/ranking',
+            {
+              'limit': '$limit',
+              'ranking_type': switch (query.category) {
+                MediaDiscoveryCategory.trending when type == MediaType.anime =>
+                  'airing',
+                MediaDiscoveryCategory.trending => 'bypopularity',
+                MediaDiscoveryCategory.mostPopular => 'bypopularity',
+                _ => 'bypopularity',
+              },
+              'fields': type == MediaType.anime
+                  ? 'main_picture,alternative_titles,num_episodes,media_type,start_season'
+                  : 'main_picture,alternative_titles,num_chapters,media_type',
+            },
+          );
+    final clientId = credentials.clientId ?? StorageService.defaultMalClientId;
+    if (clientId.isEmpty) return [];
+    final response = await http.get(
+      url,
+      headers: {'X-MAL-CLIENT-ID': clientId},
+    );
+    if (response.statusCode != 200) {
+      throw Exception('MyAnimeList discovery failed (${response.statusCode}).');
+    }
+
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    final entries = (decoded['data'] as List<dynamic>?) ?? [];
+    return entries.map((entry) {
+      final node = (entry as Map<String, dynamic>)['node'] as Map<String, dynamic>;
+      final picture = (node['main_picture'] as Map<String, dynamic>?) ?? {};
+      final titles =
+          (node['alternative_titles'] as Map<String, dynamic>?) ?? {};
+      final startSeason =
+          (node['start_season'] as Map<String, dynamic>?) ?? {};
+      return MediaItem(
+        id: (node['id'] as num).toInt(),
+        title: node['title'] as String? ?? 'Unknown',
+        englishTitle: titles['en'] as String?,
+        japaneseTitle: titles['ja'] as String?,
+        status: 'plan_to_watch',
+        score: 0,
+        progress: 0,
+        totalProgress: type == MediaType.anime
+            ? (node['num_episodes'] as num?)?.toInt()
+            : (node['num_chapters'] as num?)?.toInt(),
+        mediaFormat: (node['media_type'] as String?)?.toUpperCase(),
+        releaseSeason: (startSeason['season'] as String?)?.toUpperCase(),
+        releaseYear: (startSeason['year'] as num?)?.toInt(),
+        posterImage:
+            (picture['large'] as String?) ??
+            (picture['medium'] as String?) ??
             '',
         service: ServiceType.mal,
         mediaType: type,
