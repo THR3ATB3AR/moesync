@@ -173,11 +173,12 @@ final anilistServiceProvider = Provider<AnilistService>((ref) {
   return AnilistService(storage);
 });
 
-final mediaDiscoveryProvider =
-    FutureProvider.family<List<MediaItem>, MediaDiscoveryQuery>((
+final mediaDiscoveryPageProvider =
+    FutureProvider.family<MediaDiscoveryPage, MediaDiscoveryPageRequest>((
       ref,
-      query,
+      request,
     ) async {
+      final query = request.query;
       final library = query.category == MediaDiscoveryCategory.recommended
           ? ref.watch(mediaLibraryProvider).unifiedItems
           : const <UnifiedMediaItem>[];
@@ -199,22 +200,54 @@ final mediaDiscoveryProvider =
       final sources = <(ServiceType, Future<List<MediaItem>>)>[
         (
           ServiceType.anilist,
-          anilist.discover(query, seedMediaId: seedMediaId),
+          anilist.discover(
+            query,
+            seedMediaId: seedMediaId,
+            limit: mediaDiscoveryPageSize,
+            pageNumber: request.page,
+          ),
         ),
         if (query.includeOtherServices) ...[
-          (ServiceType.mal, ref.watch(malServiceProvider).discover(query)),
-          (ServiceType.kitsu, ref.watch(kitsuServiceProvider).discover(query)),
+          (
+            ServiceType.mal,
+            ref
+                .watch(malServiceProvider)
+                .discover(
+                  query,
+                  limit: mediaDiscoveryPageSize,
+                  pageNumber: request.page,
+                ),
+          ),
+          (
+            ServiceType.kitsu,
+            ref
+                .watch(kitsuServiceProvider)
+                .discover(
+                  query,
+                  limit: mediaDiscoveryPageSize,
+                  pageNumber: request.page,
+                ),
+          ),
           (
             ServiceType.shikimori,
-            ref.watch(shikimoriServiceProvider).discover(query),
+            ref
+                .watch(shikimoriServiceProvider)
+                .discover(
+                  query,
+                  limit: mediaDiscoveryPageSize,
+                  pageNumber: request.page,
+                ),
           ),
         ],
       ];
       final failures = <String>[];
+      final pageResults = <List<MediaItem>>[];
       final results = await Future.wait(
         sources.map((source) async {
           try {
-            return await source.$2;
+            final result = await source.$2;
+            pageResults.add(result);
+            return result;
           } catch (error) {
             failures.add('${source.$1.displayName}: $error');
             debugPrint('Media discovery failed for ${source.$1.name}: $error');
@@ -229,13 +262,32 @@ final mediaDiscoveryProvider =
 
       final animeMapping = ref.read(animeApiMappingServiceProvider);
       final mangaMapping = ref.read(mangaMappingServiceProvider);
-      return items.map((item) {
+      final mappedItems = items.map((item) {
         if (item.malId != null && item.malId! > 0) return item;
         final malId = query.mediaType == MediaType.anime
             ? animeMapping.findMalId(item.service, item.id)
             : mangaMapping.findMalId(item.service, item.id);
         return malId > 0 ? item.copyWith(malId: malId) : item;
       }).toList();
+      return MediaDiscoveryPage(
+        items: mappedItems,
+        hasMore: pageResults.any(
+          (pageItems) => pageItems.length >= mediaDiscoveryPageSize,
+        ),
+      );
+    });
+
+final mediaDiscoveryProvider =
+    FutureProvider.family<List<MediaItem>, MediaDiscoveryQuery>((
+      ref,
+      query,
+    ) async {
+      final firstPage = await ref.watch(
+        mediaDiscoveryPageProvider(
+          MediaDiscoveryPageRequest(query: query, page: 1),
+        ).future,
+      );
+      return firstPage.items;
     });
 
 final kitsuServiceProvider = Provider<KitsuService>((ref) {

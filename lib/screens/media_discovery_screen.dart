@@ -17,13 +17,30 @@ class MediaDiscoveryScreen extends ConsumerStatefulWidget {
 }
 
 class _MediaDiscoveryScreenState extends ConsumerState<MediaDiscoveryScreen> {
+  final ScrollController _scrollController = ScrollController();
   late AnimeSeason _season;
   late int _year;
   late MediaDiscoveryQuery _query;
+  MediaDiscoveryQuery? _paginationQuery;
+  final List<MediaItem> _additionalItems = [];
+  int _page = 1;
+  bool _hasMore = false;
+  bool _paginationReady = false;
+  bool _syncScheduled = false;
+  bool _isLoadingMore = false;
+  Object? _loadMoreError;
 
   bool get _isSeasonal =>
       _query.category == MediaDiscoveryCategory.currentSeason ||
       _query.category == MediaDiscoveryCategory.nextSeason;
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -42,6 +59,101 @@ class _MediaDiscoveryScreenState extends ConsumerState<MediaDiscoveryScreen> {
     if (_isSeasonal && (_query.season == null || _query.year == null)) {
       _query = _query.copyWith(season: _season, year: _year);
     }
+    _paginationQuery = _query;
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _setQuery(MediaDiscoveryQuery query) {
+    setState(() {
+      _query = query;
+      _paginationQuery = query;
+      _additionalItems.clear();
+      _page = 1;
+      _hasMore = false;
+      _paginationReady = false;
+      _syncScheduled = false;
+      _isLoadingMore = false;
+      _loadMoreError = null;
+    });
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(0);
+    }
+  }
+
+  void _syncFirstPage(MediaDiscoveryPage page) {
+    if (_paginationQuery == _query && _paginationReady || _syncScheduled) {
+      return;
+    }
+    _syncScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _syncScheduled = false;
+      if (!mounted || _paginationQuery != _query) return;
+      setState(() {
+        _paginationQuery = _query;
+        _additionalItems.clear();
+        _page = 1;
+        _hasMore = page.hasMore;
+        _paginationReady = true;
+      });
+      _onScroll();
+    });
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients ||
+        !_paginationReady ||
+        !_hasMore ||
+        _isLoadingMore ||
+        _loadMoreError != null ||
+        _scrollController.position.extentAfter > 500) {
+      return;
+    }
+    _loadMore();
+  }
+
+  Future<void> _loadMore() async {
+    if (!_paginationReady || !_hasMore || _isLoadingMore) return;
+    final query = _query;
+    final nextPage = _page + 1;
+    setState(() {
+      _isLoadingMore = true;
+      _loadMoreError = null;
+    });
+    try {
+      final page = await ref.read(
+        mediaDiscoveryPageProvider(
+          MediaDiscoveryPageRequest(query: query, page: nextPage),
+        ).future,
+      );
+      if (!mounted || query != _query) return;
+      setState(() {
+        _additionalItems.addAll(page.items);
+        _page = nextPage;
+        _hasMore = page.hasMore;
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) => _onScroll());
+    } catch (error) {
+      if (!mounted || query != _query) return;
+      setState(() => _loadMoreError = error);
+    } finally {
+      if (mounted && query == _query) {
+        setState(() => _isLoadingMore = false);
+      }
+    }
+  }
+
+  Future<void> _refreshResults() async {
+    final query = _query;
+    setState(() {
+      _additionalItems.clear();
+      _page = 1;
+      _hasMore = false;
+      _paginationReady = false;
+      _loadMoreError = null;
+    });
+    final request = MediaDiscoveryPageRequest(query: query, page: 1);
+    ref.invalidate(mediaDiscoveryPageProvider(request));
+    await ref.read(mediaDiscoveryPageProvider(request).future);
   }
 
   String _seasonLabel(AppLocalizations localizations, AnimeSeason season) =>
@@ -192,8 +304,8 @@ class _MediaDiscoveryScreenState extends ConsumerState<MediaDiscoveryScreen> {
       ),
     );
     if (result != null) {
+      _setQuery(result);
       setState(() {
-        _query = result;
         _season = result.season!;
         _year = result.year!;
       });
@@ -203,7 +315,8 @@ class _MediaDiscoveryScreenState extends ConsumerState<MediaDiscoveryScreen> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
-    final results = ref.watch(mediaDiscoveryProvider(_query));
+    final request = MediaDiscoveryPageRequest(query: _query, page: 1);
+    final results = ref.watch(mediaDiscoveryPageProvider(request));
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -227,17 +340,13 @@ class _MediaDiscoveryScreenState extends ConsumerState<MediaDiscoveryScreen> {
                   ),
                 ],
                 selected: {_query.mediaType},
-                onSelectionChanged: (selection) => setState(
-                  () => _query = _query.copyWith(mediaType: selection.first),
-                ),
+                onSelectionChanged: (selection) =>
+                    _setQuery(_query.copyWith(mediaType: selection.first)),
               ),
             ),
           Expanded(
             child: RefreshIndicator(
-              onRefresh: () async {
-                ref.invalidate(mediaDiscoveryProvider(_query));
-                await ref.read(mediaDiscoveryProvider(_query).future);
-              },
+              onRefresh: _refreshResults,
               child: results.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (error, stackTrace) => ListView(
@@ -264,7 +373,7 @@ class _MediaDiscoveryScreenState extends ConsumerState<MediaDiscoveryScreen> {
                               const SizedBox(height: 12),
                               FilledButton(
                                 onPressed: () => ref.invalidate(
-                                  mediaDiscoveryProvider(_query),
+                                  mediaDiscoveryPageProvider(request),
                                 ),
                                 child: Text(localizations.retry),
                               ),
@@ -275,8 +384,12 @@ class _MediaDiscoveryScreenState extends ConsumerState<MediaDiscoveryScreen> {
                     ),
                   ],
                 ),
-                data: (items) {
-                  final unifiedItems = unifyDiscoveryItems(items);
+                data: (firstPage) {
+                  _syncFirstPage(firstPage);
+                  final unifiedItems = unifyDiscoveryItems([
+                    ...firstPage.items,
+                    if (_paginationQuery == _query) ..._additionalItems,
+                  ]);
                   if (unifiedItems.isEmpty) {
                     return ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
@@ -290,7 +403,9 @@ class _MediaDiscoveryScreenState extends ConsumerState<MediaDiscoveryScreen> {
                       ],
                     );
                   }
+                  final showFooter = _isLoadingMore || _loadMoreError != null;
                   return GridView.builder(
+                    controller: _scrollController,
                     padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
                     physics: const AlwaysScrollableScrollPhysics(),
                     gridDelegate:
@@ -300,11 +415,34 @@ class _MediaDiscoveryScreenState extends ConsumerState<MediaDiscoveryScreen> {
                           crossAxisSpacing: 12,
                           childAspectRatio: 0.62,
                         ),
-                    itemCount: unifiedItems.length,
-                    itemBuilder: (context, index) => MediaDiscoveryCard(
-                      item: unifiedItems[index],
-                      type: _query.mediaType,
-                    ),
+                    itemCount: unifiedItems.length + (showFooter ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (index == unifiedItems.length) {
+                        return Center(
+                          child: _isLoadingMore
+                              ? const CircularProgressIndicator()
+                              : Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      localizations.failedToLoadMedia,
+                                      textAlign: TextAlign.center,
+                                      style: theme.textTheme.bodySmall,
+                                    ),
+                                    IconButton(
+                                      tooltip: localizations.retry,
+                                      onPressed: _loadMore,
+                                      icon: const Icon(Icons.refresh_rounded),
+                                    ),
+                                  ],
+                                ),
+                        );
+                      }
+                      return MediaDiscoveryCard(
+                        item: unifiedItems[index],
+                        type: _query.mediaType,
+                      );
+                    },
                   );
                 },
               ),

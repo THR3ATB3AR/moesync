@@ -535,7 +535,11 @@ class AnilistService {
     MediaDiscoveryQuery discoveryQuery, {
     int? seedMediaId,
     int limit = 30,
+    int pageNumber = 1,
   }) async {
+    if (pageNumber < 1) {
+      throw ArgumentError.value(pageNumber, 'pageNumber', 'Must be positive.');
+    }
     if (discoveryQuery.category == MediaDiscoveryCategory.recommended &&
         seedMediaId == null) {
       return [];
@@ -572,16 +576,17 @@ class AnilistService {
               }
             }
           }
-        '''.replaceFirst('SORT_VALUE', switch (discoveryQuery.category) {
-            MediaDiscoveryCategory.currentSeason ||
-            MediaDiscoveryCategory.nextSeason => 'POPULARITY_DESC',
-            MediaDiscoveryCategory.recommended ||
-            MediaDiscoveryCategory.trending => 'TRENDING_DESC',
-            MediaDiscoveryCategory.mostPopular => 'POPULARITY_DESC',
-            MediaDiscoveryCategory.newlyAdded => 'ID_DESC',
-          });
+        '''
+              .replaceFirst('SORT_VALUE', switch (discoveryQuery.category) {
+                MediaDiscoveryCategory.currentSeason ||
+                MediaDiscoveryCategory.nextSeason => 'POPULARITY_DESC',
+                MediaDiscoveryCategory.recommended ||
+                MediaDiscoveryCategory.trending => 'TRENDING_DESC',
+                MediaDiscoveryCategory.mostPopular => 'POPULARITY_DESC',
+                MediaDiscoveryCategory.newlyAdded => 'ID_DESC',
+              });
     final variables = <String, dynamic>{
-      'page': 1,
+      'page': pageNumber,
       'perPage': limit.clamp(1, 50),
     };
     if (isRecommended) {
@@ -591,9 +596,9 @@ class AnilistService {
           ? 'ANIME'
           : 'MANGA';
       if (isSeasonal) {
-        variables['season'] = (discoveryQuery.season ?? AnimeSeason.forDate(
-          DateTime.now(),
-        )).apiValue;
+        variables['season'] =
+            (discoveryQuery.season ?? AnimeSeason.forDate(DateTime.now()))
+                .apiValue;
         variables['seasonYear'] = discoveryQuery.year ?? DateTime.now().year;
       }
     }
@@ -613,9 +618,8 @@ class AnilistService {
         ? ((page?['recommendations'] as List<dynamic>?) ?? [])
               .map(
                 (recommendation) =>
-                    (recommendation as Map<String, dynamic>?)?[
-                      'mediaRecommendation'
-                    ],
+                    (recommendation
+                        as Map<String, dynamic>?)?['mediaRecommendation'],
               )
               .whereType<Map<String, dynamic>>()
               .toList()

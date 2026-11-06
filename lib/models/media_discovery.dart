@@ -35,6 +35,31 @@ enum AnimeSeason {
       AnimeSeason.values[(index - 1 + values.length) % values.length];
 }
 
+const mediaDiscoveryPageSize = 30;
+
+class MediaDiscoveryPageRequest {
+  const MediaDiscoveryPageRequest({required this.query, required this.page});
+
+  final MediaDiscoveryQuery query;
+  final int page;
+
+  @override
+  bool operator ==(Object other) =>
+      other is MediaDiscoveryPageRequest &&
+      other.query == query &&
+      other.page == page;
+
+  @override
+  int get hashCode => Object.hash(query, page);
+}
+
+class MediaDiscoveryPage {
+  const MediaDiscoveryPage({required this.items, required this.hasMore});
+
+  final List<MediaItem> items;
+  final bool hasMore;
+}
+
 class MediaDiscoveryQuery {
   const MediaDiscoveryQuery({
     required this.category,
@@ -94,8 +119,7 @@ List<UnifiedMediaItem> unifyDiscoveryItems(Iterable<MediaItem> items) {
         item.japaneseTitle ?? '',
         item.romajiTitle ?? '',
         ...item.alternativeTitles,
-      }.map((title) => title.trim().toLowerCase()).toSet()
-        ..remove('');
+      }.map((title) => title.trim().toLowerCase()).toSet()..remove('');
       final matchingEntry = merged.entries.where((entry) {
         final candidate = entry.value;
         if (candidate.mediaType != item.mediaType) return false;
@@ -116,8 +140,7 @@ List<UnifiedMediaItem> unifyDiscoveryItems(Iterable<MediaItem> items) {
               ...service.alternativeTitles,
             ],
           ),
-        }.map((title) => title.trim().toLowerCase()).toSet()
-          ..remove('');
+        }.map((title) => title.trim().toLowerCase()).toSet()..remove('');
         return !itemTitles.contains('unknown') &&
             itemTitles.intersection(candidateTitles).isNotEmpty;
       }).firstOrNull;

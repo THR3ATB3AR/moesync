@@ -384,7 +384,11 @@ class ShikimoriService {
   Future<List<MediaItem>> discover(
     MediaDiscoveryQuery query, {
     int limit = 30,
+    int pageNumber = 1,
   }) async {
+    if (pageNumber < 1) {
+      throw ArgumentError.value(pageNumber, 'pageNumber', 'Must be positive.');
+    }
     if (query.category == MediaDiscoveryCategory.recommended) return [];
 
     final type = query.mediaType;
@@ -396,6 +400,7 @@ class ShikimoriService {
     final year = query.year ?? DateTime.now().year;
     final parameters = <String, String>{
       'limit': '$limit',
+      'page': '$pageNumber',
       'order': switch (query.category) {
         MediaDiscoveryCategory.mostPopular => 'popularity',
         MediaDiscoveryCategory.newlyAdded => 'created_at',
@@ -422,9 +427,14 @@ class ShikimoriService {
       if (poster.isNotEmpty && !poster.startsWith('http')) {
         poster = 'https://shikimori.io$poster';
       }
+      final malId = int.tryParse(
+        (item['mal_id'] ?? item['myanimelist_id'])?.toString() ?? '',
+      );
       return MediaItem(
         id: (item['id'] as num).toInt(),
-        title: item['name'] as String? ?? item['russian'] as String? ?? 'Unknown',
+        malId: malId != null && malId > 0 ? malId : null,
+        title:
+            item['name'] as String? ?? item['russian'] as String? ?? 'Unknown',
         status: 'plan_to_watch',
         score: 0,
         progress: 0,
@@ -432,7 +442,9 @@ class ShikimoriService {
             ? (item['episodes'] as num?)?.toInt()
             : (item['chapters'] as num?)?.toInt(),
         mediaFormat: (item['kind'] as String?)?.toUpperCase(),
-        releaseSeason: airedOn == null ? null : AnimeSeason.forDate(airedOn).apiValue,
+        releaseSeason: airedOn == null
+            ? null
+            : AnimeSeason.forDate(airedOn).apiValue,
         releaseYear: airedOn?.year,
         posterImage: poster,
         service: ServiceType.shikimori,

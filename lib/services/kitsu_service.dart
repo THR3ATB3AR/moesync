@@ -476,7 +476,11 @@ class KitsuService {
   Future<List<MediaItem>> discover(
     MediaDiscoveryQuery query, {
     int limit = 30,
+    int pageNumber = 1,
   }) async {
+    if (pageNumber < 1) {
+      throw ArgumentError.value(pageNumber, 'pageNumber', 'Must be positive.');
+    }
     if (query.category == MediaDiscoveryCategory.recommended) return [];
 
     final type = query.mediaType;
@@ -493,7 +497,9 @@ class KitsuService {
     };
     final parameters = <String, String>{
       'page[limit]': '$limit',
+      'page[offset]': '${(pageNumber - 1) * limit}',
       'sort': sort,
+      'include': 'mappings',
     };
     if (isSeasonal) {
       parameters['filter[season]'] = season.name;
@@ -509,14 +515,43 @@ class KitsuService {
 
     final decoded = jsonDecode(response.body) as Map<String, dynamic>;
     final data = (decoded['data'] as List<dynamic>?) ?? [];
+    final includedMappings = {
+      for (final included in (decoded['included'] as List<dynamic>? ?? []))
+        if (included is Map<String, dynamic> && included['type'] == 'mappings')
+          included['id'] as String: included,
+    };
     return data.map((entry) {
       final item = entry as Map<String, dynamic>;
       final attrs = (item['attributes'] as Map<String, dynamic>?) ?? {};
+      final titles = (attrs['titles'] as Map<String, dynamic>?) ?? {};
       final poster = (attrs['posterImage'] as Map<String, dynamic>?) ?? {};
       final startDate = DateTime.tryParse(attrs['startDate'] as String? ?? '');
+      final mappingIds =
+          (item['relationships']?['mappings']?['data'] as List<dynamic>?) ?? [];
+      final malMapping = mappingIds
+          .whereType<Map<String, dynamic>>()
+          .map((mapping) => includedMappings[mapping['id']])
+          .whereType<Map<String, dynamic>>()
+          .map((mapping) => mapping['attributes'] as Map<String, dynamic>?)
+          .whereType<Map<String, dynamic>>()
+          .where(
+            (attributes) => (attributes['externalSite'] as String? ?? '')
+                .startsWith('myanimelist/'),
+          )
+          .firstOrNull;
+      final malId = int.tryParse(malMapping?['externalId'] as String? ?? '');
+      final alternativeTitles = {
+        ...titles.values.whereType<String>(),
+        if (attrs['abbreviatedTitles'] is List)
+          ...(attrs['abbreviatedTitles'] as List).whereType<String>(),
+      }.where((title) => title.trim().isNotEmpty).toList();
       return MediaItem(
         id: int.tryParse(item['id'] as String? ?? '') ?? 0,
+        malId: malId != null && malId > 0 ? malId : null,
         title: attrs['canonicalTitle'] as String? ?? 'Unknown',
+        englishTitle: titles['en'] as String?,
+        japaneseTitle: titles['ja'] as String?,
+        alternativeTitles: alternativeTitles,
         status: 'plan_to_watch',
         score: 0,
         progress: 0,
@@ -529,9 +564,7 @@ class KitsuService {
             : AnimeSeason.forDate(startDate).apiValue,
         releaseYear: startDate?.year,
         posterImage:
-            (poster['large'] as String?) ??
-            (poster['medium'] as String?) ??
-            '',
+            (poster['large'] as String?) ?? (poster['medium'] as String?) ?? '',
         service: ServiceType.kitsu,
         mediaType: type,
       );

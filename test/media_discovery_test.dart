@@ -12,6 +12,7 @@ import 'package:moesync/providers/providers.dart';
 import 'package:moesync/screens/media_discovery_screen.dart';
 import 'package:moesync/services/anilist_rate_limiter.dart';
 import 'package:moesync/services/anilist_service.dart';
+import 'package:moesync/services/kitsu_service.dart';
 import 'package:moesync/services/storage_service.dart';
 import 'package:moesync/widgets/service_badge.dart';
 import 'package:moesync/widgets/home/home_widget_registry.dart';
@@ -78,6 +79,29 @@ void main() {
     );
   });
 
+  test('discovery entries with different titles merge by mapped MAL ID', () {
+    final anilist = _discoveryItem(
+      service: ServiceType.anilist,
+      id: 21,
+      malId: 99,
+      title: 'Alternative romanized title',
+    );
+    final kitsu = _discoveryItem(
+      service: ServiceType.kitsu,
+      id: 45,
+      malId: 99,
+      title: 'Japanese title',
+    );
+
+    final unified = unifyDiscoveryItems([anilist, kitsu]);
+
+    expect(unified, hasLength(1));
+    expect(
+      unified.single.services.keys,
+      containsAll([ServiceType.anilist, ServiceType.kitsu]),
+    );
+  });
+
   test(
     'AniList discovery requests the selected season and parses results',
     () async {
@@ -124,12 +148,130 @@ void main() {
 
       expect(request['variables']['season'], 'FALL');
       expect(request['variables']['seasonYear'], 2026);
+      expect(request['variables']['page'], 1);
       expect(items, hasLength(1));
       expect(items.single.malId, 314);
       expect(items.single.releaseSeason, 'FALL');
       expect(items.single.releaseYear, 2026);
+
+      await service.discover(
+        const MediaDiscoveryQuery(
+          category: MediaDiscoveryCategory.currentSeason,
+          season: AnimeSeason.fall,
+          year: 2026,
+        ),
+        pageNumber: 2,
+      );
+      expect(request['variables']['page'], 2);
     },
   );
+
+  test(
+    'Kitsu discovery parses MAL mappings and requests later pages',
+    () async {
+      late Uri requestUri;
+      final service = KitsuService(
+        storage,
+        client: MockClient((request) async {
+          requestUri = request.url;
+          return http.Response(
+            jsonEncode({
+              'data': [
+                {
+                  'id': 'kitsu-45',
+                  'attributes': {
+                    'canonicalTitle': 'Shared title',
+                    'titles': {'en': 'Shared title'},
+                    'posterImage': {},
+                  },
+                  'relationships': {
+                    'mappings': {
+                      'data': [
+                        {'type': 'mappings', 'id': 'mapping-1'},
+                      ],
+                    },
+                  },
+                },
+              ],
+              'included': [
+                {
+                  'type': 'mappings',
+                  'id': 'mapping-1',
+                  'attributes': {
+                    'externalSite': 'myanimelist/anime',
+                    'externalId': '99',
+                  },
+                },
+              ],
+            }),
+            200,
+          );
+        }),
+      );
+
+      final items = await service.discover(
+        const MediaDiscoveryQuery(category: MediaDiscoveryCategory.trending),
+        pageNumber: 2,
+      );
+
+      expect(requestUri.queryParameters['page[offset]'], '30');
+      expect(items.single.malId, 99);
+    },
+  );
+
+  testWidgets('discovery grid requests the next page while scrolling', (
+    tester,
+  ) async {
+    const query = MediaDiscoveryQuery(
+      category: MediaDiscoveryCategory.trending,
+      includeOtherServices: true,
+    );
+    final firstPageItems = List.generate(
+      mediaDiscoveryPageSize,
+      (index) => _discoveryItem(
+        service: ServiceType.anilist,
+        id: index + 1,
+        malId: index + 100,
+        title: 'Page one item $index',
+      ),
+    );
+    var requestedSecondPage = false;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          storageServiceProvider.overrideWithValue(storage),
+          mediaLibraryProvider.overrideWith(
+            () => _TestMediaLibraryNotifier([]),
+          ),
+          mediaDiscoveryPageProvider(
+            const MediaDiscoveryPageRequest(query: query, page: 1),
+          ).overrideWith(
+            (ref) async =>
+                MediaDiscoveryPage(items: firstPageItems, hasMore: true),
+          ),
+          mediaDiscoveryPageProvider(
+            const MediaDiscoveryPageRequest(query: query, page: 2),
+          ).overrideWith((ref) async {
+            requestedSecondPage = true;
+            return const MediaDiscoveryPage(items: [], hasMore: false);
+          }),
+        ],
+        child: const MaterialApp(
+          locale: Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: MediaDiscoveryScreen(initialQuery: query),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.drag(find.byType(GridView), const Offset(0, -4000));
+    await tester.pumpAndSettle();
+
+    expect(requestedSecondPage, isTrue);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('season grid exposes season and year filters', (tester) async {
     const query = MediaDiscoveryQuery(
@@ -142,9 +284,12 @@ void main() {
       ProviderScope(
         overrides: [
           storageServiceProvider.overrideWithValue(storage),
-          mediaDiscoveryProvider(
-            query,
-          ).overrideWith((ref) async => <MediaItem>[]),
+          mediaDiscoveryPageProvider(
+            MediaDiscoveryPageRequest(query: query, page: 1),
+          ).overrideWith(
+            (ref) async =>
+                const MediaDiscoveryPage(items: <MediaItem>[], hasMore: false),
+          ),
         ],
         child: const MaterialApp(
           locale: Locale('en'),

@@ -384,7 +384,11 @@ class MalService {
   Future<List<MediaItem>> discover(
     MediaDiscoveryQuery query, {
     int limit = 30,
+    int pageNumber = 1,
   }) async {
+    if (pageNumber < 1) {
+      throw ArgumentError.value(pageNumber, 'pageNumber', 'Must be positive.');
+    }
     if (query.category == MediaDiscoveryCategory.recommended ||
         query.category == MediaDiscoveryCategory.newlyAdded) {
       return [];
@@ -403,28 +407,26 @@ class MalService {
             '/v2/anime/season/$year/${season.name}',
             {
               'limit': '$limit',
+              'offset': '${(pageNumber - 1) * limit}',
               'sort': 'anime_num_list_users',
               'fields':
                   'main_picture,alternative_titles,num_episodes,media_type,start_season',
             },
           )
-        : Uri.https(
-            'api.myanimelist.net',
-            '/v2/$endpoint/ranking',
-            {
-              'limit': '$limit',
-              'ranking_type': switch (query.category) {
-                MediaDiscoveryCategory.trending when type == MediaType.anime =>
-                  'airing',
-                MediaDiscoveryCategory.trending => 'bypopularity',
-                MediaDiscoveryCategory.mostPopular => 'bypopularity',
-                _ => 'bypopularity',
-              },
-              'fields': type == MediaType.anime
-                  ? 'main_picture,alternative_titles,num_episodes,media_type,start_season,mean'
-                  : 'main_picture,alternative_titles,num_chapters,media_type,mean',
+        : Uri.https('api.myanimelist.net', '/v2/$endpoint/ranking', {
+            'limit': '$limit',
+            'offset': '${(pageNumber - 1) * limit}',
+            'ranking_type': switch (query.category) {
+              MediaDiscoveryCategory.trending when type == MediaType.anime =>
+                'airing',
+              MediaDiscoveryCategory.trending => 'bypopularity',
+              MediaDiscoveryCategory.mostPopular => 'bypopularity',
+              _ => 'bypopularity',
             },
-          );
+            'fields': type == MediaType.anime
+                ? 'main_picture,alternative_titles,num_episodes,media_type,start_season,mean'
+                : 'main_picture,alternative_titles,num_chapters,media_type,mean',
+          });
     final clientId = credentials.clientId ?? StorageService.defaultMalClientId;
     if (clientId.isEmpty) return [];
     final response = await http.get(
@@ -438,12 +440,12 @@ class MalService {
     final decoded = jsonDecode(response.body) as Map<String, dynamic>;
     final entries = (decoded['data'] as List<dynamic>?) ?? [];
     return entries.map((entry) {
-      final node = (entry as Map<String, dynamic>)['node'] as Map<String, dynamic>;
+      final node =
+          (entry as Map<String, dynamic>)['node'] as Map<String, dynamic>;
       final picture = (node['main_picture'] as Map<String, dynamic>?) ?? {};
       final titles =
           (node['alternative_titles'] as Map<String, dynamic>?) ?? {};
-      final startSeason =
-          (node['start_season'] as Map<String, dynamic>?) ?? {};
+      final startSeason = (node['start_season'] as Map<String, dynamic>?) ?? {};
       return MediaItem(
         id: (node['id'] as num).toInt(),
         title: node['title'] as String? ?? 'Unknown',
