@@ -85,7 +85,47 @@ List<UnifiedMediaItem> unifyDiscoveryItems(Iterable<MediaItem> items) {
     final key = malId != null && malId > 0
         ? 'mal:$malId'
         : '${item.service.name}:${item.id}';
-    final existing = merged[key];
+    var existingKey = key;
+    var existing = merged[key];
+    if (existing == null) {
+      final itemTitles = {
+        item.title,
+        item.englishTitle ?? '',
+        item.japaneseTitle ?? '',
+        item.romajiTitle ?? '',
+        ...item.alternativeTitles,
+      }.map((title) => title.trim().toLowerCase()).toSet()
+        ..remove('');
+      final matchingEntry = merged.entries.where((entry) {
+        final candidate = entry.value;
+        if (candidate.mediaType != item.mediaType) return false;
+        if (malId != null &&
+            malId > 0 &&
+            candidate.malId > 0 &&
+            candidate.malId != malId) {
+          return false;
+        }
+        final candidateTitles = {
+          candidate.title,
+          ...candidate.services.values.expand(
+            (service) => [
+              service.title,
+              service.englishTitle ?? '',
+              service.japaneseTitle ?? '',
+              service.romajiTitle ?? '',
+              ...service.alternativeTitles,
+            ],
+          ),
+        }.map((title) => title.trim().toLowerCase()).toSet()
+          ..remove('');
+        return !itemTitles.contains('unknown') &&
+            itemTitles.intersection(candidateTitles).isNotEmpty;
+      }).firstOrNull;
+      if (matchingEntry != null) {
+        existingKey = matchingEntry.key;
+        existing = matchingEntry.value;
+      }
+    }
     if (existing == null) {
       merged[key] = UnifiedMediaItem(
         malId: malId ?? 0,
@@ -97,13 +137,17 @@ List<UnifiedMediaItem> unifyDiscoveryItems(Iterable<MediaItem> items) {
       continue;
     }
 
-    merged[key] = existing.copyWith(
+    merged.remove(existingKey);
+    final mergedItem = existing.copyWith(
+      malId: malId != null && malId > 0 ? malId : existing.malId,
       title: existing.title.isNotEmpty ? existing.title : item.title,
       posterImage: existing.posterImage.isNotEmpty
           ? existing.posterImage
           : item.posterImage,
       services: {...existing.services, item.service: item},
     );
+    merged[mergedItem.malId > 0 ? 'mal:${mergedItem.malId}' : existingKey] =
+        mergedItem;
   }
   return merged.values.toList();
 }

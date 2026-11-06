@@ -367,7 +367,7 @@ class ShikimoriService {
         id: (m['id'] as num).toInt(),
         title: (m['name'] as String?) ?? (m['russian'] as String?) ?? 'Unknown',
         status: 'plan_to_watch',
-        score: 0,
+        score: (double.tryParse(item['score']?.toString() ?? '') ?? 0).round(),
         progress: 0,
         totalProgress: type == MediaType.anime
             ? (m['episodes'] as num?)?.toInt()

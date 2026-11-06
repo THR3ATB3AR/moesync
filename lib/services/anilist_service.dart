@@ -552,7 +552,7 @@ class AnilistService {
             Page(page: $page, perPage: $perPage) {
               recommendations(mediaId: $seedId, sort: RATING_DESC) {
                 mediaRecommendation {
-                  id idMal title { romaji english native userPreferred }
+                  id idMal meanScore title { romaji english native userPreferred }
                   episodes chapters format season seasonYear
                   coverImage { large }
                 }
@@ -566,7 +566,7 @@ class AnilistService {
             Page(page: $page, perPage: $perPage) {
               media(type: $type, sort: SORT_VALUE,
                     season: $season, seasonYear: $seasonYear) {
-                id idMal title { romaji english native userPreferred }
+                id idMal meanScore title { romaji english native userPreferred }
                 episodes chapters format season seasonYear
                 coverImage { large }
               }
@@ -638,7 +638,9 @@ class AnilistService {
         japaneseTitle: title['native'] as String?,
         romajiTitle: title['romaji'] as String?,
         status: 'plan_to_watch',
-        score: 0,
+        score:
+            ((double.tryParse(media['meanScore']?.toString() ?? '') ?? 0) / 10)
+                .round(),
         progress: 0,
         totalProgress: discoveryQuery.mediaType == MediaType.anime
             ? (media['episodes'] as num?)?.toInt()

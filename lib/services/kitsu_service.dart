@@ -448,7 +448,10 @@ class KitsuService {
         id: int.tryParse(item['id'] as String) ?? 0,
         title: (attrs['canonicalTitle'] as String?) ?? 'Unknown',
         status: 'plan_to_watch',
-        score: 0,
+        score:
+            ((double.tryParse(attrs['averageRating']?.toString() ?? '') ?? 0) /
+                    10)
+                .round(),
         progress: 0,
         totalProgress: type == MediaType.anime
             ? (attrs['episodeCount'] as num?)?.toInt()

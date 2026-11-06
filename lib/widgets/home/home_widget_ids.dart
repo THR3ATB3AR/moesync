@@ -10,6 +10,10 @@ const homeWidgetTrendingId = 'trending';
 const homeWidgetNextSeasonId = 'next_season';
 const homeWidgetMostPopularId = 'top_rated';
 const homeWidgetNewlyAddedId = 'newly_added';
+const homeWidgetMangaRecommendedId = 'manga_recommended';
+const homeWidgetMangaTrendingId = 'manga_trending';
+const homeWidgetMangaMostPopularId = 'manga_most_popular';
+const homeWidgetMangaNewlyAddedId = 'manga_newly_added';
 
 const homeWidgetIds = [
   homeWidgetSyncStatusId,
@@ -24,6 +28,10 @@ const homeWidgetIds = [
   homeWidgetNextSeasonId,
   homeWidgetMostPopularId,
   homeWidgetNewlyAddedId,
+  homeWidgetMangaRecommendedId,
+  homeWidgetMangaTrendingId,
+  homeWidgetMangaMostPopularId,
+  homeWidgetMangaNewlyAddedId,
 ];
 
 const defaultEnabledHomeWidgetIds = homeWidgetIds;

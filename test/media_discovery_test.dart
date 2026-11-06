@@ -13,6 +13,8 @@ import 'package:moesync/screens/media_discovery_screen.dart';
 import 'package:moesync/services/anilist_rate_limiter.dart';
 import 'package:moesync/services/anilist_service.dart';
 import 'package:moesync/services/storage_service.dart';
+import 'package:moesync/widgets/service_badge.dart';
+import 'package:moesync/widgets/home/home_widget_registry.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -33,6 +35,47 @@ void main() {
     expect(AnimeSeason.forDate(DateTime(2027, 1, 1)), AnimeSeason.winter);
     expect(AnimeSeason.fall.next, AnimeSeason.winter);
     expect(AnimeSeason.winter.previous, AnimeSeason.fall);
+  });
+
+  test('discovery entries merge by MAL ID or matching titles', () {
+    final anime = _discoveryItem(
+      service: ServiceType.anilist,
+      id: 21,
+      malId: 99,
+      title: 'Shared anime',
+    );
+    final mal = _discoveryItem(
+      service: ServiceType.mal,
+      id: 99,
+      title: 'Shared anime',
+      score: 8,
+    );
+    final manga = _discoveryItem(
+      service: ServiceType.kitsu,
+      id: 45,
+      title: 'Shared manga',
+      mediaType: MediaType.manga,
+    );
+    final shikimori = _discoveryItem(
+      service: ServiceType.shikimori,
+      id: 46,
+      title: 'Shared manga',
+      mediaType: MediaType.manga,
+      score: 9,
+    );
+
+    final unified = unifyDiscoveryItems([anime, mal, manga, shikimori]);
+
+    expect(unified, hasLength(2));
+    expect(
+      unified.first.services.keys,
+      containsAll([ServiceType.anilist, ServiceType.mal]),
+    );
+    expect(unified.first.malScore, 8);
+    expect(
+      unified.last.services.keys,
+      containsAll([ServiceType.kitsu, ServiceType.shikimori]),
+    );
   });
 
   test(
@@ -123,4 +166,127 @@ void main() {
     expect(find.text('Year'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('discovery card shows personal status, rating, and services', (
+    tester,
+  ) async {
+    final catalogItem = _discoveryItem(
+      service: ServiceType.anilist,
+      id: 21,
+      malId: 99,
+      title: 'Shared anime',
+    );
+    final extraService = _discoveryItem(
+      service: ServiceType.mal,
+      id: 99,
+      title: 'Shared anime',
+      score: 8,
+    );
+    final userListItem = _discoveryItem(
+      service: ServiceType.anilist,
+      id: 21,
+      malId: 99,
+      title: 'Shared anime',
+      status: 'watching',
+      mediaType: MediaType.anime,
+    );
+    final catalogEntry = unifyDiscoveryItems([
+      catalogItem,
+      extraService,
+    ]).single;
+    final userEntry = unifyDiscoveryItems([userListItem]).single;
+    final libraryNotifier = _TestMediaLibraryNotifier([userEntry]);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          storageServiceProvider.overrideWithValue(storage),
+          mediaLibraryProvider.overrideWith(() => libraryNotifier),
+        ],
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: SizedBox(
+              width: 180,
+              height: 280,
+              child: MediaDiscoveryCard(
+                item: catalogEntry,
+                type: MediaType.anime,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Shared anime'), findsOneWidget);
+    expect(find.text('8'), findsOneWidget);
+    expect(find.byIcon(Icons.play_circle_fill_rounded), findsOneWidget);
+    expect(find.byType(ServiceBadgeChip), findsNWidgets(2));
+    expect(find.textContaining('Episode'), findsNothing);
+    expect(tester.takeException(), isNull);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        key: const ValueKey('empty-library'),
+        overrides: [
+          storageServiceProvider.overrideWithValue(storage),
+          mediaLibraryProvider.overrideWith(
+            () => _TestMediaLibraryNotifier([]),
+          ),
+        ],
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: SizedBox(
+              width: 180,
+              height: 280,
+              child: MediaDiscoveryCard(
+                item: catalogEntry,
+                type: MediaType.anime,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byIcon(Icons.play_circle_fill_rounded), findsNothing);
+    expect(find.byIcon(Icons.bookmark_add_rounded), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+}
+
+MediaItem _discoveryItem({
+  required ServiceType service,
+  required int id,
+  required String title,
+  int? malId,
+  int score = 0,
+  String status = 'plan_to_watch',
+  MediaType mediaType = MediaType.anime,
+}) => MediaItem(
+  id: id,
+  malId: malId,
+  title: title,
+  status: status,
+  score: score,
+  progress: 0,
+  posterImage: '',
+  service: service,
+  mediaType: mediaType,
+);
+
+class _TestMediaLibraryNotifier extends MediaLibraryNotifier {
+  _TestMediaLibraryNotifier(this.items);
+
+  final List<UnifiedMediaItem> items;
+
+  @override
+  MediaLibraryState build() => MediaLibraryState(unifiedItems: items);
 }

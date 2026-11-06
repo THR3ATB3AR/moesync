@@ -421,8 +421,8 @@ class MalService {
                 _ => 'bypopularity',
               },
               'fields': type == MediaType.anime
-                  ? 'main_picture,alternative_titles,num_episodes,media_type,start_season'
-                  : 'main_picture,alternative_titles,num_chapters,media_type',
+                  ? 'main_picture,alternative_titles,num_episodes,media_type,start_season,mean'
+                  : 'main_picture,alternative_titles,num_chapters,media_type,mean',
             },
           );
     final clientId = credentials.clientId ?? StorageService.defaultMalClientId;
@@ -450,7 +450,7 @@ class MalService {
         englishTitle: titles['en'] as String?,
         japaneseTitle: titles['ja'] as String?,
         status: 'plan_to_watch',
-        score: 0,
+        score: (double.tryParse(node['mean']?.toString() ?? '') ?? 0).round(),
         progress: 0,
         totalProgress: type == MediaType.anime
             ? (node['num_episodes'] as num?)?.toInt()

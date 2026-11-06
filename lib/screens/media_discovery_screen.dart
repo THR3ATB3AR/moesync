@@ -4,7 +4,7 @@ import 'package:moesync/l10n/gen/app_localizations.dart';
 import 'package:moesync/models/media_discovery.dart';
 import 'package:moesync/models/media_item.dart';
 import 'package:moesync/providers/providers.dart';
-import 'package:moesync/widgets/media/media_grid_card.dart';
+import 'package:moesync/widgets/home/home_widget_registry.dart';
 
 class MediaDiscoveryScreen extends ConsumerStatefulWidget {
   const MediaDiscoveryScreen({required this.initialQuery, super.key});
@@ -301,7 +301,7 @@ class _MediaDiscoveryScreenState extends ConsumerState<MediaDiscoveryScreen> {
                           childAspectRatio: 0.62,
                         ),
                     itemCount: unifiedItems.length,
-                    itemBuilder: (context, index) => MediaGridCard(
+                    itemBuilder: (context, index) => MediaDiscoveryCard(
                       item: unifiedItems[index],
                       type: _query.mediaType,
                     ),
