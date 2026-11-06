@@ -253,6 +253,19 @@ class AnimeApiMappingService extends ChangeNotifier {
         (targetService == ServiceType.shikimori ? malId : 0);
   }
 
+  Set<ServiceType> findMappedServices(int malId) {
+    final record = _recordsByMalId[malId];
+    if (record == null) return const {};
+    return _providerForService.entries
+        .where(
+          (entry) =>
+              entry.key == ServiceType.mal ||
+              (int.tryParse(record.ids[entry.value] ?? '') ?? 0) > 0,
+        )
+        .map((entry) => entry.key)
+        .toSet();
+  }
+
   Future<int> findTargetIdWithFallback(
     int malId,
     ServiceType targetService,

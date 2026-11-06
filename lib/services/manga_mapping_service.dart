@@ -209,8 +209,7 @@ class MangaMappingService {
             'mangabaka': _malToMangabaka[malId],
           if (_malToMangaupdates.containsKey(malId))
             'mangaupdates': _malToMangaupdates[malId],
-          if (_malToAnilist.containsKey(malId))
-            'anilist': _malToAnilist[malId],
+          if (_malToAnilist.containsKey(malId)) 'anilist': _malToAnilist[malId],
           if (_malToKitsu.containsKey(malId)) 'kitsu': _malToKitsu[malId],
         };
       }).toList();
@@ -303,7 +302,27 @@ class MangaMappingService {
     }
   }
 
-  Future<int> findTargetIdWithLookup(int malId, ServiceType targetService) async {
+  Set<ServiceType> findMappedServices(int malId) {
+    if (malId <= 0 ||
+        !(_malToAnilist.containsKey(malId) ||
+            _malToKitsu.containsKey(malId) ||
+            _malToMangabaka.containsKey(malId) ||
+            _malToMangaupdates.containsKey(malId))) {
+      return const {};
+    }
+    return {
+      ServiceType.mal,
+      if (_malToAnilist.containsKey(malId)) ServiceType.anilist,
+      if (_malToKitsu.containsKey(malId)) ServiceType.kitsu,
+      if (_malToMangabaka.containsKey(malId)) ServiceType.mangabaka,
+      if (_malToMangaupdates.containsKey(malId)) ServiceType.mangaupdates,
+    };
+  }
+
+  Future<int> findTargetIdWithLookup(
+    int malId,
+    ServiceType targetService,
+  ) async {
     if (malId <= 0) return 0;
     if (targetService == ServiceType.mal ||
         targetService == ServiceType.shikimori) {

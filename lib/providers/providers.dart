@@ -262,6 +262,10 @@ final mediaDiscoveryPageProvider =
 
       final animeMapping = ref.read(animeApiMappingServiceProvider);
       final mangaMapping = ref.read(mangaMappingServiceProvider);
+      await animeMapping.initialize();
+      if (query.mediaType == MediaType.manga) {
+        await mangaMapping.initialize();
+      }
       final mappedItems = items.map((item) {
         if (item.malId != null && item.malId! > 0) return item;
         final malId = query.mediaType == MediaType.anime

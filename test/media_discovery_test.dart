@@ -13,6 +13,8 @@ import 'package:moesync/screens/media_discovery_screen.dart';
 import 'package:moesync/services/anilist_rate_limiter.dart';
 import 'package:moesync/services/anilist_service.dart';
 import 'package:moesync/services/kitsu_service.dart';
+import 'package:moesync/services/manga_mapping_service.dart';
+import 'package:moesync/services/mangabaka_service.dart';
 import 'package:moesync/services/storage_service.dart';
 import 'package:moesync/widgets/service_badge.dart';
 import 'package:moesync/widgets/home/home_widget_registry.dart';
@@ -100,6 +102,87 @@ void main() {
       unified.single.services.keys,
       containsAll([ServiceType.anilist, ServiceType.kitsu]),
     );
+  });
+
+  test('cached manga mappings return available services', () async {
+    await storage.saveMangaMappingCache(
+      jsonEncode([
+        {
+          'mal': 99,
+          'anilist': 21,
+          'kitsu': 45,
+          'mangabaka': 78,
+          'mangaupdates': 56,
+        },
+      ]),
+    );
+    final mapping = MangaMappingService(storage, MangaBakaService(storage));
+
+    await mapping.initialize();
+
+    expect(
+      mapping.findMappedServices(99),
+      containsAll([
+        ServiceType.mal,
+        ServiceType.anilist,
+        ServiceType.kitsu,
+        ServiceType.mangabaka,
+        ServiceType.mangaupdates,
+      ]),
+    );
+    expect(mapping.findMappedServices(100), isEmpty);
+  });
+
+  testWidgets('discovery card shows services from cached manga mappings', (
+    tester,
+  ) async {
+    await storage.saveMangaMappingCache(
+      jsonEncode([
+        {
+          'mal': 99,
+          'anilist': 21,
+          'kitsu': 45,
+          'mangabaka': 78,
+          'mangaupdates': 56,
+        },
+      ]),
+    );
+    final mapping = MangaMappingService(storage, MangaBakaService(storage));
+    await mapping.initialize();
+    final item = unifyDiscoveryItems([
+      _discoveryItem(
+        service: ServiceType.kitsu,
+        id: 45,
+        malId: 99,
+        title: 'Cached manga',
+        mediaType: MediaType.manga,
+      ),
+    ]).single;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          storageServiceProvider.overrideWithValue(storage),
+          mediaLibraryProvider.overrideWith(
+            () => _TestMediaLibraryNotifier([]),
+          ),
+          mangaMappingServiceProvider.overrideWithValue(mapping),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 180,
+              height: 320,
+              child: MediaDiscoveryCard(item: item, type: MediaType.manga),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ServiceBadgeChip), findsNWidgets(5));
+    expect(tester.takeException(), isNull);
   });
 
   test(

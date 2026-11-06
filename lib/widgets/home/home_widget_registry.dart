@@ -425,6 +425,13 @@ class MediaDiscoveryCard extends ConsumerWidget {
     final statusEntry = libraryEntry?.services.values.firstOrNull;
     final score = item.malScore;
     final radius = BorderRadius.circular(14);
+    final cachedServices = item.mediaType == MediaType.anime
+        ? ref
+              .watch(animeApiMappingServiceProvider)
+              .findMappedServices(item.malId)
+        : ref.watch(mangaMappingServiceProvider).findMappedServices(item.malId);
+    final displayServices = {...item.services.keys, ...cachedServices}.toList()
+      ..sort((first, second) => first.index.compareTo(second.index));
 
     return InkWell(
       borderRadius: radius,
@@ -539,7 +546,7 @@ class MediaDiscoveryCard extends ConsumerWidget {
               spacing: 3,
               runSpacing: 2,
               clipBehavior: Clip.hardEdge,
-              children: item.services.keys
+              children: displayServices
                   .map(
                     (service) => ServiceBadgeChip(
                       service: service,
