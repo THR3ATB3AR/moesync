@@ -18,6 +18,7 @@ jobs:
     runs-on: ubuntu-22.04
     outputs:
       version: ${{ steps.version.outputs.version }}
+      product_version: ${{ steps.version.outputs.product_version }}
       build_number: ${{ steps.version.outputs.build_number }}
     steps:
       - uses: actions/checkout@v7
@@ -44,7 +45,9 @@ jobs:
           fi
           IFS=. read -r MAJOR MINOR PATCH <<< "$BASE_VERSION"
           VERSION="$MAJOR.$MINOR.$PATCH-nightly.$(date -u +%Y%m%d).$GITHUB_RUN_NUMBER"
+          PRODUCT_VERSION="$MAJOR.$MINOR.$PATCH.0"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "product_version=$PRODUCT_VERSION" >> "$GITHUB_OUTPUT"
           echo "build_number=$GITHUB_RUN_NUMBER" >> "$GITHUB_OUTPUT"
 
   linux:
@@ -201,6 +204,7 @@ jobs:
     environment: MOESYNC_ENV
     env:
       VERSION: ${{ needs.version.outputs.version }}
+      PRODUCT_VERSION: ${{ needs.version.outputs.product_version }}
       BUILD_NUMBER: ${{ needs.version.outputs.build_number }}
     steps:
       - uses: actions/checkout@v7
@@ -245,7 +249,7 @@ jobs:
           if (-not (Test-Path $iscc)) {
             throw "Inno Setup compiler was not found at $iscc"
           }
-          & $iscc "/DAppVersion=$env:VERSION" "/DBuildNumber=$env:BUILD_NUMBER" windows\installer.iss
+          & $iscc "/DAppVersion=$env:VERSION" "/DAppProductVersion=$env:PRODUCT_VERSION" "/DBuildNumber=$env:BUILD_NUMBER" windows\installer.iss
           if ($LASTEXITCODE -ne 0) {
             throw "Inno Setup failed with exit code $LASTEXITCODE"
           }

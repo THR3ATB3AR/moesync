@@ -2,6 +2,10 @@
   #define AppVersion "0.0.0"
 #endif
 
+#ifndef AppProductVersion
+  #define AppProductVersion AppVersion
+#endif
+
 #ifndef BuildNumber
   #define BuildNumber "0"
 #endif
@@ -28,7 +32,7 @@ PrivilegesRequired=lowest
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
-VersionInfoProductVersion={#AppVersion}
+VersionInfoProductVersion={#AppProductVersion}
 VersionInfoCompany=THR3ATB3AR
 VersionInfoDescription=MoeSync Setup
 
