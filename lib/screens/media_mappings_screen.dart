@@ -58,6 +58,14 @@ class _MediaMappingsScreenState extends ConsumerState<MediaMappingsScreen> {
     setState(() => _selectedSuggestions = selected);
   }
 
+  void _selectAllSuggestions(List<SuggestedMediaMapping> suggestions) {
+    setState(() {
+      _selectedSuggestions.addAll(
+        suggestions.map((suggestion) => suggestion.key),
+      );
+    });
+  }
+
   Future<void> _saveSelectedSuggestions(
     List<SuggestedMediaMapping> suggestions,
   ) async {
@@ -472,9 +480,27 @@ class _MediaMappingsScreenState extends ConsumerState<MediaMappingsScreen> {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(4, 4, 4, 12),
-          child: Text(
-            localizations.possibleMatchHint,
-            style: Theme.of(context).textTheme.bodySmall,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  localizations.possibleMatchHint,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+              TextButton(
+                onPressed:
+                    _isSaving ||
+                        suggestions.every(
+                          (suggestion) =>
+                              _selectedSuggestions.contains(suggestion.key),
+                        )
+                    ? null
+                    : () => _selectAllSuggestions(suggestions),
+                child: Text(localizations.selectAll),
+              ),
+            ],
           ),
         ),
         for (final suggestion in suggestions)
