@@ -7,6 +7,12 @@ import '../providers/providers.dart';
 
 enum _MappingMode { suggestions, manual, saved }
 
+typedef _SuggestedMapping = ({
+  UnifiedMediaItem first,
+  UnifiedMediaItem second,
+  String title,
+});
+
 class MediaMappingsScreen extends ConsumerStatefulWidget {
   const MediaMappingsScreen({super.key});
 
@@ -20,6 +26,9 @@ class _MediaMappingsScreenState extends ConsumerState<MediaMappingsScreen> {
   _MappingMode _mode = _MappingMode.suggestions;
   String _query = '';
   Set<String> _selectedItems = {};
+  Set<String> _selectedSuggestions = {};
+  String? _cachedSuggestionKey;
+  List<_SuggestedMapping> _cachedSuggestions = const [];
   bool _isSaving = false;
 
   String _itemKey(UnifiedMediaItem item) {
@@ -56,14 +65,9 @@ class _MediaMappingsScreenState extends ConsumerState<MediaMappingsScreen> {
         .toSet();
   }
 
-  List<({UnifiedMediaItem first, UnifiedMediaItem second, String title})>
-  _findSuggestions(List<UnifiedMediaItem> items) {
+  List<_SuggestedMapping> _findSuggestions(List<UnifiedMediaItem> items) {
     final byTitle = <String, List<UnifiedMediaItem>>{};
-    final pairs =
-        <
-          String,
-          ({UnifiedMediaItem first, UnifiedMediaItem second, String title})
-        >{};
+    final pairs = <String, _SuggestedMapping>{};
     final query = _query.trim().toLowerCase();
     for (final item in items) {
       for (final title in _titleKeys(item)) {
@@ -102,6 +106,113 @@ class _MediaMappingsScreenState extends ConsumerState<MediaMappingsScreen> {
           for (final serviceItem in item.services.values)
             MediaMappingIdentity.fromItem(serviceItem),
       ];
+
+  String _suggestionKey(_SuggestedMapping suggestion) => ([
+    _itemKey(suggestion.first),
+    _itemKey(suggestion.second),
+  ]..sort()).join('::');
+
+  List<MediaMappingIdentity> _suggestionIdentities(
+    _SuggestedMapping suggestion,
+  ) => _identitiesFor([suggestion.first, suggestion.second]);
+
+  bool _selectionHasConflictingServices(
+    Iterable<_SuggestedMapping> suggestions,
+  ) {
+    final serviceIds = <(MediaType, ServiceType), int>{};
+    for (final suggestion in suggestions) {
+      for (final identity in _suggestionIdentities(suggestion)) {
+        final key = (identity.mediaType, identity.service);
+        final previousId = serviceIds[key];
+        if (previousId != null && previousId != identity.id) return true;
+        serviceIds[key] = identity.id;
+      }
+    }
+    return false;
+  }
+
+  void _toggleSuggestion(
+    _SuggestedMapping suggestion,
+    List<_SuggestedMapping> suggestions,
+  ) {
+    final key = _suggestionKey(suggestion);
+    final selected = Set<String>.from(_selectedSuggestions);
+    if (!selected.add(key)) {
+      selected.remove(key);
+    } else {
+      final selectedSuggestions = suggestions.where(
+        (candidate) => selected.contains(_suggestionKey(candidate)),
+      );
+      if (_selectionHasConflictingServices(selectedSuggestions)) {
+        selected.remove(key);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context).mappingSelectionConflict,
+            ),
+          ),
+        );
+      }
+    }
+    setState(() => _selectedSuggestions = selected);
+  }
+
+  Future<void> _saveSelectedSuggestions(
+    List<_SuggestedMapping> suggestions,
+  ) async {
+    if (_isSaving || _selectedSuggestions.isEmpty) return;
+    setState(() => _isSaving = true);
+    var savedCount = 0;
+    Object? saveError;
+    try {
+      final selected = suggestions
+          .where(
+            (suggestion) =>
+                _selectedSuggestions.contains(_suggestionKey(suggestion)),
+          )
+          .toList();
+      for (final suggestion in selected) {
+        try {
+          await ref
+              .read(storageServiceProvider)
+              .saveManualMediaMapping(_suggestionIdentities(suggestion));
+          savedCount++;
+          _cachedSuggestions = _cachedSuggestions
+              .where(
+                (cached) =>
+                    _suggestionKey(cached) != _suggestionKey(suggestion),
+              )
+              .toList();
+          _selectedSuggestions.remove(_suggestionKey(suggestion));
+        } catch (error) {
+          saveError = error;
+          break;
+        }
+      }
+
+      if (savedCount > 0) {
+        await ref.read(mediaLibraryProvider.notifier).loadItems();
+      }
+      if (mounted) {
+        final message = saveError == null
+            ? AppLocalizations.of(context).mappingSaved
+            : AppLocalizations.of(
+                context,
+              ).mappingSavedWithError(savedCount, '$saveError');
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('$error')));
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
 
   Future<void> _saveMapping(Iterable<UnifiedMediaItem> items) async {
     if (_isSaving) return;
@@ -206,7 +317,16 @@ class _MediaMappingsScreenState extends ConsumerState<MediaMappingsScreen> {
     final items = library.unifiedItems
         .where((item) => item.mediaType == _mediaType)
         .toList();
-    final suggestions = _findSuggestions(items);
+    final suggestionQueryKey =
+        '${_mediaType.name}:${_query.trim().toLowerCase()}';
+    if (_cachedSuggestionKey != suggestionQueryKey && !library.isLoading) {
+      _cachedSuggestionKey = suggestionQueryKey;
+      _cachedSuggestions = _findSuggestions(items);
+      _selectedSuggestions = {};
+    }
+    final suggestions = _cachedSuggestionKey == suggestionQueryKey
+        ? _cachedSuggestions
+        : _findSuggestions(items);
     final savedMappings = ref
         .read(storageServiceProvider)
         .getManualMediaMappings()
@@ -245,6 +365,8 @@ class _MediaMappingsScreenState extends ConsumerState<MediaMappingsScreen> {
                     setState(() {
                       _mediaType = type;
                       _selectedItems = {};
+                      _selectedSuggestions = {};
+                      _cachedSuggestionKey = null;
                     });
                   },
                 ),
@@ -323,7 +445,21 @@ class _MediaMappingsScreenState extends ConsumerState<MediaMappingsScreen> {
           ),
         ],
       ),
-      floatingActionButton: _mode == _MappingMode.manual
+      floatingActionButton:
+          _mode == _MappingMode.suggestions && _selectedSuggestions.isNotEmpty
+          ? FloatingActionButton.extended(
+              onPressed: _isSaving
+                  ? null
+                  : () => _saveSelectedSuggestions(suggestions),
+              icon: _isSaving
+                  ? const SizedBox.square(
+                      dimension: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.link_rounded),
+              label: Text(localizations.mapSelectedMedia),
+            )
+          : _mode == _MappingMode.manual
           ? FloatingActionButton.extended(
               onPressed: _selectedItems.length == 2 && !_isSaving
                   ? () => _saveMapping(
@@ -345,8 +481,7 @@ class _MediaMappingsScreenState extends ConsumerState<MediaMappingsScreen> {
   }
 
   Widget _suggestionsView(
-    List<({UnifiedMediaItem first, UnifiedMediaItem second, String title})>
-    suggestions,
+    List<_SuggestedMapping> suggestions,
     AppLocalizations localizations,
   ) {
     if (suggestions.isEmpty) {
@@ -365,6 +500,14 @@ class _MediaMappingsScreenState extends ConsumerState<MediaMappingsScreen> {
         for (final suggestion in suggestions)
           Card(
             child: ListTile(
+              leading: Checkbox(
+                value: _selectedSuggestions.contains(
+                  _suggestionKey(suggestion),
+                ),
+                onChanged: _isSaving
+                    ? null
+                    : (_) => _toggleSuggestion(suggestion, suggestions),
+              ),
               title: Text(
                 '${suggestion.first.title} / ${suggestion.second.title}',
                 maxLines: 2,
@@ -372,13 +515,6 @@ class _MediaMappingsScreenState extends ConsumerState<MediaMappingsScreen> {
               ),
               subtitle: Text(
                 '${_serviceNames(suggestion.first)} · ${_serviceNames(suggestion.second)}',
-              ),
-              trailing: IconButton(
-                tooltip: localizations.mapSelectedMedia,
-                onPressed: _isSaving
-                    ? null
-                    : () => _saveMapping([suggestion.first, suggestion.second]),
-                icon: const Icon(Icons.link_rounded),
               ),
             ),
           ),

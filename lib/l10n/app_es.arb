@@ -504,6 +504,16 @@
   "removeMapping": "Eliminar mapeo",
   "possibleMatchHint": "Los títulos coincidentes son sugerencias; revísalos antes de vincularlos.",
   "mappingRequiresDifferentServices": "Las entradas vinculadas deben proceder de servicios distintos.",
+  "mappingSelectionConflict": "Las sugerencias seleccionadas contienen entradas distintas del mismo servicio. Vincúlalas por separado.",
+  "mappingSavedWithError": "Se vincularon {savedCount} sugerencias, pero falló otro mapeo: {error}",
+  "@mappingSavedWithError": {
+    "placeholders": {
+      "savedCount": {
+        "type": "int"
+      },
+      "error": {}
+    }
+  },
   "settings": "Ajustes",
   "searchSettings": "Buscar en ajustes",
   "themeDisplayModeBadgeStyle": "Tema, modo de visualización y estilo de distintivos",

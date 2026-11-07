@@ -504,6 +504,16 @@
   "removeMapping": "Usuń mapowanie",
   "possibleMatchHint": "Pasujące tytuły to tylko propozycje — sprawdź je przed mapowaniem.",
   "mappingRequiresDifferentServices": "Mapowane wpisy muszą pochodzić z różnych serwisów.",
+  "mappingSelectionConflict": "Wybrane propozycje zawierają różne wpisy z tego samego serwisu. Mapuj je osobno.",
+  "mappingSavedWithError": "Zmapowano {savedCount} propozycji, ale kolejne mapowanie się nie powiodło: {error}",
+  "@mappingSavedWithError": {
+    "placeholders": {
+      "savedCount": {
+        "type": "int"
+      },
+      "error": {}
+    }
+  },
   "settings": "Ustawienia",
   "searchSettings": "Szukaj w ustawieniach",
   "themeDisplayModeBadgeStyle": "Motyw, tryb wyświetlania, styl oznaczeń",

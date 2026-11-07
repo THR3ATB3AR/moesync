@@ -1411,6 +1411,15 @@ class AppLocalizationsPl extends AppLocalizations {
       'Mapowane wpisy muszą pochodzić z różnych serwisów.';
 
   @override
+  String get mappingSelectionConflict =>
+      'Wybrane propozycje zawierają różne wpisy z tego samego serwisu. Mapuj je osobno.';
+
+  @override
+  String mappingSavedWithError(int savedCount, Object error) {
+    return 'Zmapowano $savedCount propozycji, ale kolejne mapowanie się nie powiodło: $error';
+  }
+
+  @override
   String get settings => 'Ustawienia';
 
   @override

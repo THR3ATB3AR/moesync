@@ -1416,6 +1416,15 @@ class AppLocalizationsEs extends AppLocalizations {
       'Las entradas vinculadas deben proceder de servicios distintos.';
 
   @override
+  String get mappingSelectionConflict =>
+      'Las sugerencias seleccionadas contienen entradas distintas del mismo servicio. Vincúlalas por separado.';
+
+  @override
+  String mappingSavedWithError(int savedCount, Object error) {
+    return 'Se vincularon $savedCount sugerencias, pero falló otro mapeo: $error';
+  }
+
+  @override
   String get settings => 'Ajustes';
 
   @override

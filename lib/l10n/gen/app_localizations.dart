@@ -2517,6 +2517,18 @@ abstract class AppLocalizations {
   /// **'Mapped entries must come from different services.'**
   String get mappingRequiresDifferentServices;
 
+  /// No description provided for @mappingSelectionConflict.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected suggestions contain different entries from the same service. Map them separately.'**
+  String get mappingSelectionConflict;
+
+  /// No description provided for @mappingSavedWithError.
+  ///
+  /// In en, this message translates to:
+  /// **'Mapped {savedCount} suggestion(s), but another mapping failed: {error}'**
+  String mappingSavedWithError(int savedCount, Object error);
+
   /// No description provided for @settings.
   ///
   /// In en, this message translates to:

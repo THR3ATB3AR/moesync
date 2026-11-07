@@ -504,6 +504,16 @@
   "removeMapping": "Remove mapping",
   "possibleMatchHint": "Matching titles are suggestions only; review them before mapping.",
   "mappingRequiresDifferentServices": "Mapped entries must come from different services.",
+  "mappingSelectionConflict": "Selected suggestions contain different entries from the same service. Map them separately.",
+  "mappingSavedWithError": "Mapped {savedCount} suggestion(s), but another mapping failed: {error}",
+  "@mappingSavedWithError": {
+    "placeholders": {
+      "savedCount": {
+        "type": "int"
+      },
+      "error": {}
+    }
+  },
   "settings": "Settings",
   "searchSettings": "Search settings",
   "themeDisplayModeBadgeStyle": "Theme, display mode, badge style",

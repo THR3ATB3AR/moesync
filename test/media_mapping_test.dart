@@ -61,6 +61,21 @@ void main() {
     );
   });
 
+  test('separate mappings stay separate when saved in a batch', () async {
+    await storage.saveManualMediaMapping([
+      identity(ServiceType.mal, 101),
+      identity(ServiceType.kitsu, 202),
+    ]);
+    await storage.saveManualMediaMapping([
+      identity(ServiceType.anilist, 303),
+      identity(ServiceType.shikimori, 404),
+    ]);
+
+    final mappings = storage.getManualMediaMappings();
+    expect(mappings, hasLength(2));
+    expect(mappings.map((mapping) => mapping.members.length), everyElement(2));
+  });
+
   test('manual mappings can be removed and cannot mix media types', () async {
     final mal = identity(ServiceType.mal, 101);
     final kitsu = identity(ServiceType.kitsu, 202);

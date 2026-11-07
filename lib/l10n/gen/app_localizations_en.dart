@@ -1398,6 +1398,15 @@ class AppLocalizationsEn extends AppLocalizations {
       'Mapped entries must come from different services.';
 
   @override
+  String get mappingSelectionConflict =>
+      'Selected suggestions contain different entries from the same service. Map them separately.';
+
+  @override
+  String mappingSavedWithError(int savedCount, Object error) {
+    return 'Mapped $savedCount suggestion(s), but another mapping failed: $error';
+  }
+
+  @override
   String get settings => 'Settings';
 
   @override
