@@ -27,6 +27,7 @@ jobs:
           REPOSITORY: ${{ github.repository }}
         run: |
           LAST_NIGHTLY_TAG="$(gh release list \
+            --repo "$REPOSITORY" \
             --exclude-drafts \
             --limit 100 \
             --json tagName,isPrerelease \
