@@ -1360,6 +1360,57 @@ class AppLocalizationsPl extends AppLocalizations {
   String get more => 'Więcej';
 
   @override
+  String get mediaMappings => 'Mapowanie mediów';
+
+  @override
+  String get mediaMappingsSubtitle =>
+      'Łącz pasujące anime i mangi z różnych serwisów';
+
+  @override
+  String get suggestedMatches => 'Podobne tytuły';
+
+  @override
+  String get chooseManually => 'Wybierz ręcznie';
+
+  @override
+  String get savedMappings => 'Zmapowane media';
+
+  @override
+  String get searchMediaLibrary => 'Szukaj w bibliotece';
+
+  @override
+  String get noSuggestedMatches => 'Nie znaleziono propozycji mapowania.';
+
+  @override
+  String get selectTwoMediaToMap => 'Wybierz dwa wpisy, aby je połączyć.';
+
+  @override
+  String get mapSelectedMedia => 'Mapuj wybrane media';
+
+  @override
+  String get mappingSaved => 'Połączono wpisy mediów.';
+
+  @override
+  String get mappingRemoved => 'Usunięto mapowanie.';
+
+  @override
+  String get noMediaInLibrary => 'Nie znaleziono mediów w bibliotece.';
+
+  @override
+  String get noSavedMappings => 'Nie masz ręcznych mapowań.';
+
+  @override
+  String get removeMapping => 'Usuń mapowanie';
+
+  @override
+  String get possibleMatchHint =>
+      'Pasujące tytuły to tylko propozycje — sprawdź je przed mapowaniem.';
+
+  @override
+  String get mappingRequiresDifferentServices =>
+      'Mapowane wpisy muszą pochodzić z różnych serwisów.';
+
+  @override
   String get settings => 'Ustawienia';
 
   @override

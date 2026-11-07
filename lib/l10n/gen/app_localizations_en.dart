@@ -1347,6 +1347,57 @@ class AppLocalizationsEn extends AppLocalizations {
   String get more => 'More';
 
   @override
+  String get mediaMappings => 'Media mappings';
+
+  @override
+  String get mediaMappingsSubtitle =>
+      'Link matching anime and manga across services';
+
+  @override
+  String get suggestedMatches => 'Suggested matches';
+
+  @override
+  String get chooseManually => 'Choose manually';
+
+  @override
+  String get savedMappings => 'Mapped media';
+
+  @override
+  String get searchMediaLibrary => 'Search your library';
+
+  @override
+  String get noSuggestedMatches => 'No possible matches found.';
+
+  @override
+  String get selectTwoMediaToMap => 'Select two entries to map them together.';
+
+  @override
+  String get mapSelectedMedia => 'Map selected media';
+
+  @override
+  String get mappingSaved => 'Media entries mapped.';
+
+  @override
+  String get mappingRemoved => 'Mapping removed.';
+
+  @override
+  String get noMediaInLibrary => 'No media found in your library.';
+
+  @override
+  String get noSavedMappings => 'You have no manual mappings.';
+
+  @override
+  String get removeMapping => 'Remove mapping';
+
+  @override
+  String get possibleMatchHint =>
+      'Matching titles are suggestions only; review them before mapping.';
+
+  @override
+  String get mappingRequiresDifferentServices =>
+      'Mapped entries must come from different services.';
+
+  @override
   String get settings => 'Settings';
 
   @override

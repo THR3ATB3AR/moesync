@@ -511,9 +511,10 @@ UnifiedMediaItem resolveMediaItem({
   final library = ref.read(mediaLibraryProvider);
   return library.unifiedItems.firstWhere(
     (u) =>
-        (malId != null && malId > 0 && u.malId == malId) ||
-        (id > 0 && u.malId == id) ||
-        u.title.toLowerCase() == title.toLowerCase(),
+        u.mediaType == mediaType &&
+        ((malId != null && malId > 0 && u.malId == malId) ||
+            (id > 0 && u.services[ServiceType.anilist]?.id == id) ||
+            u.title.toLowerCase() == title.toLowerCase()),
     orElse: () => UnifiedMediaItem(
       malId: (malId != null && malId > 0) ? malId : id,
       title: title,
@@ -571,9 +572,14 @@ UnifiedMediaItem resolveUnifiedItem({
   final library = ref.read(mediaLibraryProvider);
   final match = library.unifiedItems.firstWhere(
     (u) =>
-        (malId != null && malId > 0 && u.malId == malId) ||
-        (id > 0 && u.malId == id) ||
-        u.title.toLowerCase() == title.toLowerCase(),
+        u.mediaType == mediaType &&
+        ((malId != null && malId > 0 && u.malId == malId) ||
+            (id > 0 && u.services[sourceService]?.id == id) ||
+            ((sourceService == ServiceType.mal ||
+                    sourceService == ServiceType.shikimori) &&
+                id > 0 &&
+                u.malId == id) ||
+            u.title.toLowerCase() == title.toLowerCase()),
     orElse: () => UnifiedMediaItem(
       malId: (malId != null && malId > 0)
           ? malId

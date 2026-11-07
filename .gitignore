@@ -58,6 +58,7 @@ app.*.map.json
 !/test/media_search_storage_test.dart
 !/test/home_widget_settings_test.dart
 !/test/media_discovery_test.dart
+!/test/media_mapping_test.dart
 !/test/release_service_test.dart
 docs/WYDANIA.md
 docs/RELEASING.md

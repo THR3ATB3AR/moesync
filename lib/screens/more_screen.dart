@@ -122,6 +122,30 @@ class MoreScreen extends ConsumerWidget {
                 vertical: 4,
               ),
               leading: Icon(
+                Icons.link_rounded,
+                color: theme.colorScheme.primary,
+                size: 26,
+              ),
+              title: Text(
+                AppLocalizations.of(context).mediaMappings,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              subtitle: Text(
+                AppLocalizations.of(context).mediaMappingsSubtitle,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              onTap: () => context.push('/more/media-mappings'),
+            ),
+            ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 4,
+              ),
+              leading: Icon(
                 Icons.settings_outlined,
                 color: theme.colorScheme.primary,
                 size: 26,

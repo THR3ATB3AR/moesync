@@ -1365,6 +1365,57 @@ class AppLocalizationsEs extends AppLocalizations {
   String get more => 'Más';
 
   @override
+  String get mediaMappings => 'Mapeos de medios';
+
+  @override
+  String get mediaMappingsSubtitle =>
+      'Vincula anime y manga coincidentes entre servicios';
+
+  @override
+  String get suggestedMatches => 'Coincidencias sugeridas';
+
+  @override
+  String get chooseManually => 'Elegir manualmente';
+
+  @override
+  String get savedMappings => 'Medios vinculados';
+
+  @override
+  String get searchMediaLibrary => 'Buscar en tu biblioteca';
+
+  @override
+  String get noSuggestedMatches => 'No se encontraron posibles coincidencias.';
+
+  @override
+  String get selectTwoMediaToMap => 'Selecciona dos entradas para vincularlas.';
+
+  @override
+  String get mapSelectedMedia => 'Vincular medios seleccionados';
+
+  @override
+  String get mappingSaved => 'Entradas de medios vinculadas.';
+
+  @override
+  String get mappingRemoved => 'Mapeo eliminado.';
+
+  @override
+  String get noMediaInLibrary => 'No se encontraron medios en tu biblioteca.';
+
+  @override
+  String get noSavedMappings => 'No tienes mapeos manuales.';
+
+  @override
+  String get removeMapping => 'Eliminar mapeo';
+
+  @override
+  String get possibleMatchHint =>
+      'Los títulos coincidentes son sugerencias; revísalos antes de vincularlos.';
+
+  @override
+  String get mappingRequiresDifferentServices =>
+      'Las entradas vinculadas deben proceder de servicios distintos.';
+
+  @override
   String get settings => 'Ajustes';
 
   @override

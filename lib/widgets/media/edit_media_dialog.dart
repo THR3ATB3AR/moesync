@@ -482,12 +482,7 @@ class _EditMediaDialogState extends ConsumerState<EditMediaDialog> {
     final isTracked = ref
         .read(mediaLibraryProvider)
         .unifiedItems
-        .any(
-          (item) =>
-              item.mediaType == widget.item.mediaType &&
-              ((widget.item.malId > 0 && item.malId == widget.item.malId) ||
-                  item.title.toLowerCase() == widget.item.title.toLowerCase()),
-        );
+        .any((item) => sameUnifiedMediaItem(item, widget.item));
 
     try {
       if (_status == 'not_on_list') {

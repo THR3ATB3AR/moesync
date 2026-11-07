@@ -686,6 +686,17 @@ class UnifiedMediaItem {
   );
 }
 
+bool sameUnifiedMediaItem(UnifiedMediaItem first, UnifiedMediaItem second) {
+  if (first.mediaType != second.mediaType) return false;
+  if (first.malId > 0 && first.malId == second.malId) return true;
+  if (first.services.entries.any(
+    (entry) => second.services[entry.key]?.id == entry.value.id,
+  )) {
+    return true;
+  }
+  return first.title.toLowerCase() == second.title.toLowerCase();
+}
+
 int compareUnifiedMediaItems(
   UnifiedMediaItem a,
   UnifiedMediaItem b,

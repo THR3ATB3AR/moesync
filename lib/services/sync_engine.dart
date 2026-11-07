@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../models/media_item.dart';
+import '../models/media_mapping.dart';
 import 'anilist_service.dart';
 import 'anime_api_mapping_service.dart';
 import 'kitsu_service.dart';
@@ -23,6 +24,7 @@ class SyncEngine {
   final MangaBakaService? mangabaka;
   final MangaUpdatesService? mangaupdates;
   final MangaMappingService? mangaMapping;
+  final List<ManualMediaMapping> Function() manualMappings;
 
   SyncEngine({
     required this.mal,
@@ -35,10 +37,14 @@ class SyncEngine {
     this.mangabaka,
     this.mangaupdates,
     this.mangaMapping,
+    List<ManualMediaMapping> Function()? manualMappings,
   }) : animeApi =
            animeApi ??
            fribb ??
-           (throw ArgumentError('An AnimeApi mapping service is required.'));
+           (throw ArgumentError('An AnimeApi mapping service is required.')),
+       manualMappings = manualMappings ?? _emptyManualMappings;
+
+  static List<ManualMediaMapping> _emptyManualMappings() => const [];
 
   bool isServiceConnected(ServiceType service) {
     switch (service) {
@@ -204,6 +210,7 @@ class SyncEngine {
     Map<ServiceType, List<MediaItem>> allServiceItems,
   ) {
     final unifiedMap = <int, UnifiedMediaItem>{};
+    final manualMappingIndex = ManualMediaMappingIndex(manualMappings(), type);
 
     for (final entry in allServiceItems.entries) {
       final service = entry.key;
@@ -227,13 +234,17 @@ class SyncEngine {
               ? item.malId!
               : animeApi.findMalId(service, item.id);
         }
-        final effectiveKey = malId != 0
-            ? malId
-            : (item.id + service.index * 1000000);
+        final manualGroupKey = manualMappingIndex.groupKeyFor(item);
+        final effectiveMalId = manualMappingIndex.malIdFor(item) ?? malId;
+        final effectiveKey =
+            manualGroupKey ??
+            (effectiveMalId != 0
+                ? effectiveMalId
+                : (item.id + service.index * 1000000));
 
         if (!unifiedMap.containsKey(effectiveKey)) {
           unifiedMap[effectiveKey] = UnifiedMediaItem(
-            malId: effectiveKey,
+            malId: effectiveMalId > 0 ? effectiveMalId : effectiveKey,
             title: item.title.trim().isNotEmpty
                 ? item.title
                 : animeApi.findTitle(malId) ?? item.title,
@@ -245,6 +256,9 @@ class SyncEngine {
 
         final u = unifiedMap[effectiveKey]!;
         u.services[service] = item;
+        if (u.malId <= 0 && effectiveMalId > 0) {
+          unifiedMap[effectiveKey] = u.copyWith(malId: effectiveMalId);
+        }
       }
     }
 
@@ -439,6 +453,10 @@ class SyncEngine {
       await _resolveMangaMappings(allServiceItems);
     }
 
+    final manualMappingIndex = ManualMediaMappingIndex(
+      manualMappings(),
+      mediaType,
+    );
     final primaryItems = allServiceItems[primaryService] ?? [];
 
     if (primaryItems.isEmpty) return [];
@@ -448,16 +466,22 @@ class SyncEngine {
     final targetByMalId = <ServiceType, Map<int, MediaItem>>{};
     final targetByServiceId = <ServiceType, Map<int, MediaItem>>{};
     final targetByTitle = <ServiceType, Map<String, MediaItem>>{};
+    final targetByManualGroup = <ServiceType, Map<int, MediaItem>>{};
 
     for (final service in ServiceType.values) {
       if (service == primaryService) continue;
       targetByMalId[service] = {};
       targetByServiceId[service] = {};
       targetByTitle[service] = {};
+      targetByManualGroup[service] = {};
 
       final items = allServiceItems[service] ?? [];
       for (final item in items) {
         targetByServiceId[service]![item.id] = item;
+        final manualGroupKey = manualMappingIndex.groupKeyFor(item);
+        if (manualGroupKey != null) {
+          targetByManualGroup[service]![manualGroupKey] = item;
+        }
         final cleanTitle = _normalizeTitle(item.title);
         if (cleanTitle.isNotEmpty) {
           targetByTitle[service]![cleanTitle] = item;
@@ -499,7 +523,8 @@ class SyncEngine {
     }).toList();
 
     for (final pItem in primaryItems) {
-      final pMalId =
+      final manualGroupKey = manualMappingIndex.groupKeyFor(pItem);
+      final resolvedPrimaryMalId =
           (primaryService == ServiceType.mal ||
               primaryService == ServiceType.shikimori)
           ? pItem.id
@@ -508,11 +533,14 @@ class SyncEngine {
           : (mediaType == MediaType.manga
                 ? (mangaMapping?.findMalId(primaryService, pItem.id) ?? 0)
                 : animeApi.findMalId(primaryService, pItem.id));
+      final pMalId = manualMappingIndex.malIdFor(pItem) ?? resolvedPrimaryMalId;
 
       for (final targetSvc in availableTargets) {
-        MediaItem? existingTarget;
+        MediaItem? existingTarget = manualGroupKey == null
+            ? null
+            : targetByManualGroup[targetSvc]?[manualGroupKey];
 
-        if (pMalId != 0) {
+        if (existingTarget == null && pMalId != 0) {
           existingTarget = targetByMalId[targetSvc]?[pMalId];
 
           if (existingTarget == null) {

@@ -2,6 +2,7 @@ import 'package:moesync/l10n/gen/app_localizations.dart';
 import 'package:moesync/models/media_item.dart';
 import 'package:moesync/models/media_discovery.dart';
 import 'package:moesync/screens/media_detail_screen.dart';
+import 'package:moesync/screens/media_mappings_screen.dart';
 import 'package:moesync/screens/settings/settings_about_page.dart';
 import 'package:moesync/screens/settings/settings_appearance_page.dart';
 import 'package:moesync/screens/settings/settings_language_page.dart';
@@ -140,6 +141,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/more',
             builder: (context, state) => const MoreScreen(),
+          ),
+          GoRoute(
+            path: '/more/media-mappings',
+            builder: (context, state) => const MediaMappingsScreen(),
           ),
           GoRoute(
             path: '/more/settings',

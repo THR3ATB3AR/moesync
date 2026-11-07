@@ -355,6 +355,8 @@ final syncEngineProvider = Provider<SyncEngine>((ref) {
     mangabaka: ref.watch(mangabakaServiceProvider),
     mangaupdates: ref.watch(mangaupdatesServiceProvider),
     mangaMapping: ref.watch(mangaMappingServiceProvider),
+    manualMappings: () =>
+        ref.read(storageServiceProvider).getManualMediaMappings(),
   );
 });
 
@@ -720,10 +722,7 @@ class MediaLibraryNotifier extends Notifier<MediaLibraryState> {
     Map<ServiceType, MediaItem> servicesToCommit = {};
 
     final existingIndex = state.unifiedItems.indexWhere(
-      (u) =>
-          u.mediaType == item.mediaType &&
-          ((item.malId > 0 && u.malId == item.malId) ||
-              u.title.toLowerCase() == item.title.toLowerCase()),
+      (u) => sameUnifiedMediaItem(u, item),
     );
 
     if (existingIndex >= 0) {
@@ -751,7 +750,7 @@ class MediaLibraryNotifier extends Notifier<MediaLibraryState> {
             SyncAction(
               targetService: service,
               targetId: serviceItem.id,
-              targetMalId: serviceItem.malId ?? (u.malId != 0 ? u.malId : null),
+              targetMalId: serviceItem.malId ?? (u.malId > 0 ? u.malId : null),
               title: u.title,
               posterImage: u.posterImage,
               mediaType: u.mediaType,
@@ -789,7 +788,7 @@ class MediaLibraryNotifier extends Notifier<MediaLibraryState> {
               targetService: service,
               targetId: serviceItem.id,
               targetMalId:
-                  serviceItem.malId ?? (item.malId != 0 ? item.malId : null),
+                  serviceItem.malId ?? (item.malId > 0 ? item.malId : null),
               title: item.title,
               posterImage: item.posterImage,
               mediaType: item.mediaType,
@@ -813,10 +812,7 @@ class MediaLibraryNotifier extends Notifier<MediaLibraryState> {
     }
 
     final latestIndex = state.unifiedItems.indexWhere(
-      (u) =>
-          u.mediaType == item.mediaType &&
-          ((item.malId > 0 && u.malId == item.malId) ||
-              u.title.toLowerCase() == item.title.toLowerCase()),
+      (u) => sameUnifiedMediaItem(u, item),
     );
     final updatedItems = List<UnifiedMediaItem>.from(state.unifiedItems);
     if (latestIndex >= 0) {
@@ -952,10 +948,7 @@ class MediaLibraryNotifier extends Notifier<MediaLibraryState> {
 
   Future<void> removeItemFromAllServices(UnifiedMediaItem item) async {
     final libraryIndex = state.unifiedItems.indexWhere(
-      (candidate) =>
-          candidate.mediaType == item.mediaType &&
-          ((item.malId > 0 && candidate.malId == item.malId) ||
-              candidate.title.toLowerCase() == item.title.toLowerCase()),
+      (candidate) => sameUnifiedMediaItem(candidate, item),
     );
     if (libraryIndex < 0) return;
 
@@ -969,7 +962,7 @@ class MediaLibraryNotifier extends Notifier<MediaLibraryState> {
           await engine.removeItem(
             service: entry.key,
             item: entry.value,
-            malId: libraryItem.malId,
+            malId: libraryItem.malId > 0 ? libraryItem.malId : 0,
             title: libraryItem.title,
           );
           return (service: entry.key, error: null as Object?);

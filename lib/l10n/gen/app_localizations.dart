@@ -2421,6 +2421,102 @@ abstract class AppLocalizations {
   /// **'More'**
   String get more;
 
+  /// No description provided for @mediaMappings.
+  ///
+  /// In en, this message translates to:
+  /// **'Media mappings'**
+  String get mediaMappings;
+
+  /// No description provided for @mediaMappingsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Link matching anime and manga across services'**
+  String get mediaMappingsSubtitle;
+
+  /// No description provided for @suggestedMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested matches'**
+  String get suggestedMatches;
+
+  /// No description provided for @chooseManually.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose manually'**
+  String get chooseManually;
+
+  /// No description provided for @savedMappings.
+  ///
+  /// In en, this message translates to:
+  /// **'Mapped media'**
+  String get savedMappings;
+
+  /// No description provided for @searchMediaLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Search your library'**
+  String get searchMediaLibrary;
+
+  /// No description provided for @noSuggestedMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'No possible matches found.'**
+  String get noSuggestedMatches;
+
+  /// No description provided for @selectTwoMediaToMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Select two entries to map them together.'**
+  String get selectTwoMediaToMap;
+
+  /// No description provided for @mapSelectedMedia.
+  ///
+  /// In en, this message translates to:
+  /// **'Map selected media'**
+  String get mapSelectedMedia;
+
+  /// No description provided for @mappingSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Media entries mapped.'**
+  String get mappingSaved;
+
+  /// No description provided for @mappingRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Mapping removed.'**
+  String get mappingRemoved;
+
+  /// No description provided for @noMediaInLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'No media found in your library.'**
+  String get noMediaInLibrary;
+
+  /// No description provided for @noSavedMappings.
+  ///
+  /// In en, this message translates to:
+  /// **'You have no manual mappings.'**
+  String get noSavedMappings;
+
+  /// No description provided for @removeMapping.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove mapping'**
+  String get removeMapping;
+
+  /// No description provided for @possibleMatchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Matching titles are suggestions only; review them before mapping.'**
+  String get possibleMatchHint;
+
+  /// No description provided for @mappingRequiresDifferentServices.
+  ///
+  /// In en, this message translates to:
+  /// **'Mapped entries must come from different services.'**
+  String get mappingRequiresDifferentServices;
+
   /// No description provided for @settings.
   ///
   /// In en, this message translates to:

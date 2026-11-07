@@ -94,9 +94,7 @@ class _MediaRelationsAndRecommendationsSectionState
                   );
 
                   final isInLibrary = library.unifiedItems.any(
-                    (u) =>
-                        (targetItem.malId > 0 && u.malId == targetItem.malId) ||
-                        u.title.toLowerCase() == targetItem.title.toLowerCase(),
+                    (u) => sameUnifiedMediaItem(u, targetItem),
                   );
 
                   return MediaInteractiveMediaCard(
@@ -139,9 +137,7 @@ class _MediaRelationsAndRecommendationsSectionState
                   );
 
                   final isInLibrary = library.unifiedItems.any(
-                    (u) =>
-                        (targetItem.malId > 0 && u.malId == targetItem.malId) ||
-                        u.title.toLowerCase() == targetItem.title.toLowerCase(),
+                    (u) => sameUnifiedMediaItem(u, targetItem),
                   );
 
                   return MediaInteractiveMediaCard(

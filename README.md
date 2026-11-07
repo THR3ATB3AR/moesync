@@ -16,6 +16,7 @@ MoeSync brings anime and manga tracking services into a unified library. Browse 
 ## Features
 
 - **Unified library** — view anime and manga from connected services in one place.
+- **Manual media mappings** — link entries the catalogs fail to match, review possible duplicates, and keep the links across refreshes.
 - **Cross-service sync** — compare lists against a primary service, review pending additions and updates, and apply the changes you select.
 - **Flexible information sources** — choose default information, description, and synchronization services separately for anime and manga.
 - **Rich title details** — explore descriptions, ratings, rankings, statistics, related titles, recommendations, staff, characters, and anime music themes where available.

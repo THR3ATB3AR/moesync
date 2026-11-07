@@ -70,10 +70,7 @@ class _MediaDetailScreenState extends ConsumerState<MediaDetailScreen> {
   UnifiedMediaItem _getLiveItem() {
     final library = ref.watch(mediaLibraryProvider);
     final match = library.unifiedItems.firstWhere(
-      (u) =>
-          u.mediaType == widget.item.mediaType &&
-          ((widget.item.malId > 0 && u.malId == widget.item.malId) ||
-              u.title.toLowerCase() == widget.item.title.toLowerCase()),
+      (u) => sameUnifiedMediaItem(u, widget.item),
       orElse: () => widget.item,
     );
     return match;
@@ -82,9 +79,7 @@ class _MediaDetailScreenState extends ConsumerState<MediaDetailScreen> {
   UnifiedMediaItem? _getLibraryItem() {
     final library = ref.watch(mediaLibraryProvider);
     for (final item in library.unifiedItems) {
-      if (item.mediaType == widget.item.mediaType &&
-          ((widget.item.malId > 0 && item.malId == widget.item.malId) ||
-              item.title.toLowerCase() == widget.item.title.toLowerCase())) {
+      if (sameUnifiedMediaItem(item, widget.item)) {
         return item;
       }
     }

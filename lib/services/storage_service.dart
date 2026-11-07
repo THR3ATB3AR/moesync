@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/anime_api_database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/app_release.dart';
+import '../models/media_mapping.dart';
 import '../models/media_item.dart';
 import 'env.dart';
 
@@ -14,6 +15,7 @@ class StorageService {
   static const _mediaSearchCacheKey = 'media_search_cache';
   static const _mediaSearchHistoryKey = 'media_search_history';
   static const _mangaMappingCacheKey = 'manga_mapping_cache';
+  static const _manualMediaMappingsKey = 'manual_media_mappings';
 
   static String get defaultMalClientId => Env.malClientId;
   static String get defaultMalClientSecret => Env.malClientSecret;
@@ -183,6 +185,88 @@ class StorageService {
 
   String? getMangaMappingCache() {
     return _prefs.getString(_mangaMappingCacheKey);
+  }
+
+  List<ManualMediaMapping> getManualMediaMappings() {
+    final encoded = _prefs.getString(_manualMediaMappingsKey);
+    if (encoded == null) return const [];
+    try {
+      final mappings = jsonDecode(encoded);
+      if (mappings is! List<dynamic>) {
+        throw const FormatException('Invalid manual media mappings list.');
+      }
+      return mappings
+          .map(
+            (mapping) =>
+                ManualMediaMapping.fromJson(mapping as Map<String, dynamic>),
+          )
+          .toList(growable: false);
+    } catch (error) {
+      debugPrint('Failed to load manual media mappings: $error');
+      return const [];
+    }
+  }
+
+  Future<void> saveManualMediaMapping(
+    Iterable<MediaMappingIdentity> identities,
+  ) async {
+    final members = {for (final identity in identities) identity.key: identity};
+    if (members.length < 2) {
+      throw ArgumentError('A manual media mapping needs two distinct items.');
+    }
+    if (members.values.map((member) => member.mediaType).toSet().length != 1) {
+      throw ArgumentError('Manual media mappings cannot mix media types.');
+    }
+
+    final mappings = getManualMediaMappings();
+    final mergedMembers = <String, MediaMappingIdentity>{...members};
+    final retainedMappings = <ManualMediaMapping>[];
+    var changed = true;
+    while (changed) {
+      changed = false;
+      for (final mapping in mappings) {
+        if (retainedMappings.contains(mapping)) continue;
+        if (!mapping.members.any(
+          (member) => mergedMembers.containsKey(member.key),
+        )) {
+          continue;
+        }
+        for (final member in mapping.members) {
+          mergedMembers[member.key] = member;
+        }
+        retainedMappings.add(mapping);
+        changed = true;
+      }
+    }
+    final updatedMappings = mappings
+        .where((mapping) => !retainedMappings.contains(mapping))
+        .toList();
+    updatedMappings.add(ManualMediaMapping(mergedMembers.values));
+    if (mergedMembers.values.map((member) => member.service).toSet().length !=
+        mergedMembers.length) {
+      throw ArgumentError(
+        'Each manual media mapping can contain only one item per service.',
+      );
+    }
+    await _prefs.setString(
+      _manualMediaMappingsKey,
+      jsonEncode(updatedMappings.map((mapping) => mapping.toJson()).toList()),
+    );
+  }
+
+  Future<void> removeManualMediaMapping(ManualMediaMapping mapping) async {
+    final memberKeys = mapping.members.map((member) => member.key).toSet();
+    final updatedMappings = getManualMediaMappings()
+        .where(
+          (existing) => !existing.members.every(
+            (member) => memberKeys.contains(member.key),
+          ),
+        )
+        .toList();
+    await _prefs.setString(
+      _manualMediaMappingsKey,
+      jsonEncode(updatedMappings.map((mapping) => mapping.toJson()).toList()),
+    );
   }
 
   Future<void> saveCachedItems(
