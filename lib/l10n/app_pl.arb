@@ -504,7 +504,6 @@
   "removeMapping": "Usuń mapowanie",
   "possibleMatchHint": "Pasujące tytuły to tylko propozycje — sprawdź je przed mapowaniem.",
   "mappingRequiresDifferentServices": "Mapowane wpisy muszą pochodzić z różnych serwisów.",
-  "mappingSelectionConflict": "Wybrane propozycje zawierają różne wpisy z tego samego serwisu. Mapuj je osobno.",
   "mappingMediaCount": "{count} wpisy",
   "@mappingMediaCount": {
     "placeholders": {

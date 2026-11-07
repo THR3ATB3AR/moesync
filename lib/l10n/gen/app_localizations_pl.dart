@@ -1411,10 +1411,6 @@ class AppLocalizationsPl extends AppLocalizations {
       'Mapowane wpisy muszą pochodzić z różnych serwisów.';
 
   @override
-  String get mappingSelectionConflict =>
-      'Wybrane propozycje zawierają różne wpisy z tego samego serwisu. Mapuj je osobno.';
-
-  @override
   String mappingMediaCount(int count) {
     return '$count wpisy';
   }

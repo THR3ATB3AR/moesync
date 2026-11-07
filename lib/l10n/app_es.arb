@@ -504,7 +504,6 @@
   "removeMapping": "Eliminar mapeo",
   "possibleMatchHint": "Los títulos coincidentes son sugerencias; revísalos antes de vincularlos.",
   "mappingRequiresDifferentServices": "Las entradas vinculadas deben proceder de servicios distintos.",
-  "mappingSelectionConflict": "Las sugerencias seleccionadas contienen entradas distintas del mismo servicio. Vincúlalas por separado.",
   "mappingMediaCount": "{count} elementos",
   "@mappingMediaCount": {
     "placeholders": {

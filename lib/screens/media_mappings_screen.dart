@@ -49,43 +49,11 @@ class _MediaMappingsScreenState extends ConsumerState<MediaMappingsScreen> {
     SuggestedMediaMapping suggestion,
   ) => _identitiesFor(suggestion.items);
 
-  bool _selectionHasConflictingServices(
-    Iterable<SuggestedMediaMapping> suggestions,
-  ) {
-    final serviceIds = <(MediaType, ServiceType), int>{};
-    for (final suggestion in suggestions) {
-      for (final identity in _suggestionIdentities(suggestion)) {
-        final key = (identity.mediaType, identity.service);
-        final previousId = serviceIds[key];
-        if (previousId != null && previousId != identity.id) return true;
-        serviceIds[key] = identity.id;
-      }
-    }
-    return false;
-  }
-
-  void _toggleSuggestion(
-    SuggestedMediaMapping suggestion,
-    List<SuggestedMediaMapping> suggestions,
-  ) {
+  void _toggleSuggestion(SuggestedMediaMapping suggestion) {
     final key = suggestion.key;
     final selected = Set<String>.from(_selectedSuggestions);
     if (!selected.add(key)) {
       selected.remove(key);
-    } else {
-      final selectedSuggestions = suggestions.where(
-        (candidate) => selected.contains(candidate.key),
-      );
-      if (_selectionHasConflictingServices(selectedSuggestions)) {
-        selected.remove(key);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              AppLocalizations.of(context).mappingSelectionConflict,
-            ),
-          ),
-        );
-      }
     }
     setState(() => _selectedSuggestions = selected);
   }
@@ -519,7 +487,7 @@ class _MediaMappingsScreenState extends ConsumerState<MediaMappingsScreen> {
                   value: _selectedSuggestions.contains(suggestion.key),
                   onChanged: _isSaving
                       ? null
-                      : (_) => _toggleSuggestion(suggestion, suggestions),
+                      : (_) => _toggleSuggestion(suggestion),
                   title: Text(
                     _suggestionTitle(suggestion),
                     maxLines: 2,

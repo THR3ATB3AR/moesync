@@ -1416,10 +1416,6 @@ class AppLocalizationsEs extends AppLocalizations {
       'Las entradas vinculadas deben proceder de servicios distintos.';
 
   @override
-  String get mappingSelectionConflict =>
-      'Las sugerencias seleccionadas contienen entradas distintas del mismo servicio. Vincúlalas por separado.';
-
-  @override
   String mappingMediaCount(int count) {
     return '$count elementos';
   }

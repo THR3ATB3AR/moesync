@@ -67,8 +67,8 @@ void main() {
       identity(ServiceType.kitsu, 202),
     ]);
     await storage.saveManualMediaMapping([
+      identity(ServiceType.mal, 102),
       identity(ServiceType.anilist, 303),
-      identity(ServiceType.shikimori, 404),
     ]);
 
     final mappings = storage.getManualMediaMappings();

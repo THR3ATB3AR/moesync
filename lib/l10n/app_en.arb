@@ -504,7 +504,6 @@
   "removeMapping": "Remove mapping",
   "possibleMatchHint": "Matching titles are suggestions only; review them before mapping.",
   "mappingRequiresDifferentServices": "Mapped entries must come from different services.",
-  "mappingSelectionConflict": "Selected suggestions contain different entries from the same service. Map them separately.",
   "mappingMediaCount": "{count} entries",
   "@mappingMediaCount": {
     "placeholders": {
