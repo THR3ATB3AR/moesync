@@ -13,8 +13,44 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  check_changes:
+    name: Check for new commits
+    runs-on: ubuntu-22.04
+    outputs:
+      changed: ${{ steps.compare.outputs.changed }}
+    steps:
+      - name: Compare with the last nightly release
+        id: compare
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CURRENT_SHA: ${{ github.sha }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          LAST_NIGHTLY_TAG="$(gh release list \
+            --exclude-drafts \
+            --limit 100 \
+            --json tagName,isPrerelease \
+            --jq '[.[] | select(.isPrerelease and (.tagName | contains("-nightly.")))][0].tagName // empty')"
+          if [ -z "$LAST_NIGHTLY_TAG" ]; then
+            echo "No previous nightly release found; building one."
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            STATUS="$(gh api \
+              "repos/$REPOSITORY/compare/$LAST_NIGHTLY_TAG...$CURRENT_SHA" \
+              --jq '.status')"
+            if [ "$STATUS" = "ahead" ] || [ "$STATUS" = "diverged" ]; then
+              echo "New commits found since nightly release $LAST_NIGHTLY_TAG."
+              echo "changed=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "::notice::No new commits since nightly release $LAST_NIGHTLY_TAG (comparison: $STATUS); skipping build."
+              echo "changed=false" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
   version:
     name: Prepare nightly version
+    needs: check_changes
+    if: needs.check_changes.outputs.changed == 'true'
     runs-on: ubuntu-22.04
     outputs:
       version: ${{ steps.version.outputs.version }}
