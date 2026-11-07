@@ -139,6 +139,45 @@ void main() {
       expect(sameUnifiedMediaItem(anime, manga), isFalse);
     },
   );
+
+  test('suggestions group three matching entries into one mapping', () async {
+    final items = [
+      for (final (service, id, title) in [
+        (ServiceType.mal, 101, 'Kamui (TV)'),
+        (ServiceType.kitsu, 202, 'Kamui'),
+        (ServiceType.anilist, 303, 'Kamui: Special'),
+      ])
+        UnifiedMediaItem(
+          malId: id,
+          title: title,
+          mediaType: MediaType.anime,
+          services: {
+            service: MediaItem(
+              id: id,
+              title: title,
+              alternativeTitles: const ['Kamui Shared'],
+              status: 'watching',
+              score: 0,
+              progress: 0,
+              posterImage: '',
+              service: service,
+            ),
+          },
+        ),
+    ];
+
+    final suggestions = findSuggestedMediaMappings(items);
+
+    expect(suggestions, hasLength(1));
+    expect(suggestions.single.items, hasLength(3));
+    expect(suggestions.single.key, contains('anilist:303'));
+    await storage.saveManualMediaMapping([
+      for (final item in suggestions.single.items)
+        for (final serviceItem in item.services.values)
+          MediaMappingIdentity.fromItem(serviceItem),
+    ]);
+    expect(storage.getManualMediaMappings().single.members, hasLength(3));
+  });
 }
 
 MediaItem _mediaItem({

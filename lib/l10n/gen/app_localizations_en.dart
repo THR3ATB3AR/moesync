@@ -1402,6 +1402,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Selected suggestions contain different entries from the same service. Map them separately.';
 
   @override
+  String mappingMediaCount(int count) {
+    return '$count entries';
+  }
+
+  @override
   String mappingSavedWithError(int savedCount, Object error) {
     return 'Mapped $savedCount suggestion(s), but another mapping failed: $error';
   }

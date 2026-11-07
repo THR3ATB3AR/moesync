@@ -1420,6 +1420,11 @@ class AppLocalizationsEs extends AppLocalizations {
       'Las sugerencias seleccionadas contienen entradas distintas del mismo servicio. Vincúlalas por separado.';
 
   @override
+  String mappingMediaCount(int count) {
+    return '$count elementos';
+  }
+
+  @override
   String mappingSavedWithError(int savedCount, Object error) {
     return 'Se vincularon $savedCount sugerencias, pero falló otro mapeo: $error';
   }

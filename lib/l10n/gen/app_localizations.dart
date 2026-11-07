@@ -2523,6 +2523,12 @@ abstract class AppLocalizations {
   /// **'Selected suggestions contain different entries from the same service. Map them separately.'**
   String get mappingSelectionConflict;
 
+  /// No description provided for @mappingMediaCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} entries'**
+  String mappingMediaCount(int count);
+
   /// No description provided for @mappingSavedWithError.
   ///
   /// In en, this message translates to:

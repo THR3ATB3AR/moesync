@@ -1,17 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:moesync/l10n/gen/app_localizations.dart';
 import '../models/media_item.dart';
 import '../models/media_mapping.dart';
 import '../providers/providers.dart';
 
 enum _MappingMode { suggestions, manual, saved }
-
-typedef _SuggestedMapping = ({
-  UnifiedMediaItem first,
-  UnifiedMediaItem second,
-  String title,
-});
 
 class MediaMappingsScreen extends ConsumerStatefulWidget {
   const MediaMappingsScreen({super.key});
@@ -28,7 +23,7 @@ class _MediaMappingsScreenState extends ConsumerState<MediaMappingsScreen> {
   Set<String> _selectedItems = {};
   Set<String> _selectedSuggestions = {};
   String? _cachedSuggestionKey;
-  List<_SuggestedMapping> _cachedSuggestions = const [];
+  List<SuggestedMediaMapping> _cachedSuggestions = const [];
   bool _isSaving = false;
 
   String _itemKey(UnifiedMediaItem item) {
@@ -43,63 +38,6 @@ class _MediaMappingsScreenState extends ConsumerState<MediaMappingsScreen> {
     return keys.join('|');
   }
 
-  Set<String> _titleKeys(UnifiedMediaItem item) {
-    final titles = <String>[
-      item.title,
-      for (final service in item.services.values) ...[
-        service.title,
-        if (service.englishTitle != null) service.englishTitle!,
-        if (service.japaneseTitle != null) service.japaneseTitle!,
-        if (service.romajiTitle != null) service.romajiTitle!,
-        ...service.alternativeTitles,
-      ],
-    ];
-    return titles
-        .map(
-          (title) => title.toLowerCase().replaceAll(
-            RegExp(r'[\s\-_.,:;!?()\[\]{}「」『』]+'),
-            '',
-          ),
-        )
-        .where((title) => title.length >= 3)
-        .toSet();
-  }
-
-  List<_SuggestedMapping> _findSuggestions(List<UnifiedMediaItem> items) {
-    final byTitle = <String, List<UnifiedMediaItem>>{};
-    final pairs = <String, _SuggestedMapping>{};
-    final query = _query.trim().toLowerCase();
-    for (final item in items) {
-      for (final title in _titleKeys(item)) {
-        for (final other in byTitle[title] ?? const <UnifiedMediaItem>[]) {
-          if (other.services.keys
-              .toSet()
-              .intersection(item.services.keys.toSet())
-              .isNotEmpty) {
-            continue;
-          }
-          final first = other;
-          final second = item;
-          if (query.isNotEmpty &&
-              !title.toLowerCase().contains(query) &&
-              !first.matchesTitleQuery(query) &&
-              !second.matchesTitleQuery(query)) {
-            continue;
-          }
-          final pairKeys = [_itemKey(first), _itemKey(second)]..sort();
-          pairs.putIfAbsent(
-            pairKeys.join('::'),
-            () => (first: first, second: second, title: title),
-          );
-          if (pairs.length >= 100) return pairs.values.toList();
-        }
-        byTitle.putIfAbsent(title, () => []).add(item);
-      }
-    }
-
-    return pairs.values.toList();
-  }
-
   List<MediaMappingIdentity> _identitiesFor(Iterable<UnifiedMediaItem> items) =>
       [
         for (final item in items)
@@ -107,17 +45,12 @@ class _MediaMappingsScreenState extends ConsumerState<MediaMappingsScreen> {
             MediaMappingIdentity.fromItem(serviceItem),
       ];
 
-  String _suggestionKey(_SuggestedMapping suggestion) => ([
-    _itemKey(suggestion.first),
-    _itemKey(suggestion.second),
-  ]..sort()).join('::');
-
   List<MediaMappingIdentity> _suggestionIdentities(
-    _SuggestedMapping suggestion,
-  ) => _identitiesFor([suggestion.first, suggestion.second]);
+    SuggestedMediaMapping suggestion,
+  ) => _identitiesFor(suggestion.items);
 
   bool _selectionHasConflictingServices(
-    Iterable<_SuggestedMapping> suggestions,
+    Iterable<SuggestedMediaMapping> suggestions,
   ) {
     final serviceIds = <(MediaType, ServiceType), int>{};
     for (final suggestion in suggestions) {
@@ -132,16 +65,16 @@ class _MediaMappingsScreenState extends ConsumerState<MediaMappingsScreen> {
   }
 
   void _toggleSuggestion(
-    _SuggestedMapping suggestion,
-    List<_SuggestedMapping> suggestions,
+    SuggestedMediaMapping suggestion,
+    List<SuggestedMediaMapping> suggestions,
   ) {
-    final key = _suggestionKey(suggestion);
+    final key = suggestion.key;
     final selected = Set<String>.from(_selectedSuggestions);
     if (!selected.add(key)) {
       selected.remove(key);
     } else {
       final selectedSuggestions = suggestions.where(
-        (candidate) => selected.contains(_suggestionKey(candidate)),
+        (candidate) => selected.contains(candidate.key),
       );
       if (_selectionHasConflictingServices(selectedSuggestions)) {
         selected.remove(key);
@@ -158,7 +91,7 @@ class _MediaMappingsScreenState extends ConsumerState<MediaMappingsScreen> {
   }
 
   Future<void> _saveSelectedSuggestions(
-    List<_SuggestedMapping> suggestions,
+    List<SuggestedMediaMapping> suggestions,
   ) async {
     if (_isSaving || _selectedSuggestions.isEmpty) return;
     setState(() => _isSaving = true);
@@ -166,10 +99,7 @@ class _MediaMappingsScreenState extends ConsumerState<MediaMappingsScreen> {
     Object? saveError;
     try {
       final selected = suggestions
-          .where(
-            (suggestion) =>
-                _selectedSuggestions.contains(_suggestionKey(suggestion)),
-          )
+          .where((suggestion) => _selectedSuggestions.contains(suggestion.key))
           .toList();
       for (final suggestion in selected) {
         try {
@@ -178,12 +108,9 @@ class _MediaMappingsScreenState extends ConsumerState<MediaMappingsScreen> {
               .saveManualMediaMapping(_suggestionIdentities(suggestion));
           savedCount++;
           _cachedSuggestions = _cachedSuggestions
-              .where(
-                (cached) =>
-                    _suggestionKey(cached) != _suggestionKey(suggestion),
-              )
+              .where((cached) => cached.key != suggestion.key)
               .toList();
-          _selectedSuggestions.remove(_suggestionKey(suggestion));
+          _selectedSuggestions.remove(suggestion.key);
         } catch (error) {
           saveError = error;
           break;
@@ -291,6 +218,91 @@ class _MediaMappingsScreenState extends ConsumerState<MediaMappingsScreen> {
   String _serviceNames(UnifiedMediaItem item) =>
       item.services.keys.map((service) => service.shortName).join(', ');
 
+  int? _yearFor(UnifiedMediaItem item) {
+    for (final serviceItem in item.services.values) {
+      final year = serviceItem.releaseYear ?? serviceItem.startDate?.year;
+      if (year != null) return year;
+    }
+    return null;
+  }
+
+  String _suggestionTitle(SuggestedMediaMapping suggestion) =>
+      suggestion.items.map((item) => item.title).toSet().join(' / ');
+
+  Widget _suggestedMediaCard(UnifiedMediaItem item) {
+    final theme = Theme.of(context);
+    final year = _yearFor(item);
+    return SizedBox(
+      width: 220,
+      child: Card(
+        margin: const EdgeInsets.only(right: 10, bottom: 8),
+        clipBehavior: Clip.antiAlias,
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: SizedBox(
+                  width: 54,
+                  height: 78,
+                  child: item.posterImage.isEmpty
+                      ? ColoredBox(
+                          color: theme.colorScheme.surfaceContainerHighest,
+                          child: Icon(
+                            _mediaType == MediaType.anime
+                                ? Icons.movie_outlined
+                                : Icons.menu_book_outlined,
+                          ),
+                        )
+                      : CachedNetworkImage(
+                          imageUrl: item.posterImage,
+                          fit: BoxFit.cover,
+                          errorWidget: (context, url, error) => ColoredBox(
+                            color: theme.colorScheme.surfaceContainerHighest,
+                            child: const Icon(Icons.broken_image_outlined),
+                          ),
+                        ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _serviceNames(item),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                    if (year != null)
+                      Text(
+                        '$year',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   String _mappingTitle(
     ManualMediaMapping mapping,
     List<UnifiedMediaItem> library,
@@ -321,12 +333,12 @@ class _MediaMappingsScreenState extends ConsumerState<MediaMappingsScreen> {
         '${_mediaType.name}:${_query.trim().toLowerCase()}';
     if (_cachedSuggestionKey != suggestionQueryKey && !library.isLoading) {
       _cachedSuggestionKey = suggestionQueryKey;
-      _cachedSuggestions = _findSuggestions(items);
+      _cachedSuggestions = findSuggestedMediaMappings(items, query: _query);
       _selectedSuggestions = {};
     }
     final suggestions = _cachedSuggestionKey == suggestionQueryKey
         ? _cachedSuggestions
-        : _findSuggestions(items);
+        : findSuggestedMediaMappings(items, query: _query);
     final savedMappings = ref
         .read(storageServiceProvider)
         .getManualMediaMappings()
@@ -481,7 +493,7 @@ class _MediaMappingsScreenState extends ConsumerState<MediaMappingsScreen> {
   }
 
   Widget _suggestionsView(
-    List<_SuggestedMapping> suggestions,
+    List<SuggestedMediaMapping> suggestions,
     AppLocalizations localizations,
   ) {
     if (suggestions.isEmpty) {
@@ -499,23 +511,37 @@ class _MediaMappingsScreenState extends ConsumerState<MediaMappingsScreen> {
         ),
         for (final suggestion in suggestions)
           Card(
-            child: ListTile(
-              leading: Checkbox(
-                value: _selectedSuggestions.contains(
-                  _suggestionKey(suggestion),
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CheckboxListTile(
+                  value: _selectedSuggestions.contains(suggestion.key),
+                  onChanged: _isSaving
+                      ? null
+                      : (_) => _toggleSuggestion(suggestion, suggestions),
+                  title: Text(
+                    _suggestionTitle(suggestion),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  subtitle: Text(
+                    localizations.mappingMediaCount(suggestion.items.length),
+                  ),
+                  controlAffinity: ListTileControlAffinity.leading,
                 ),
-                onChanged: _isSaving
-                    ? null
-                    : (_) => _toggleSuggestion(suggestion, suggestions),
-              ),
-              title: Text(
-                '${suggestion.first.title} / ${suggestion.second.title}',
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              subtitle: Text(
-                '${_serviceNames(suggestion.first)} · ${_serviceNames(suggestion.second)}',
-              ),
+                SizedBox(
+                  height: 112,
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      for (final item in suggestion.items)
+                        _suggestedMediaCard(item),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
       ],

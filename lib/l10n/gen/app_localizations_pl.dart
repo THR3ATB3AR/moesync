@@ -1415,6 +1415,11 @@ class AppLocalizationsPl extends AppLocalizations {
       'Wybrane propozycje zawierają różne wpisy z tego samego serwisu. Mapuj je osobno.';
 
   @override
+  String mappingMediaCount(int count) {
+    return '$count wpisy';
+  }
+
+  @override
   String mappingSavedWithError(int savedCount, Object error) {
     return 'Zmapowano $savedCount propozycji, ale kolejne mapowanie się nie powiodło: $error';
   }

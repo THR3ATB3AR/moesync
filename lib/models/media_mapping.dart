@@ -122,3 +122,108 @@ class ManualMediaMappingIndex {
     return groupKey == null ? null : _malIdByGroup[groupKey];
   }
 }
+
+class SuggestedMediaMapping {
+  const SuggestedMediaMapping({required this.items, required this.title});
+
+  final List<UnifiedMediaItem> items;
+  final String title;
+
+  String identityKey(UnifiedMediaItem item) {
+    final serviceKeys =
+        item.services.entries
+            .map((entry) => '${entry.key.name}:${entry.value.id}')
+            .toList()
+          ..sort();
+    return serviceKeys.join('|');
+  }
+
+  String get key => (items.map(identityKey).toList()..sort()).join('::');
+}
+
+List<SuggestedMediaMapping> findSuggestedMediaMappings(
+  Iterable<UnifiedMediaItem> sourceItems, {
+  String query = '',
+  int limit = 100,
+}) {
+  final byTitle = <String, Map<String, UnifiedMediaItem>>{};
+  final groups = <String, SuggestedMediaMapping>{};
+  final normalizedQuery = query.trim().toLowerCase();
+
+  Set<String> titleKeys(UnifiedMediaItem item) {
+    final titles = <String>[
+      item.title,
+      for (final service in item.services.values) ...[
+        service.title,
+        if (service.englishTitle != null) service.englishTitle!,
+        if (service.japaneseTitle != null) service.japaneseTitle!,
+        if (service.romajiTitle != null) service.romajiTitle!,
+        ...service.alternativeTitles,
+      ],
+    ];
+    return titles
+        .map(
+          (title) => title.toLowerCase().replaceAll(
+            RegExp(r'[\s\-_.,:;!?()\[\]{}「」『』]+'),
+            '',
+          ),
+        )
+        .where((title) => title.length >= 3)
+        .toSet();
+  }
+
+  String itemKey(UnifiedMediaItem item) {
+    final serviceKeys =
+        item.services.entries
+            .map((entry) => '${entry.key.name}:${entry.value.id}')
+            .toList()
+          ..sort();
+    return serviceKeys.join('|');
+  }
+
+  for (final item in sourceItems) {
+    final key = itemKey(item);
+    for (final title in titleKeys(item)) {
+      byTitle.putIfAbsent(title, () => {})[key] = item;
+    }
+  }
+
+  for (final titleEntry in byTitle.entries) {
+    final matchingItems = titleEntry.value.values.toList();
+    if (matchingItems.length < 2) continue;
+
+    final clusters = <List<UnifiedMediaItem>>[];
+    for (final item in matchingItems) {
+      final availableCluster = clusters.where(
+        (cluster) => cluster.every(
+          (member) => member.services.keys
+              .toSet()
+              .intersection(item.services.keys.toSet())
+              .isEmpty,
+        ),
+      );
+      if (availableCluster.isEmpty) {
+        clusters.add([item]);
+      } else {
+        availableCluster.first.add(item);
+      }
+    }
+
+    for (final cluster in clusters.where((cluster) => cluster.length > 1)) {
+      if (normalizedQuery.isNotEmpty &&
+          !titleEntry.key.contains(normalizedQuery) &&
+          !cluster.any((item) => item.matchesTitleQuery(normalizedQuery))) {
+        continue;
+      }
+      final itemKeys = cluster.map(itemKey).toList()..sort();
+      groups.putIfAbsent(
+        itemKeys.join('::'),
+        () => SuggestedMediaMapping(
+          items: List.unmodifiable(cluster),
+          title: titleEntry.key,
+        ),
+      );
+    }
+  }
+  return groups.values.take(limit).toList();
+}
