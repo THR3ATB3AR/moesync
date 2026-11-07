@@ -123,6 +123,8 @@ jobs:
         env:
           RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
           MOESYNC_ENV: ${{ secrets.MOESYNC_ENV }}
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
@@ -136,6 +138,25 @@ jobs:
           fi
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
           echo "BUILD_NUMBER=$GITHUB_RUN_NUMBER" >> "$GITHUB_ENV"
+          MAX_ANDROID_VERSION_CODE="$(gh api --paginate \
+            "repos/$REPOSITORY/releases?per_page=100" \
+            --jq '.[].assets[].name' |
+            sed -nE 's/^moesync-.*\+([0-9]+)-android-(universal|armeabi-v7a|arm64-v8a|x86_64)\.apk$/\1/p' |
+            sort -n | tail -n 1)"
+          MAX_ANDROID_VERSION_CODE="${MAX_ANDROID_VERSION_CODE:-0}"
+          if ! [[ "$MAX_ANDROID_VERSION_CODE" =~ ^[0-9]+$ ]]; then
+            echo "::error::Could not determine the latest Android version code."
+            exit 1
+          fi
+          if (( GITHUB_RUN_NUMBER > MAX_ANDROID_VERSION_CODE )); then
+            MAX_ANDROID_VERSION_CODE="$GITHUB_RUN_NUMBER"
+          fi
+          ANDROID_VERSION_CODE=$((MAX_ANDROID_VERSION_CODE + 1))
+          if (( ANDROID_VERSION_CODE > 2147483647 )); then
+            echo "::error::Android version code exceeds the supported maximum."
+            exit 1
+          fi
+          echo "ANDROID_VERSION_CODE=$ANDROID_VERSION_CODE" >> "$GITHUB_ENV"
           if [ -n "${MOESYNC_ENV:-}" ]; then
             printf '%s' "$MOESYNC_ENV" > .env
           else
@@ -159,23 +180,23 @@ jobs:
         run: |
           flutter build apk --release \
             --build-name "$VERSION" \
-            --build-number "$BUILD_NUMBER" \
+            --build-number "$ANDROID_VERSION_CODE" \
             --dart-define-from-file=.dart-defines.json
           mkdir -p dist
           cp build/app/outputs/flutter-apk/app-release.apk \
-            "dist/moesync-${VERSION}+${BUILD_NUMBER}-android-universal.apk"
+            "dist/moesync-${VERSION}+${ANDROID_VERSION_CODE}-android-universal.apk"
       - name: Build per-ABI APKs
         run: |
           flutter build apk --release --split-per-abi \
             --build-name "$VERSION" \
-            --build-number "$BUILD_NUMBER" \
+            --build-number "$ANDROID_VERSION_CODE" \
             --dart-define-from-file=.dart-defines.json
           cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk \
-            "dist/moesync-${VERSION}+${BUILD_NUMBER}-android-armeabi-v7a.apk"
+            "dist/moesync-${VERSION}+${ANDROID_VERSION_CODE}-android-armeabi-v7a.apk"
           cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk \
-            "dist/moesync-${VERSION}+${BUILD_NUMBER}-android-arm64-v8a.apk"
+            "dist/moesync-${VERSION}+${ANDROID_VERSION_CODE}-android-arm64-v8a.apk"
           cp build/app/outputs/flutter-apk/app-x86_64-release.apk \
-            "dist/moesync-${VERSION}+${BUILD_NUMBER}-android-x86_64.apk"
+            "dist/moesync-${VERSION}+${ANDROID_VERSION_CODE}-android-x86_64.apk"
       - uses: actions/upload-artifact@v7
         with:
           name: android-release

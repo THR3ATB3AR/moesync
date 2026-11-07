@@ -37,9 +37,9 @@ void main() {
     expect(
       ReleaseService.latestReleaseFor([
         _release('v1.0.1', isPrerelease: false),
-        _release('v1.0.1-nightly.20261106.11', isPrerelease: true),
+        _release('v1.0.2-nightly.20261106.11', isPrerelease: true),
       ], includeNightly: true)?.tagName,
-      'v1.0.1',
+      'v1.0.2-nightly.20261106.11',
     );
   });
 
@@ -55,6 +55,13 @@ void main() {
     );
     expect(
       ReleaseService.isUpdateAvailable('1.0.1-nightly.20261106.11+11', stable),
+      isTrue,
+    );
+    expect(
+      ReleaseService.isUpdateAvailable(
+        '1.0.1+12',
+        _release('v1.0.2-nightly.20261107.12', isPrerelease: true),
+      ),
       isTrue,
     );
     expect(ReleaseService.isUpdateAvailable('1.0.1+12', earlier), isFalse);

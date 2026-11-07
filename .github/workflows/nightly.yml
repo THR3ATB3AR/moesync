@@ -76,11 +76,12 @@ jobs:
           RELEASE_TAG: ${{ steps.latest_release.outputs.tag }}
         run: |
           BASE_VERSION="${RELEASE_TAG#v}"
-          if ! [[ "$BASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          if ! [[ "$BASE_VERSION" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
             echo "::error::Latest stable release tag '$RELEASE_TAG' is not a stable semantic version."
             exit 1
           fi
           IFS=. read -r MAJOR MINOR PATCH <<< "$BASE_VERSION"
+          PATCH=$((10#$PATCH + 1))
           VERSION="$MAJOR.$MINOR.$PATCH-nightly.$(date -u +%Y%m%d).$GITHUB_RUN_NUMBER"
           PRODUCT_VERSION="$MAJOR.$MINOR.$PATCH.0"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
@@ -184,6 +185,8 @@ jobs:
           java-version: "17"
       - name: Prepare version, environment, and signing
         env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
           MOESYNC_ENV: ${{ secrets.MOESYNC_ENV }}
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
@@ -196,6 +199,25 @@ jobs:
             cp .env.example .env
           fi
           python3 scripts/prepare_dart_defines.py
+          MAX_ANDROID_VERSION_CODE="$(gh api --paginate \
+            "repos/$REPOSITORY/releases?per_page=100" \
+            --jq '.[].assets[].name' |
+            sed -nE 's/^moesync-.*\+([0-9]+)-android-(universal|armeabi-v7a|arm64-v8a|x86_64)\.apk$/\1/p' |
+            sort -n | tail -n 1)"
+          MAX_ANDROID_VERSION_CODE="${MAX_ANDROID_VERSION_CODE:-0}"
+          if ! [[ "$MAX_ANDROID_VERSION_CODE" =~ ^[0-9]+$ ]]; then
+            echo "::error::Could not determine the latest Android version code."
+            exit 1
+          fi
+          if (( GITHUB_RUN_NUMBER > MAX_ANDROID_VERSION_CODE )); then
+            MAX_ANDROID_VERSION_CODE="$GITHUB_RUN_NUMBER"
+          fi
+          ANDROID_VERSION_CODE=$((MAX_ANDROID_VERSION_CODE + 1))
+          if (( ANDROID_VERSION_CODE > 2147483647 )); then
+            echo "::error::Android version code exceeds the supported maximum."
+            exit 1
+          fi
+          echo "ANDROID_VERSION_CODE=$ANDROID_VERSION_CODE" >> "$GITHUB_ENV"
           if [ -z "$ANDROID_KEYSTORE_BASE64" ] || [ -z "$ANDROID_KEY_ALIAS" ] || \
              [ -z "$ANDROID_KEY_PASSWORD" ] || [ -z "$ANDROID_STORE_PASSWORD" ]; then
             echo "::error::Android signing secrets are required. See docs/WYDANIA.md."
@@ -214,20 +236,20 @@ jobs:
           mkdir -p dist
           flutter build apk --release \
             --build-name "$VERSION" \
-            --build-number "$BUILD_NUMBER" \
+            --build-number "$ANDROID_VERSION_CODE" \
             --dart-define-from-file=.dart-defines.json
           cp build/app/outputs/flutter-apk/app-release.apk \
-            "dist/moesync-${VERSION}+${BUILD_NUMBER}-android-universal.apk"
+            "dist/moesync-${VERSION}+${ANDROID_VERSION_CODE}-android-universal.apk"
           flutter build apk --release --split-per-abi \
             --build-name "$VERSION" \
-            --build-number "$BUILD_NUMBER" \
+            --build-number "$ANDROID_VERSION_CODE" \
             --dart-define-from-file=.dart-defines.json
           cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk \
-            "dist/moesync-${VERSION}+${BUILD_NUMBER}-android-armeabi-v7a.apk"
+            "dist/moesync-${VERSION}+${ANDROID_VERSION_CODE}-android-armeabi-v7a.apk"
           cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk \
-            "dist/moesync-${VERSION}+${BUILD_NUMBER}-android-arm64-v8a.apk"
+            "dist/moesync-${VERSION}+${ANDROID_VERSION_CODE}-android-arm64-v8a.apk"
           cp build/app/outputs/flutter-apk/app-x86_64-release.apk \
-            "dist/moesync-${VERSION}+${BUILD_NUMBER}-android-x86_64.apk"
+            "dist/moesync-${VERSION}+${ANDROID_VERSION_CODE}-android-x86_64.apk"
       - uses: actions/upload-artifact@v7
         with:
           name: android-nightly
