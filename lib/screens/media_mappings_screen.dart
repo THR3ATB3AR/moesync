@@ -170,14 +170,13 @@ class _MediaMappingsScreenState extends ConsumerState<MediaMappingsScreen> {
     if (!selected.add(key)) {
       selected.remove(key);
     } else if (selected.length > 1) {
-      final other = items
-          .where((candidate) => _itemKey(candidate) == selected.first)
-          .firstOrNull;
-      if (other != null &&
-          other.services.keys
-              .toSet()
-              .intersection(item.services.keys.toSet())
-              .isNotEmpty) {
+      final hasServiceConflict = items.any(
+        (candidate) =>
+            _itemKey(candidate) != key &&
+            selected.contains(_itemKey(candidate)) &&
+            candidate.services.keys.any(item.services.containsKey),
+      );
+      if (hasServiceConflict) {
         selected.remove(key);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -449,7 +448,7 @@ class _MediaMappingsScreenState extends ConsumerState<MediaMappingsScreen> {
             )
           : _mode == _MappingMode.manual
           ? FloatingActionButton.extended(
-              onPressed: _selectedItems.length == 2 && !_isSaving
+              onPressed: _selectedItems.length >= 2 && !_isSaving
                   ? () => _saveMapping(
                       items.where(
                         (item) => _selectedItems.contains(_itemKey(item)),
@@ -556,10 +555,7 @@ class _MediaMappingsScreenState extends ConsumerState<MediaMappingsScreen> {
         for (final item in visibleItems)
           CheckboxListTile(
             value: _selectedItems.contains(_itemKey(item)),
-            onChanged:
-                _isSaving ||
-                    (_selectedItems.length == 2 &&
-                        !_selectedItems.contains(_itemKey(item)))
+            onChanged: _isSaving
                 ? null
                 : (_) => _toggleSelection(item, allItems),
             title: Text(
