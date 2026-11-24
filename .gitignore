@@ -63,3 +63,4 @@ app.*.map.json
 docs/WYDANIA.md
 docs/RELEASING.md
 run-android.fish
+.vscode/
